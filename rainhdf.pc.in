@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: RainHDF
+Description: Rainfields ODIM HDF5 Library
+Version: @PACKAGE_VERSION@
+Libs: -L${libdir} -lrainhdf -lhdf5
+Cflags: -I${includedir}
