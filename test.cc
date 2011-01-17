@@ -18,7 +18,7 @@ int main(int argc, const char *argv[])
   try
   {
     // Open an existing volume for reading
-    const Volume hdfr("../data/201001221325Kurnell.h5", false);
+    const Volume hdfr("201001221325Kurnell.h5", false);
 
     // Create a new volume to copy it into
     Volume hdfw(
@@ -27,6 +27,18 @@ int main(int argc, const char *argv[])
         hdfr.GetLatitude(),
         hdfr.GetLongitude(),
         hdfr.GetHeight());
+
+    // Read the source attribute
+    string s1, s2, s3, s4, s5, s6;
+    hdfr.GetSource(s1, s2, s3, s4, s5, s6);
+    hdfw.SetSource(s1.c_str(), s2.c_str(), s3.c_str(), s4.c_str(), s5.c_str(), s6.c_str());
+    cout 
+      << "met " << s1 << endl
+      << "rad " << s2 << endl
+      << "org " << s3 << endl
+      << "plc " << s4 << endl
+      << "cty " << s5 << endl
+      << "cmt " << s6 << endl;
 
     for (size_t i = 0; i < hdfr.GetScanCount(); ++i)
     {

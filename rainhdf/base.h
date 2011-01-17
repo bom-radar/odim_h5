@@ -22,9 +22,26 @@ namespace RainHDF
     bool IsReadOnly() const { return m_bReadOnly; }
 
     /// Get the nominal (valid) time of the data/product
-    time_t GetTime() const { return GetAtt<time_t>(m_hWhat, "date", "time"); }
+    time_t GetTime() const { return GetAtt<time_t>(m_hWhat, kAtt_Date, kAtt_Time); }
     /// Write the nominal (valid) time of the data/product
-    void SetTime(time_t tValid) { SetAtt(m_hFile, "date", "time", tValid); }
+    void SetTime(time_t tValid) { SetAtt(m_hFile, kAtt_Date, kAtt_Time, tValid); }
+
+    /// Read the source attribute values
+    void GetSource(
+          std::string &strWMO
+        , std::string &strRadar
+        , std::string &strOrigCentre
+        , std::string &strPlace
+        , std::string &strCountry
+        , std::string &strComment) const;
+    /// Write the data source attriubte
+    void SetSource(
+          const std::string &strWMO
+        , const std::string &strRadar
+        , const std::string &strOrigCentre
+        , const std::string &strPlace
+        , const std::string &strCountry
+        , const std::string &strComment);
 
     /// Read a global quality attribute
     bool GetQuality(QualityAttribute_Double eAttr, double &fVal) const;

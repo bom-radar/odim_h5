@@ -121,6 +121,18 @@ namespace RainHDF
     , kQA_SignalToNoise     ///< Signal-to-noise ratio threshold value (dB)
   };
 
+  // Common group names
+  extern const char * kGrp_What;
+  extern const char * kGrp_Where;
+  extern const char * kGrp_How;
+  extern const char * kGrp_Dataset;
+  extern const char * kGrp_Data;
+  extern const char * kGrp_Quality;
+
+  // Common attribute names
+  extern const char * kAtt_Date;
+  extern const char * kAtt_Time;
+
   // Check if a numbered group exists
   bool IndexedGroupExists(hid_t hParent, const char *pszGroup, int nIndex, char *pszNameOut);
 

@@ -13,13 +13,6 @@ using namespace RainHDF;
 
 namespace RainHDF
 {
-  static const char * kGrp_What = "what";
-  static const char * kGrp_Where = "where";
-  static const char * kGrp_How = "how";
-  static const char * kGrp_Scan = "dataset";
-  static const char * kGrp_LayerData = "data";
-  static const char * kGrp_LayerQuality = "quality";
-
   static const char * kAtt_Product = "product";
   static const char * kAtt_AzimuthCount = "nrays";
   static const char * kAtt_RangeCount = "nbins";
@@ -217,11 +210,11 @@ Volume::Scan::Scan(hid_t hParent, const char *pszName)
     throw Error(m_hScan, "Scan product code mismatch");
 
   // Check for any data layers
-  for (int i = 1; IndexedGroupExists(m_hScan, kGrp_LayerData, i, pszLayerName); ++i)
+  for (int i = 1; IndexedGroupExists(m_hScan, kGrp_Data, i, pszLayerName); ++i)
     m_Layers.push_back(Layer(m_hScan, pszLayerName, &m_nAzimuthCount));
 
   // Check for quality layers
-  for (int i = 1; IndexedGroupExists(m_hScan, kGrp_LayerQuality, i, pszLayerName); ++i)
+  for (int i = 1; IndexedGroupExists(m_hScan, kGrp_Quality, i, pszLayerName); ++i)
     m_Layers.push_back(Layer(m_hScan, pszLayerName, &m_nAzimuthCount));
 }
 
@@ -245,7 +238,7 @@ Volume::Scan::Layer & Volume::Scan::AddLayer(
 {
   // TODO - should be either dataX or qualityX depending on nature of layer
   char pszName[16];
-  sprintf(pszName, "%s%d", kGrp_LayerData, m_Layers.size() + 1);
+  sprintf(pszName, "%s%d", kGrp_Data, m_Layers.size() + 1);
   m_Layers.push_back(
       Layer(
           m_hScan,
@@ -282,7 +275,7 @@ Volume::Volume(const std::string &strFilename, bool bReadOnly)
 
   // Load our scans
   char pszName[32];
-  for (int i = 1; IndexedGroupExists(m_hFile, kGrp_Scan, i, pszName); ++i)
+  for (int i = 1; IndexedGroupExists(m_hFile, kGrp_Dataset, i, pszName); ++i)
     m_Scans.push_back(Scan(m_hFile, pszName));
 }
 
@@ -298,7 +291,7 @@ Volume::Scan & Volume::AddScan(
 {
   // Create the new dataset group
   char pszName[32];
-  sprintf(pszName, "%s%d", kGrp_Scan, m_Scans.size() + 1);
+  sprintf(pszName, "%s%d", kGrp_Dataset, m_Scans.size() + 1);
   m_Scans.push_back(
       Scan(
           m_hFile,

@@ -113,6 +113,16 @@ namespace RainHDF
     , "PAC"
     , "S2N"
   };
+
+  const char * kGrp_What = "what";
+  const char * kGrp_Where = "where";
+  const char * kGrp_How = "how";
+  const char * kGrp_Dataset = "dataset";
+  const char * kGrp_Data = "data";
+  const char * kGrp_Quality = "quality";
+
+  const char * kAtt_Date = "date";
+  const char * kAtt_Time = "time";
 }
 
 bool RainHDF::IndexedGroupExists(
