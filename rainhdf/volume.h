@@ -9,35 +9,8 @@
 
 #include "base.h"
 
+#include <memory>
 #include <vector>
-
-#if 0
-      // Optional data layers (dataX)
-      HID_Group     m_hReflectivity;    ///< Raw reflectivity
-      HID_Group     m_hRadialVelocity;  ///< Doppler radial velocity
-      // spectral width of velocity
-
-      // Optional quality layers (qualityX)
-      HID_Group     m_hClutterProb;     ///< Probability of clutter
-      HID_Group     m_hShadowing;       ///< Beam blocking amount
-      HID_Group     m_hAttenuation;     ///< Path integrated attenuation
-#endif
-    /* TODO Scalar quality indicators to store:
-     * Global:
-     *  - radar frequency
-     *  - beam width
-     *  - pointing accuracy (elevation)
-     *  - pointing accuracy (azimuth)
-     *  - minimum detectable signal at 1km?
-     *  - wet radome attenuation
-     * Per scan:
-     *  - radar horizon?
-     * With reflectivity:
-     * With velocity:
-     *  - Maximum unambiguous velocity
-     *  - Maximum unambiguous range
-     */
-
 
 namespace RainHDF
 {
@@ -58,6 +31,9 @@ namespace RainHDF
         Layer & operator=(const Layer &layer) = delete;
         Layer & operator=(Layer &&layer);
 
+        /// Is this layer a quality layer?
+        bool IsQualityLayer() const { return m_bIsQuality; }
+
         /// Get the quantity stored by this layer
         Quantity GetQuantity() const { return m_eQuantity; }
 
@@ -77,28 +53,35 @@ namespace RainHDF
       private:
         Layer(
               hid_t hParent
-            , const char *pszName
+            , bool bIsQuality
+            , size_t nIndex
+            , Quantity eQuantity
             , const hsize_t *pDims);
         Layer(
               hid_t hParent
-            , const char *pszName
-            , const hsize_t *pDims
+            , bool bIsQuality
+            , size_t nIndex
             , Quantity eQuantity
+            , const hsize_t *pDims
             , const float *pData
             , float fNoData
             , float fUndetect);
 
       private:
-        HID_Group   m_hLayer;           ///< Handle to the 'dataX' group
-        HID_Group   m_hWhat;            ///< Compulsory 'what' group
-        HID_Group   m_hHow;             ///< The optional 'how' group
+        bool              m_bIsQuality; ///< Is this a quality layer?
+        Quantity          m_eQuantity;  ///< Quantity stored by this layer
+        HID_Group         m_hLayer;     ///< Handle to the 'dataX' group
+        HID_Group         m_hWhat;      ///< Compulsory 'what' group
+        HID_Group         m_hHow;       ///< The optional 'how' group
 
         // Cached values
-        size_t      m_nSize;            ///< Number of elements in dataset
-        Quantity    m_eQuantity;        ///< Quantity represented by this layer
+        size_t            m_nSize;      ///< Number of elements in dataset
 
         friend class Scan;
       };
+
+      typedef std::auto_ptr<Layer> LayerPtr;
+      typedef std::auto_ptr<const Layer> LayerConstPtr;
 
     public:
       /// Disable copy construction
@@ -128,15 +111,19 @@ namespace RainHDF
       time_t GetEndTime() const { return GetAtt<time_t>(m_hWhat, kAtt_EndDate, kAtt_EndTime); }
 
       /// Get the number of layers in the file
-      size_t GetLayerCount() const { return m_Layers.size(); }
+      size_t GetLayerCount() const { return m_LayerInfos.size(); }
       /// Get the 'nth' layer
-      Layer & GetLayer(size_t nLayer) { return m_Layers[nLayer]; }
+      LayerPtr GetLayer(size_t nLayer);
       /// Get the 'nth' layer
-      const Layer & GetLayer(size_t nLayer) const { return m_Layers[nLayer]; }
+      LayerConstPtr GetLayer(size_t nLayer) const;
+      /// Get a layer based on it's quantity (or NULL if no such layer)
+      LayerPtr GetLayer(Quantity eQuantity);
+      LayerConstPtr GetLayer(Quantity eQuantity) const;
 
       /// Add a new data or quality layer to the scan
-      Layer & AddLayer(
+      LayerPtr AddLayer(
             Quantity eQuantity
+          , bool bIsQuality
           , const float *pData
           , float fNoData
           , float fUndetect);
@@ -150,10 +137,19 @@ namespace RainHDF
       void SetAttribute(E eAtt, const T &val) { SetHowAtt(m_hScan, m_hHow, eAtt, val); }
 
     private:
+      struct LayerInfo
+      {
+        bool      m_bIsQuality;   ///< True if data, false if quality
+        size_t    m_nIndex;       ///< Index of dataX/qualityX in file
+        Quantity  m_eQuantity;    ///< Quantity stored by layer
+      };
+      typedef std::vector<LayerInfo> LayerInfoStore_t;
+
+    private:
       /// Create new scan in file
       Scan(
             hid_t hParent
-          , const char *pszName
+          , size_t nIndex         ///< Scan number in file (datasetX)
           , double fElevation     ///< Scan elevation angle (degrees above horizon)
           , size_t nAzimuths      ///< Number of azimuths in scan
           , size_t nRangeBins     ///< Number of range bins per azimuth
@@ -165,24 +161,21 @@ namespace RainHDF
           );
 
       /// Create handle to a scan that is existing in the file
-      Scan(hid_t hParent, const char *pszName);
+      Scan(hid_t hParent, size_t nIndex);
 
     private:
-      typedef std::vector<Layer> LayerStore_t;
-
-    private:
-      // Compulsory per scan groups
-      HID_Group     m_hScan;            ///< Handle to the 'datasetX' group
-      HID_Group     m_hWhat;            ///< The compulsory 'what' group
-      HID_Group     m_hWhere;           ///< The compulsory 'where' group
-      HID_Group     m_hHow;             ///< The optional 'how' group
+      // Per scan groups
+      HID_Group         m_hScan;            ///< Handle to the 'datasetX' group
+      HID_Group         m_hWhat;            ///< The compulsory 'what' group
+      HID_Group         m_hWhere;           ///< The compulsory 'where' group
+      HID_Group         m_hHow;             ///< The optional 'how' group
 
       // Size required by data layers
-      hsize_t       m_nAzimuthCount,    ///< Number of azimuths
-                    m_nRangeCount;      ///< Number of range bins
+      hsize_t           m_nAzimuthCount,    ///< Number of azimuths
+                        m_nRangeCount;      ///< Number of range bins
 
       // Handles to any data layers that are present
-      LayerStore_t  m_Layers;           ///< Data and quality layers of this scan
+      LayerInfoStore_t  m_LayerInfos;       ///< Information about data/quality layers
 
     private:
       static const char * kAtt_RangeStart;
@@ -196,6 +189,9 @@ namespace RainHDF
 
       friend class Volume;
     };
+
+    typedef std::auto_ptr<Scan> ScanPtr;
+    typedef std::auto_ptr<const Scan> ScanConstPtr;
 
   public:
     /// Create a new HDF5 volume file
@@ -228,16 +224,14 @@ namespace RainHDF
     /// Write the station elevation
     void SetHeight(double fHeight) { SetAtt(m_hWhere, "height", fHeight); }
 
-    /// Get the number of scans in the file
-    size_t GetScanCount() const { return m_Scans.size(); }
+    /// Get the number of scans in the volume
+    size_t GetScanCount() const { return m_nScanCount; }
     /// Get the 'nth' scan
-    Scan & GetScan(size_t nScan) { return m_Scans[nScan]; }
+    ScanPtr GetScan(size_t nScan) { return ScanPtr(new Scan(m_hFile, nScan + 1)); }
     /// Get the 'nth' scan
-    const Scan & GetScan(size_t nScan) const { return m_Scans[nScan]; }
-
+    ScanConstPtr GetScan(size_t nScan) const { return ScanConstPtr(new Scan(m_hFile, nScan + 1)); }
     /// Add a new scan to the file
-    /** \return The index of the new scan */
-    Scan & AddScan(
+    ScanPtr AddScan(
           double fElevation     ///< Scan elevation angle (degrees above horizon)
         , size_t nAzimuths      ///< Number of azimuths scanned
         , size_t nRangeBins     ///< Number of range bins
@@ -249,11 +243,32 @@ namespace RainHDF
         );
 
   private:
-    typedef std::vector<Scan> ScanStore_t;
-
-  private:
-    ScanStore_t   m_Scans;    ///< Handles to the scan groups
+    size_t    m_nScanCount;   ///< Number of scans in file
   };
+
+  inline Volume::ScanPtr Volume::AddScan(
+        double fElevation
+      , size_t nAzimuths
+      , size_t nRangeBins
+      , size_t nFirstAzimuth
+      , double fRangeStart
+      , double fRangeScale
+      , time_t tStart
+      , time_t tEnd)
+  {
+    return ScanPtr(
+        new Scan(
+            m_hFile,
+            ++m_nScanCount,
+            fElevation,
+            nAzimuths,
+            nRangeBins,
+            nFirstAzimuth,
+            fRangeStart,
+            fRangeScale,
+            tStart,
+            tEnd));
+  }
 };
 
 #endif

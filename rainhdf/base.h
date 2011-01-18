@@ -24,7 +24,7 @@ namespace RainHDF
     /// Get the nominal (valid) time of the data/product
     time_t GetTime() const { return GetAtt<time_t>(m_hWhat, kAtt_Date, kAtt_Time); }
     /// Write the nominal (valid) time of the data/product
-    void SetTime(time_t tValid) { SetAtt(m_hFile, kAtt_Date, kAtt_Time, tValid); }
+    void SetTime(time_t tValid) { SetAtt(m_hWhat, kAtt_Date, kAtt_Time, tValid); }
 
     /// Read the source attribute values
     void GetSource(

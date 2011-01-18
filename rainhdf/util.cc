@@ -161,6 +161,7 @@ namespace RainHDF
 
   const char * kAtt_Date = "date";
   const char * kAtt_Time = "time";
+  const char * kAtt_Quantity = "quantity";
 }
 
 bool RainHDF::IndexedGroupExists(

@@ -42,40 +42,64 @@ int main(int argc, const char *argv[])
 
     for (size_t i = 0; i < hdfr.GetScanCount(); ++i)
     {
-      const Volume::Scan &sr(hdfr.GetScan(i));
-      Volume::Scan &sw(
+      Volume::ScanConstPtr sr = hdfr.GetScan(i);
+      Volume::ScanPtr sw = 
           hdfw.AddScan(
-              sr.GetElevation(),
-              sr.GetAzimuthCount(),
-              sr.GetRangeBinCount(),
-              sr.GetFirstAzimuth(),
-              sr.GetRangeStart(),
-              sr.GetRangeScale(),
-              sr.GetStartTime(),
-              sr.GetEndTime()));
+              sr->GetElevation(),
+              sr->GetAzimuthCount(),
+              sr->GetRangeBinCount(),
+              sr->GetFirstAzimuth(),
+              sr->GetRangeStart(),
+              sr->GetRangeScale(),
+              sr->GetStartTime(),
+              sr->GetEndTime());
 
       float fNoData, fUndetect;
-      vector<float> vecData(sr.GetAzimuthCount() * sr.GetRangeBinCount());
+      vector<float> vecData(sr->GetAzimuthCount() * sr->GetRangeBinCount());
 
-      for (size_t j = 0; j < sr.GetLayerCount(); ++j)
+      for (size_t j = 0; j < sr->GetLayerCount(); ++j)
       {
-        const Volume::Scan::Layer &lr(sr.GetLayer(j));
-        lr.Read(&vecData[0], fNoData, fUndetect);
-        Volume::Scan::Layer &lw(
-            sw.AddLayer(
-                lr.GetQuantity(),
-                &vecData[0],
-                fNoData,
-                fUndetect));
+        // Read the layer data
+        Volume::Scan::LayerConstPtr lr = sr->GetLayer(j);
+        lr->Read(&vecData[0], fNoData, fUndetect);
 
-        lw.SetAttribute(kAtt_NyquistVelocity, 2.5);
+        // Write it out as a new layer
+        Volume::Scan::LayerPtr lw = 
+          sw->AddLayer(
+              lr->GetQuantity(),
+              lr->IsQualityLayer(),
+              &vecData[0],
+              fNoData,
+              fUndetect);
+        lw->SetAttribute(kAtt_NyquistVelocity, 2.5);
+
+        // Now go through and filter our reflectivity (only)
+        if (lr->GetQuantity() == kQty_DBZH)
+        {
+          for (vector<float>::iterator i = vecData.begin(); i != vecData.end(); ++i)
+            if (*i < 10)
+              *i = 0;
+
+          sw->AddLayer(
+              lr->GetQuantity(),
+              true,
+              &vecData[0],
+              fNoData,
+              fUndetect);
+        }
       }
+
+      printf("open objs: %d\n", H5Fget_obj_count(H5F_OBJ_ALL, H5F_OBJ_ALL));
     }
+
+    printf("open objs: %d (should be 8?)\n", H5Fget_obj_count(H5F_OBJ_ALL, H5F_OBJ_ALL));
   }
   catch (std::exception &err)
   {
     cout << "error: " << err.what() << endl;
   }
+
+  printf("open objs: %d (should be 0)\n", H5Fget_obj_count(H5F_OBJ_ALL, H5F_OBJ_ALL));
 
   cout << "done" << endl;
 }

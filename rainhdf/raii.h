@@ -94,12 +94,32 @@ namespace RainHDF
         throw Error(hParent, "Failed to create group '%s'", pszName);
     }
 
+    /// Create a HDF5 group (append index to name)
+    HID_Group(hid_t hParent, const char *pszName, size_t nIndex, CreateFlag eCreate)
+    {
+      char pszName2[32];
+      sprintf(pszName2, "%s%d", pszName, (int) nIndex);
+      m_hID = H5Gcreate(hParent, pszName2, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+      if (m_hID < 0) 
+        throw Error(hParent, "Failed to create group '%s'", pszName2);
+    }
+
     /// Open an existing HDF5 group
     HID_Group(hid_t hParent, const char *pszName, OpenFlag eOpen)
       : m_hID(H5Gopen(hParent, pszName, H5P_DEFAULT))
     { 
       if (m_hID < 0)
-        throw Error(hParent, "Failed to open HDF5 group '%s'", pszName);
+        throw Error(hParent, "Failed to open group '%s'", pszName);
+    }
+
+    /// Open an existing HDF5 group (append index to name)
+    HID_Group(hid_t hParent, const char *pszName, size_t nIndex, OpenFlag eOpen)
+    {
+      char pszName2[32];
+      sprintf(pszName2, "%s%d", pszName, (int) nIndex);
+      m_hID = H5Gopen(hParent, pszName2, H5P_DEFAULT);
+      if (m_hID < 0) 
+        throw Error(hParent, "Failed to open group '%s'", pszName2);
     }
 
     /// Open an existing HDF5 group if it exists
@@ -114,7 +134,7 @@ namespace RainHDF
       {
         m_hID = H5Gopen(hParent, pszName, H5P_DEFAULT);
         if (m_hID < 0)
-          throw Error(hParent, "Failed to open HDF5 group '%s'", pszName);
+          throw Error(hParent, "Failed to open group '%s'", pszName);
       }
     }
 

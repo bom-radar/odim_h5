@@ -173,6 +173,7 @@ namespace RainHDF
   // Common attribute names
   extern const char * kAtt_Date;
   extern const char * kAtt_Time;
+  extern const char * kAtt_Quantity;
 
   // Check if a numbered group exists
   bool IndexedGroupExists(hid_t hParent, const char *pszGroup, int nIndex, char *pszNameOut);
