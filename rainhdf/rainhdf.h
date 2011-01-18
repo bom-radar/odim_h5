@@ -9,5 +9,14 @@
 
 #include "volume.h"
 
+/// Classes for reading and writing Rainfields products in ODIM_H5 compliant HDF5 format
+/**
+ *
+ */
+namespace RainHDF
+{
+
+}
+
 #endif
 

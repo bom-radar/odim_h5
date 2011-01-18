@@ -6,7 +6,7 @@
 #-------------------------------------------------------------------------------
 
 # Initialization and sanity checks
-AC_INIT(rainhdf, 1.0.0, [m.curtis@bom.gov.au])
+AC_INIT(rainhdf, 0.0.1, [m.curtis@bom.gov.au])
 SHARED_LIB_VERSION="1:0:0" # current:revision:age
 AM_INIT_AUTOMAKE([foreign -Wall])
 AC_PREREQ(2.53)

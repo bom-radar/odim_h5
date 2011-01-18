@@ -63,12 +63,12 @@ int main(int argc, const char *argv[])
         lr.Read(&vecData[0], fNoData, fUndetect);
         Volume::Scan::Layer &lw(
             sw.AddLayer(
-                kDQ_DBZH,
+                lr.GetQuantity(),
                 &vecData[0],
                 fNoData,
                 fUndetect));
 
-        lw.SetQuality(kQA_NyquistVelocity, 2.5);
+        lw.SetAttribute(kAtt_NyquistVelocity, 2.5);
       }
     }
   }

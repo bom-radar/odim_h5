@@ -43,10 +43,13 @@ namespace RainHDF
         , const std::string &strCountry
         , const std::string &strComment);
 
-    /// Read a global quality attribute
-    bool GetQuality(QualityAttribute_Double eAttr, double &fVal) const;
-    /// Write a global quality attribute
-    void SetQuality(QualityAttribute_Double eAttr, double fVal);
+    /// Read an optional attribute
+    template <class E, class T>
+    bool GetAttribute(E eAtt, T &val) const { return GetHowAtt(m_hHow, eAtt, val); }
+
+    /// Write an optional attribute
+    template <class E, class T>
+    void SetAttribute(E eAtt, const T &val) { SetHowAtt(m_hFile, m_hHow, eAtt, val); }
 
   protected:
     /// Create a new ODIM_H5 compliant HDF file
@@ -62,16 +65,6 @@ namespace RainHDF
     HID_Group m_hWhere;     ///< Root 'where' group
     HID_Group m_hHow;       ///< Root 'how' (quality) group
   };
-
-  inline bool Base::GetQuality(QualityAttribute_Double eAttr, double &fVal) const
-  {
-    return GetHowAtt(m_hHow, eAttr, fVal);
-  }
-
-  inline void Base::SetQuality(QualityAttribute_Double eAttr, double fVal)
-  {
-    SetHowAtt(m_hFile, m_hHow, eAttr, fVal);
-  }
 }
 
 #endif

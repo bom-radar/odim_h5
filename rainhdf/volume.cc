@@ -46,8 +46,10 @@ const char * Volume::Scan::kAtt_FirstAzimuth = "a1gate";
 
 Volume::Scan::Layer::Layer(Layer &&layer)
   : m_hLayer(std::move(layer.m_hLayer))
+  , m_hWhat(std::move(layer.m_hWhat))
   , m_hHow(std::move(layer.m_hHow))
   , m_nSize(layer.m_nSize)
+  , m_eQuantity(layer.m_eQuantity)
 {
 
 }
@@ -55,8 +57,10 @@ Volume::Scan::Layer::Layer(Layer &&layer)
 Volume::Scan::Layer & Volume::Scan::Layer::operator=(Layer &&layer)
 {
   m_hLayer = std::move(layer.m_hLayer);
+  m_hWhat = std::move(layer.m_hWhat);
   m_hHow = std::move(layer.m_hHow);
   m_nSize = layer.m_nSize;
+  m_eQuantity = layer.m_eQuantity;
   return *this;
 }
 
@@ -65,8 +69,10 @@ Volume::Scan::Layer::Layer(
     , const char *pszName
     , const hsize_t *pDims)
   : m_hLayer(hParent, pszName, kOpen)
+  , m_hWhat(m_hLayer, kGrp_What, kOpen)
   , m_hHow(m_hLayer, kGrp_How, kOpen, true)
   , m_nSize(pDims[0] * pDims[1])
+  , m_eQuantity(GetAtt<Quantity>(m_hWhat, kAtt_Quantity))
 {
 
 }
@@ -75,20 +81,21 @@ Volume::Scan::Layer::Layer(
       hid_t hParent
     , const char *pszName
     , const hsize_t *pDims
-    , DataQuantity eQuantity
+    , Quantity eQuantity
     , const float *pData
     , float fNoData
     , float fUndetect)
   : m_hLayer(hParent, pszName, kCreate)
+  , m_hWhat(m_hLayer, kGrp_What, kCreate)
   , m_nSize(pDims[0] * pDims[1])
+  , m_eQuantity(eQuantity)
 {
   // Fill in the 'what' parameters
-  HID_Group hWhat(m_hLayer, kGrp_What, kCreate);
-  NewAtt(hWhat, kAtt_Quantity, kDQ_DBZH);
-  NewAtt(hWhat, kAtt_Gain, 1.0);
-  NewAtt(hWhat, kAtt_Offset, 0.0);
-  NewAtt(hWhat, kAtt_NoData, fNoData);
-  NewAtt(hWhat, kAtt_Undetect, fUndetect);
+  NewAtt(m_hWhat, kAtt_Quantity, m_eQuantity);
+  NewAtt(m_hWhat, kAtt_Gain, 1.0);
+  NewAtt(m_hWhat, kAtt_Offset, 0.0);
+  NewAtt(m_hWhat, kAtt_NoData, fNoData);
+  NewAtt(m_hWhat, kAtt_Undetect, fUndetect);
 
   // Create the HDF dataset
   HID_Space hSpace(2, pDims, kCreate);
@@ -129,7 +136,7 @@ void Volume::Scan::Layer::Read(float *pData, float &fNoData, float &fUndetect) c
       || std::fabs(fOffset) > 0.000001)
   {
     fNoData = (fNoData * fGain) + fOffset;
-    fUndetect = (fNoData * fGain) + fUndetect;
+    fUndetect = (fUndetect * fGain) + fOffset;
     for (size_t i = 0; i < m_nSize; ++i)
       pData[i] = (pData[i] * fGain) + fOffset;
   }
@@ -231,7 +238,7 @@ Volume::Scan & Volume::Scan::operator=(Scan &&scan)
 }
 
 Volume::Scan::Layer & Volume::Scan::AddLayer(
-      DataQuantity eQuantity
+      Quantity eQuantity
     , const float *pData
     , float fNoData
     , float fUndetect)

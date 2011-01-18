@@ -58,15 +58,21 @@ namespace RainHDF
         Layer & operator=(const Layer &layer) = delete;
         Layer & operator=(Layer &&layer);
 
-        // TODO - get the quantity
+        /// Get the quantity stored by this layer
+        Quantity GetQuantity() const { return m_eQuantity; }
 
+        /// Read the layer data
         void Read(float *pData, float &fNoData, float &fUndetect) const;
+        /// Write the layer data
         void Write(const float *pData, float fNoData, float fUndetect);
 
-        /// Read a per layer quality attribute
-        bool GetQuality(QualityAttribute_Double eAttr, double &fVal) const;
-        /// Write a per layer quality attribute
-        void SetQuality(QualityAttribute_Double eAttr, double fVal);
+        /// Read an optional attribute
+        template <class E, class T>
+        bool GetAttribute(E eAtt, T &val) const { return GetHowAtt(m_hHow, eAtt, val); }
+
+        /// Write an optional attribute
+        template <class E, class T>
+        void SetAttribute(E eAtt, const T &val) { SetHowAtt(m_hLayer, m_hHow, eAtt, val); }
 
       private:
         Layer(
@@ -77,15 +83,19 @@ namespace RainHDF
               hid_t hParent
             , const char *pszName
             , const hsize_t *pDims
-            , DataQuantity eQuantity
+            , Quantity eQuantity
             , const float *pData
             , float fNoData
             , float fUndetect);
 
       private:
         HID_Group   m_hLayer;           ///< Handle to the 'dataX' group
+        HID_Group   m_hWhat;            ///< Compulsory 'what' group
         HID_Group   m_hHow;             ///< The optional 'how' group
+
+        // Cached values
         size_t      m_nSize;            ///< Number of elements in dataset
+        Quantity    m_eQuantity;        ///< Quantity represented by this layer
 
         friend class Scan;
       };
@@ -126,29 +136,32 @@ namespace RainHDF
 
       /// Add a new data or quality layer to the scan
       Layer & AddLayer(
-            DataQuantity eQuantity
+            Quantity eQuantity
           , const float *pData
           , float fNoData
           , float fUndetect);
 
-      /// Read a per scan quality attribute
-      bool GetQuality(QualityAttribute_Double eAttr, double &fVal) const;
-      /// Write a per scan quality attribute
-      void SetQuality(QualityAttribute_Double eAttr, double fVal);
+      /// Read an optional attribute
+      template <class E, class T>
+      bool GetAttribute(E eAtt, T &val) const { return GetHowAtt(m_hHow, eAtt, val); }
+
+      /// Write an optional attribute
+      template <class E, class T>
+      void SetAttribute(E eAtt, const T &val) { SetHowAtt(m_hScan, m_hHow, eAtt, val); }
 
     private:
       /// Create new scan in file
       Scan(
             hid_t hParent
           , const char *pszName
-          , double fElevation   ///< Scan elevation angle (degrees above horizon)
+          , double fElevation     ///< Scan elevation angle (degrees above horizon)
           , size_t nAzimuths      ///< Number of azimuths in scan
           , size_t nRangeBins     ///< Number of range bins per azimuth
           , size_t nFirstAzimuth  ///< Index of first azimuth to be radiated
-          , double fRangeStart  ///< Range of start of first bin (km)
-          , double fRangeScale  ///< Distance between bins (m)
-          , time_t tStart       ///< Time scan started
-          , time_t tEnd         ///< Time scan ended
+          , double fRangeStart    ///< Range of start of first bin (km)
+          , double fRangeScale    ///< Distance between bins (m)
+          , time_t tStart         ///< Time scan started
+          , time_t tEnd           ///< Time scan ended
           );
 
       /// Create handle to a scan that is existing in the file
@@ -241,26 +254,6 @@ namespace RainHDF
   private:
     ScanStore_t   m_Scans;    ///< Handles to the scan groups
   };
-
-  inline bool Volume::Scan::Layer::GetQuality(QualityAttribute_Double eAttr, double &fVal) const
-  {
-    return GetHowAtt(m_hHow, eAttr, fVal);
-  }
-
-  inline void Volume::Scan::Layer::SetQuality(QualityAttribute_Double eAttr, double fVal)
-  {
-    SetHowAtt(m_hLayer, m_hHow, eAttr, fVal);
-  }
-
-  inline bool Volume::Scan::GetQuality(QualityAttribute_Double eAttr, double &fVal) const
-  {
-    return GetHowAtt(m_hHow, eAttr, fVal);
-  }
-
-  inline void Volume::Scan::SetQuality(QualityAttribute_Double eAttr, double fVal)
-  {
-    SetHowAtt(m_hScan, m_hHow, eAttr, fVal);
-  }
 };
 
 #endif
