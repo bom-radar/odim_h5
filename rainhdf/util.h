@@ -59,28 +59,35 @@ namespace RainHDF
   /// Variable quantities supported by ODIM_H5
   enum Quantity
   {
-      kQty_TH      ///< Horizontally-polarized total (uncorrected) reflectivity factor (dBZ)
-    , kQty_TV      ///< Vertically-polarized total (uncorrected) reflectivity factor (dBZ)
-    , kQty_DBZH    ///< Horizontally-polarized (corrected) reflectivity factor (dBZ)
-    , kQty_DBZV    ///< Vertically-polarized (corrected) reflectivity factor (dBZ)
-    , kQty_ZDR     ///< Differential reflectivity (dBZ)
-    , kQty_RHOHV   ///< Correlation between Zh and Zv [0-1]
-    , kQty_LDR     ///< Linear depolarization info (dB)
-    , kQty_PHIDP   ///< Differential phase (degrees)
-    , kQty_KDP     ///< Specific differential phase (degrees/km)
-    , kQty_SQI     ///< Signal quality index [0-1]
-    , kQty_SNR     ///< Normalized signal-to-noise ratio [0-1]
-    , kQty_RATE    ///< Rain rate (mm/h)
-    , kQty_ACRR    ///< Accumulated precipitation (mm)
-    , kQty_HGHT    ///< Height of echotops (km)
-    , kQty_VIL     ///< Vertical Integrated Liquid water (kg/m2)
-    , kQty_VRAD    ///< Radial velocity (m/s)
-    , kQty_WRAD    ///< Spectral width of radial velocity (m/s)
-    , kQty_UWND    ///< Component of wind in x-direction (m/s)
-    , kQty_VWND    ///< Component of wind in y-direction (m/s)
-    , kQty_BRDR    ///< 1 denotes border between radars in composite, 0 otherwise
-    , kQty_QIND    ///< Spatially analyzed quality indicator, according to OPERA II [0-1]
-    , kQty_CLASS   ///< Classified according to legend
+    // ODIM specified quantities
+      kQty_TH             ///< Horizontally-polarized total (uncorrected) reflectivity factor (dBZ)
+    , kQty_TV             ///< Vertically-polarized total (uncorrected) reflectivity factor (dBZ)
+    , kQty_DBZH           ///< Horizontally-polarized (corrected) reflectivity factor (dBZ)
+    , kQty_DBZV           ///< Vertically-polarized (corrected) reflectivity factor (dBZ)
+    , kQty_ZDR            ///< Differential reflectivity (dBZ)
+    , kQty_RHOHV          ///< Correlation between Zh and Zv [0-1]
+    , kQty_LDR            ///< Linear depolarization info (dB)
+    , kQty_PHIDP          ///< Differential phase (degrees)
+    , kQty_KDP            ///< Specific differential phase (degrees/km)
+    , kQty_SQI            ///< Signal quality index [0-1]
+    , kQty_SNR            ///< Normalized signal-to-noise ratio [0-1]
+    , kQty_RATE           ///< Rain rate (mm/h)
+    , kQty_ACRR           ///< Accumulated precipitation (mm)
+    , kQty_HGHT           ///< Height of echotops (km)
+    , kQty_VIL            ///< Vertical Integrated Liquid water (kg/m2)
+    , kQty_VRAD           ///< Radial velocity (m/s)
+    , kQty_WRAD           ///< Spectral width of radial velocity (m/s)
+    , kQty_UWND           ///< Component of wind in x-direction (m/s)
+    , kQty_VWND           ///< Component of wind in y-direction (m/s)
+    , kQty_BRDR           ///< 1 denotes border between radars in composite, 0 otherwise
+    , kQty_QIND           ///< Spatially analyzed quality indicator, according to OPERA II [0-1]
+    , kQty_CLASS          ///< Classified according to legend
+
+    // Extended quantities unique to BOM
+    , kQty_Occultation    ///< Proportion of bin that is occulded [0-1]
+    , kQty_Attenuation    ///< Fraction of bin power that is attenuated (PIA) [0-1]
+    , kQty_ClutterProb    ///< Probability that bin is clutter [0-1]
+    , kQty_HailProb       ///< Probability that bin is hail [0-1]
 
     , kQty_Unknown ///< Invalid or unknown qualtity
   };

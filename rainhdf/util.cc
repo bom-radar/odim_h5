@@ -75,6 +75,12 @@ namespace RainHDF
     , "BRDR"
     , "QIND"
     , "CLASS"
+
+    , "OCCUL"
+    , "ATTEN"
+    , "CPROB"
+    , "HPROB"
+
     , "???"
     , NULL
   };
@@ -353,7 +359,7 @@ void RainHDF::GetAtt(hid_t hID, const char *pszName, ProductType &eVal)
 
 void RainHDF::GetAtt(hid_t hID, const char *pszName, Quantity &eVal)
 {
-  char pszBuf[16];
+  char pszBuf[32];
   GetAtt(hID, pszName, pszBuf, sizeof(pszBuf));
   for (int nVal = 0; kVal_Quantity[nVal] != NULL; ++nVal)
   {
