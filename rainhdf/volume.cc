@@ -354,8 +354,6 @@ Volume::Volume(const std::string &strFilename, bool bReadOnly)
       break;
   }
   m_nScanCount = nObjs;
-
-  printf("determine there are %d scans\n", m_nScanCount);
 }
 
 Volume & Volume::operator=(const Volume &vol)

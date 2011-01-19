@@ -189,209 +189,46 @@ namespace RainHDF
 
   const char * kDat_Data = "data";
 
+  const char * kVal_True = "True";
+  const char * kVal_False = "False";
   const char * kVal_Conventions = "ODIM_H5/V2_0";
   const char * kVal_Version = "H5rad 2.0";
   const char * kVal_Class = "IMAGE";
   const char * kVal_ImageVersion = "1.2";
+
+  // Error strings
+  static const char * kErr_FailAttExists = "Attribute existance check failed for attribute '%s'";
+  static const char * kErr_FailAttRead = "Failed to read attribute '%s'";
+  static const char * kErr_FailAttType = "Type mismatch on attribute '%s'";
+  static const char * kErr_FailAttSize = "String overflow on attribute '%s'";
+  static const char * kErr_FailAttWrite = "Failed to write attribute '%s'";
+  static const char * kErr_FailAttDelete = "failed to delete attribute '%s' before write";
 }
 
-void RainHDF::NewAtt(hid_t hID, const char *pszName, const char *pszVal)
+void RainHDF::GetAtt(hid_t hID, const char *pszName, bool &bVal)
 {
-  // Setup a new type for the string
-  HID_Type hType(H5Tcopy(H5T_C_S1));
-  if (H5Tset_size(hType, strlen(pszVal) + 1) < 0)
-    throw Error(hID, "Unable to set string size for atttribute '%s'", pszName);
-  if (H5Tset_strpad(hType, H5T_STR_NULLTERM) < 0)
-    throw Error(hID, "Unable to set nullterm property of attribute '%s'", pszName);
-
-  // Setup the dataspace for the attribute
-  HID_Space hSpace(kCreate);
-
-  // Create and write the attribute
-  HID_Attr hAttr(hID, pszName, hType, hSpace, kCreate);
-  if (H5Awrite(hAttr, hType, pszVal) < 0)
-    throw Error(hID, "Unable to write string attribute '%s'", pszName);
+  char pszBuf[6];
+  GetAtt(hID, pszName, pszBuf, 6);
+  if (strcmp(pszBuf, kVal_True) == 0)
+    bVal = true;
+  else if (strcmp(pszBuf, kVal_False) == 0)
+    bVal = false;
+  else 
+    throw Error(hID, "Parse error reading attribute '%s'", pszName);
 }
 
-void RainHDF::NewAtt(hid_t hID, const char *pszName, const std::string &strVal)
+void RainHDF::GetAtt(hid_t hID, const char *pszName, long &nVal)
 {
-  // Setup a new type for the string
-  HID_Type hType(H5Tcopy(H5T_C_S1));
-  if (H5Tset_size(hType, strVal.size() + 1) < 0)
-    throw Error(hID, "Unable to set string size for atttribute '%s'", pszName);
-  if (H5Tset_strpad(hType, H5T_STR_NULLTERM) < 0)
-    throw Error(hID, "Unable to set nullterm property of attribute '%s'", pszName);
-
-  // Setup the dataspace for the attribute
-  HID_Space hSpace(kCreate);
-
-  // Create and write the attribute
-  HID_Attr hAttr(hID, pszName, hType, hSpace, kCreate);
-  if (H5Awrite(hAttr, hType, strVal.c_str()) < 0)
-    throw Error(hID, "Unable to write string attribute '%s'", pszName);
+  HID_Attr hAttr(hID, pszName, kOpen);
+  if (H5Aread(hAttr, H5T_NATIVE_LONG, &nVal) < 0)
+    throw Error(hID, kErr_FailAttRead, pszName);
 }
 
-void RainHDF::NewAtt(hid_t hID, const char *pszName, long nVal)
+void RainHDF::GetAtt(hid_t hID, const char *pszName, double &fVal)
 {
-  // Create a dataspace for the variable
-  HID_Space hSpace(kCreate);
-
-  // Create and write the attribute
-  HID_Attr hAttr(hID, pszName, H5T_NATIVE_LONG, hSpace, kCreate);
-  if (H5Awrite(hAttr, H5T_NATIVE_LONG, &nVal) < 0)
-    throw Error(hID, "Unable to write long attribute '%s'", pszName);
-}
-
-void RainHDF::NewAtt(hid_t hID, const char *pszName, double fVal)
-{
-  // Create a dataspace for the variable
-  HID_Space hSpace(kCreate);
-
-  // Create and write the attribute
-  HID_Attr hAttr(hID, pszName, H5T_NATIVE_DOUBLE, hSpace, kCreate);
-  if (H5Awrite(hAttr, H5T_NATIVE_DOUBLE, &fVal) < 0)
-    throw Error(hID, "Unable to write double attribute '%s'", pszName);
-}
-
-void RainHDF::NewAtt(hid_t hID, const char *pszNameDate, const char *pszNameTime, time_t tVal)
-{
-  // Print the date and time in one string
-  char pszBuf[9+7];
-  struct tm *pTm = gmtime(&tVal);
-  snprintf(
-      pszBuf, 
-      9+7, 
-      "%04d%02d%02d %02d%02d%02d",
-      pTm->tm_year + 1900,
-      pTm->tm_mon + 1,
-      pTm->tm_mday,
-      pTm->tm_hour,
-      pTm->tm_min,
-      pTm->tm_sec);
-
-  // Split the string into two
-  pszBuf[8] = '\0';
-
-  // Output each as an attribute
-  NewAtt(hID, pszNameDate, pszBuf);
-  NewAtt(hID, pszNameTime, &pszBuf[9]);
-}
-
-void RainHDF::NewAtt(hid_t hID, const char *pszName, ObjectType eVal)
-{
-  NewAtt(hID, pszName, kVal_ObjectType[eVal]);
-}
-
-void RainHDF::NewAtt(hid_t hID, const char *pszName, ProductType eVal)
-{
-  NewAtt(hID, pszName, kVal_ProductType[eVal]);
-}
-
-void RainHDF::NewAtt(hid_t hID, const char *pszName, Quantity eVal)
-{
-  NewAtt(hID, pszName, kVal_Quantity[eVal]);
-}
-
-void RainHDF::SetAtt(hid_t hID, const char *pszName, const std::string &strVal)
-{
-  // For a string attribute, we always delete and recreate (in case size changes)
-  htri_t ret = H5Aexists(hID, pszName);
-  if (ret < 0)
-    throw Error(hID, "Attribute existance check failed for attribute '%s'", pszName);
-  else if (ret)
-    if (H5Adelete(hID, pszName) < 0)
-      throw Error(hID, "Failed to delete attribute '%s' before write", pszName);
-
-  // Okay, now re-create it
-  NewAtt(hID, pszName, strVal);
-}
-
-void RainHDF::SetAtt(hid_t hID, const char *pszName, const char *pszVal)
-{
-  // For a string attribute, we always delete and recreate (in case size changes)
-  htri_t ret = H5Aexists(hID, pszName);
-  if (ret < 0)
-    throw Error(hID, "Attribute existance check failed for attribute '%s'", pszName);
-  else if (ret)
-    if (H5Adelete(hID, pszName) < 0)
-      throw Error(hID, "Failed to delete attribute '%s' before write", pszName);
-
-  // Okay, now re-create it
-  NewAtt(hID, pszName, pszVal);
-}
-
-void RainHDF::SetAtt(hid_t hID, const char *pszName, long nVal)
-{
-  // Check if it's already been created
-  htri_t ret = H5Aexists(hID, pszName);
-  if (ret < 0)
-    throw Error(hID, "Attribute existance check failed for attribute '%s'", pszName);
-  else if (ret == 0)
-    NewAtt(hID, pszName, nVal);
-  else
-  {
-    // Okay, it's existing - just open and write
-    HID_Attr hAttr(hID, pszName, kOpen);
-    if (H5Awrite(hAttr, H5T_NATIVE_LONG, &nVal) < 0)
-      throw Error(hID, "Unable to write long attribute '%s'", pszName);
-  }
-}
-
-void RainHDF::SetAtt(hid_t hID, const char *pszName, double fVal)
-{
-  // Check if it's already been created
-  htri_t ret = H5Aexists(hID, pszName);
-  if (ret < 0)
-    throw Error(hID, "Attribute existance check failed for attribute '%s'", pszName);
-  else if (ret == 0)
-    NewAtt(hID, pszName, fVal);
-  else
-  {
-    // Okay, it's existing - just open and write
-    HID_Attr hAttr(hID, pszName, kOpen);
-    if (H5Awrite(hAttr, H5T_NATIVE_DOUBLE, &fVal) < 0)
-      throw Error(hID, "Unable to write double attribute '%s'", pszName);
-  }
-}
-
-void RainHDF::SetAtt(hid_t hID, const char *pszNameDate, const char *pszNameTime, time_t tVal)
-{
-  // Print the date and time in one string
-  char pszBuf[9+7];
-  struct tm tms;
-  gmtime_r(&tVal, &tms);
-  snprintf(
-      pszBuf, 
-      9+7, 
-      "%04d%02d%02d %02d%02d%02d",
-      tms.tm_year + 1900,
-      tms.tm_mon + 1,
-      tms.tm_mday,
-      tms.tm_hour,
-      tms.tm_min,
-      tms.tm_sec);
-
-  // Split the string into two
-  pszBuf[8] = '\0';
-
-  // Output each as an attribute
-  SetAtt(hID, pszNameDate, pszBuf);
-  SetAtt(hID, pszNameTime, &pszBuf[9]);
-}
-
-void RainHDF::SetAtt(hid_t hID, const char *pszName, ObjectType eVal)
-{
-  SetAtt(hID, pszName, kVal_ObjectType[eVal]);
-}
-
-void RainHDF::SetAtt(hid_t hID, const char *pszName, ProductType eVal)
-{
-  SetAtt(hID, pszName, kVal_ProductType[eVal]);
-}
-
-void RainHDF::SetAtt(hid_t hID, const char *pszName, Quantity eVal)
-{
-  SetAtt(hID, pszName, kVal_Quantity[eVal]);
+  HID_Attr hAttr(hID, pszName, kOpen);
+  if (H5Aread(hAttr, H5T_NATIVE_DOUBLE, &fVal) < 0)
+    throw Error(hID, kErr_FailAttRead, pszName);
 }
 
 void RainHDF::GetAtt(hid_t hID, const char *pszName, char *pszBuf, size_t nBufSize)
@@ -399,11 +236,11 @@ void RainHDF::GetAtt(hid_t hID, const char *pszName, char *pszBuf, size_t nBufSi
   HID_Attr hAttr(hID, pszName, kOpen);
   HID_Type hType(H5Aget_type(hAttr));
   if (H5Tget_class(hType) != H5T_STRING)
-    throw Error(hID, "Type mismatch on attribute '%s'", pszName);
+    throw Error(hID, kErr_FailAttType, pszName);
   if (H5Tget_size(hType) > nBufSize)
-    throw Error(hID, "String overflow on attribute '%s'", pszName);
+    throw Error(hID, kErr_FailAttSize, pszName);
   if (H5Aread(hAttr, hType, pszBuf) < 0)
-    throw Error(hID, "Unable to string attribute '%s'", pszName);
+    throw Error(hID, kErr_FailAttRead, pszName);
 }
 
 void RainHDF::GetAtt(hid_t hID, const char *pszName, std::string &strVal)
@@ -415,27 +252,13 @@ void RainHDF::GetAtt(hid_t hID, const char *pszName, std::string &strVal)
   HID_Attr hAttr(hID, pszName, kOpen);
   HID_Type hType(H5Aget_type(hAttr));
   if (H5Tget_class(hType) != H5T_STRING)
-    throw Error(hID, "Type mismatch on attribute '%s'", pszName);
+    throw Error(hID, kErr_FailAttType, pszName);
   if (H5Tget_size(hType) > kAttBufSize)
-    throw Error(hID, "String overflow on attribute '%s'", pszName);
+    throw Error(hID, kErr_FailAttSize, pszName);
   if (H5Aread(hAttr, hType, pszBuf) < 0)
-    throw Error(hID, "Unable to string attribute '%s'", pszName);
+    throw Error(hID, kErr_FailAttRead, pszName);
 
   strVal.assign(pszBuf);
-}
-
-void RainHDF::GetAtt(hid_t hID, const char *pszName, long &nVal)
-{
-  HID_Attr hAttr(hID, pszName, kOpen);
-  if (H5Aread(hAttr, H5T_NATIVE_LONG, &nVal) < 0)
-    throw Error(hID, "Unable to read long attribute '%s'", pszName);
-}
-
-void RainHDF::GetAtt(hid_t hID, const char *pszName, double &fVal)
-{
-  HID_Attr hAttr(hID, pszName, kOpen);
-  if (H5Aread(hAttr, H5T_NATIVE_DOUBLE, &fVal) < 0)
-    throw Error(hID, "Unable to read double attribute '%s'", pszName);
 }
 
 void RainHDF::GetAtt(hid_t hID, const char *pszNameDate, const char *pszNameTime, time_t &tVal)
@@ -522,6 +345,282 @@ void RainHDF::GetAtt(hid_t hID, const char *pszName, Quantity &eVal)
   eVal = kQty_Unknown;
 }
 
+void RainHDF::NewAtt(hid_t hID, const char *pszName, bool bVal)
+{
+  NewAtt(hID, pszName, bVal ? kVal_True : kVal_False);
+}
+
+void RainHDF::NewAtt(hid_t hID, const char *pszName, long nVal)
+{
+  // Create a dataspace for the variable
+  HID_Space hSpace(kCreate);
+
+  // Create and write the attribute
+  HID_Attr hAttr(hID, pszName, H5T_NATIVE_LONG, hSpace, kCreate);
+  if (H5Awrite(hAttr, H5T_NATIVE_LONG, &nVal) < 0)
+    throw Error(hID, kErr_FailAttWrite, pszName);
+}
+
+void RainHDF::NewAtt(hid_t hID, const char *pszName, double fVal)
+{
+  // Create a dataspace for the variable
+  HID_Space hSpace(kCreate);
+
+  // Create and write the attribute
+  HID_Attr hAttr(hID, pszName, H5T_NATIVE_DOUBLE, hSpace, kCreate);
+  if (H5Awrite(hAttr, H5T_NATIVE_DOUBLE, &fVal) < 0)
+    throw Error(hID, kErr_FailAttWrite, pszName);
+}
+
+void RainHDF::NewAtt(hid_t hID, const char *pszName, const char *pszVal)
+{
+  // Setup a new type for the string
+  HID_Type hType(H5Tcopy(H5T_C_S1));
+  if (H5Tset_size(hType, strlen(pszVal) + 1) < 0)
+    throw Error(hID, "Unable to set string size for atttribute '%s'", pszName);
+  if (H5Tset_strpad(hType, H5T_STR_NULLTERM) < 0)
+    throw Error(hID, "Unable to set nullterm property of attribute '%s'", pszName);
+
+  // Setup the dataspace for the attribute
+  HID_Space hSpace(kCreate);
+
+  // Create and write the attribute
+  HID_Attr hAttr(hID, pszName, hType, hSpace, kCreate);
+  if (H5Awrite(hAttr, hType, pszVal) < 0)
+    throw Error(hID, kErr_FailAttWrite, pszName);
+}
+
+void RainHDF::NewAtt(hid_t hID, const char *pszName, const std::string &strVal)
+{
+  // Setup a new type for the string
+  HID_Type hType(H5Tcopy(H5T_C_S1));
+  if (H5Tset_size(hType, strVal.size() + 1) < 0)
+    throw Error(hID, "Unable to set string size for atttribute '%s'", pszName);
+  if (H5Tset_strpad(hType, H5T_STR_NULLTERM) < 0)
+    throw Error(hID, "Unable to set nullterm property of attribute '%s'", pszName);
+
+  // Setup the dataspace for the attribute
+  HID_Space hSpace(kCreate);
+
+  // Create and write the attribute
+  HID_Attr hAttr(hID, pszName, hType, hSpace, kCreate);
+  if (H5Awrite(hAttr, hType, strVal.c_str()) < 0)
+    throw Error(hID, kErr_FailAttWrite, pszName);
+}
+
+void RainHDF::NewAtt(hid_t hID, const char *pszNameDate, const char *pszNameTime, time_t tVal)
+{
+  // Print the date and time in one string
+  char pszBuf[9+7];
+  struct tm *pTm = gmtime(&tVal);
+  snprintf(
+      pszBuf, 
+      9+7, 
+      "%04d%02d%02d %02d%02d%02d",
+      pTm->tm_year + 1900,
+      pTm->tm_mon + 1,
+      pTm->tm_mday,
+      pTm->tm_hour,
+      pTm->tm_min,
+      pTm->tm_sec);
+
+  // Split the string into two
+  pszBuf[8] = '\0';
+
+  // Output each as an attribute
+  NewAtt(hID, pszNameDate, pszBuf);
+  NewAtt(hID, pszNameTime, &pszBuf[9]);
+}
+
+void RainHDF::NewAtt(hid_t hID, const char *pszName, ObjectType eVal)
+{
+  NewAtt(hID, pszName, kVal_ObjectType[eVal]);
+}
+
+void RainHDF::NewAtt(hid_t hID, const char *pszName, ProductType eVal)
+{
+  NewAtt(hID, pszName, kVal_ProductType[eVal]);
+}
+
+void RainHDF::NewAtt(hid_t hID, const char *pszName, Quantity eVal)
+{
+  NewAtt(hID, pszName, kVal_Quantity[eVal]);
+}
+
+void RainHDF::SetAtt(hid_t hID, const char *pszName, bool bVal)
+{
+  SetAtt(hID, pszName, bVal ? kVal_True : kVal_False);
+}
+
+void RainHDF::SetAtt(hid_t hID, const char *pszName, long nVal)
+{
+  // Check if it's already been created
+  htri_t ret = H5Aexists(hID, pszName);
+  if (ret < 0)
+    throw Error(hID, kErr_FailAttExists, pszName);
+  else if (ret == 0)
+    NewAtt(hID, pszName, nVal);
+  else
+  {
+    // Okay, it's existing - just open and write
+    HID_Attr hAttr(hID, pszName, kOpen);
+    if (H5Awrite(hAttr, H5T_NATIVE_LONG, &nVal) < 0)
+      throw Error(hID, kErr_FailAttWrite, pszName);
+  }
+}
+
+void RainHDF::SetAtt(hid_t hID, const char *pszName, double fVal)
+{
+  // Check if it's already been created
+  htri_t ret = H5Aexists(hID, pszName);
+  if (ret < 0)
+    throw Error(hID, kErr_FailAttExists, pszName);
+  else if (ret == 0)
+    NewAtt(hID, pszName, fVal);
+  else
+  {
+    // Okay, it's existing - just open and write
+    HID_Attr hAttr(hID, pszName, kOpen);
+    if (H5Awrite(hAttr, H5T_NATIVE_DOUBLE, &fVal) < 0)
+      throw Error(hID, kErr_FailAttWrite, pszName);
+  }
+}
+
+void RainHDF::SetAtt(hid_t hID, const char *pszName, const std::string &strVal)
+{
+  // For a string attribute, we always delete and recreate (in case size changes)
+  htri_t ret = H5Aexists(hID, pszName);
+  if (ret < 0)
+    throw Error(hID, kErr_FailAttExists, pszName);
+  else if (ret)
+    if (H5Adelete(hID, pszName) < 0)
+      throw Error(hID, kErr_FailAttDelete, pszName);
+
+  // Okay, now re-create it
+  NewAtt(hID, pszName, strVal);
+}
+
+void RainHDF::SetAtt(hid_t hID, const char *pszName, const char *pszVal)
+{
+  // For a string attribute, we always delete and recreate (in case size changes)
+  htri_t ret = H5Aexists(hID, pszName);
+  if (ret < 0)
+    throw Error(hID, kErr_FailAttExists, pszName);
+  else if (ret)
+    if (H5Adelete(hID, pszName) < 0)
+      throw Error(hID, kErr_FailAttDelete, pszName);
+
+  // Okay, now re-create it
+  NewAtt(hID, pszName, pszVal);
+}
+
+void RainHDF::SetAtt(hid_t hID, const char *pszNameDate, const char *pszNameTime, time_t tVal)
+{
+  // Print the date and time in one string
+  char pszBuf[9+7];
+  struct tm tms;
+  gmtime_r(&tVal, &tms);
+  snprintf(
+      pszBuf, 
+      9+7, 
+      "%04d%02d%02d %02d%02d%02d",
+      tms.tm_year + 1900,
+      tms.tm_mon + 1,
+      tms.tm_mday,
+      tms.tm_hour,
+      tms.tm_min,
+      tms.tm_sec);
+
+  // Split the string into two
+  pszBuf[8] = '\0';
+
+  // Output each as an attribute
+  SetAtt(hID, pszNameDate, pszBuf);
+  SetAtt(hID, pszNameTime, &pszBuf[9]);
+}
+
+void RainHDF::SetAtt(hid_t hID, const char *pszName, ObjectType eVal)
+{
+  SetAtt(hID, pszName, kVal_ObjectType[eVal]);
+}
+
+void RainHDF::SetAtt(hid_t hID, const char *pszName, ProductType eVal)
+{
+  SetAtt(hID, pszName, kVal_ProductType[eVal]);
+}
+
+void RainHDF::SetAtt(hid_t hID, const char *pszName, Quantity eVal)
+{
+  SetAtt(hID, pszName, kVal_Quantity[eVal]);
+}
+
+bool RainHDF::GetHowAtt(const HID_Group &hHow, OptAttrib_Bool eAttr, bool &bVal)
+{
+  const char * pszName = kAtt_OptAttrib_Bool[eAttr];
+  if (!hHow) return false;
+  htri_t ret = H5Aexists(hHow, pszName);
+  if (ret < 0) throw Error(hHow, kErr_FailAttExists, pszName);
+  if (ret == 0) return false;
+  GetAtt(hHow, pszName, bVal);
+  return true;
+}
+
+bool RainHDF::GetHowAtt(const HID_Group &hHow, OptAttrib_Long eAttr, long &nVal)
+{
+  const char * pszName = kAtt_OptAttrib_Long[eAttr];
+  if (!hHow) return false;
+  htri_t ret = H5Aexists(hHow, pszName);
+  if (ret < 0) throw Error(hHow, kErr_FailAttExists, pszName);
+  if (ret == 0) return false;
+  GetAtt(hHow, pszName, nVal);
+  return true;
+}
+
+bool RainHDF::GetHowAtt(const HID_Group &hHow, OptAttrib_Double eAttr, double &fVal)
+{
+  const char * pszName = kAtt_OptAttrib_Double[eAttr];
+  if (!hHow) return false;
+  htri_t ret = H5Aexists(hHow, pszName);
+  if (ret < 0) throw Error(hHow, kErr_FailAttExists, pszName);
+  if (ret == 0) return false;
+  GetAtt(hHow, pszName, fVal);
+  return true;
+}
+
+bool RainHDF::GetHowAtt(const HID_Group &hHow, OptAttrib_Str eAttr, char *pszBuf, size_t nBufSize)
+{
+  const char * pszName = kAtt_OptAttrib_Str[eAttr];
+  if (!hHow) return false;
+  htri_t ret = H5Aexists(hHow, pszName);
+  if (ret < 0) throw Error(hHow, kErr_FailAttExists, pszName);
+  if (ret == 0) return false;
+  GetAtt(hHow, pszName, pszBuf, nBufSize);
+  return true;
+}
+
+bool RainHDF::GetHowAtt(const HID_Group &hHow, OptAttrib_Str eAttr, std::string &strVal)
+{
+  const char * pszName = kAtt_OptAttrib_Str[eAttr];
+  if (!hHow) return false;
+  htri_t ret = H5Aexists(hHow, pszName);
+  if (ret < 0) throw Error(hHow, kErr_FailAttExists, pszName);
+  if (ret == 0) return false;
+  GetAtt(hHow, pszName, strVal);
+  return true;
+}
+
+void RainHDF::SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Bool eAttr, bool bVal)
+{
+  if (hHow)
+    SetAtt(hHow, kAtt_OptAttrib_Bool[eAttr], bVal ? kVal_True : kVal_False);
+  else
+  {
+    HID_Group hNewHow(hParent, kGrp_How, kCreate);
+    hHow = hNewHow;
+    NewAtt(hHow, kAtt_OptAttrib_Bool[eAttr], bVal ? kVal_True : kVal_False);
+  }
+}
+
 void RainHDF::SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Long eAttr, long nVal)
 {
   if (hHow)
@@ -568,32 +667,6 @@ void RainHDF::SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Str eAttr, con
     hHow = hNewHow;
     NewAtt(hHow, kAtt_OptAttrib_Str[eAttr], strVal);
   }
-}
-
-bool RainHDF::GetHowAtt(const HID_Group &hHow, OptAttrib_Double eAttr, double &fVal)
-{
-  if (!hHow)
-    return false;
-
-  htri_t ret = H5Aexists(hHow, kAtt_OptAttrib_Double[eAttr]);
-  if (ret < 0)
-    throw Error(
-        hHow, 
-        "Attribute existance check failed for attribute '%s'", 
-        kAtt_OptAttrib_Double[eAttr]);
-
-  if (ret == 0)
-    return false;
-
-  // Okay, it's existing - attempt to read it
-  HID_Attr hAttr(hHow, kAtt_OptAttrib_Double[eAttr], kOpen);
-  if (H5Aread(hAttr, H5T_NATIVE_DOUBLE, &fVal) < 0)
-    throw Error(
-        hHow, 
-        "Unable to read double attribute '%s'", 
-        kAtt_OptAttrib_Double[eAttr]);
-
-  return true;
 }
 
 

@@ -40,6 +40,25 @@ int main(int argc, const char *argv[])
       << "cty " << s5 << endl
       << "cmt " << s6 << endl;
 
+    // Set some quality attributes
+    hdfw.SetAttribute(kAtt_Simulated, true);
+    hdfw.SetAttribute(kAtt_Malfunction, false);
+    hdfw.SetAttribute(kAtt_LevelCount, 1234);
+    hdfw.SetAttribute(kAtt_RPM, 2.5);
+    hdfw.SetAttribute(kAtt_Task, "RainHDF Test Application");
+    hdfw.SetAttribute(kAtt_System, std::string("Test string"));
+
+    // Get some quality attributes
+    bool b1, b2; long n; double f;
+    hdfw.GetAttribute(kAtt_Simulated, b1);
+    hdfw.GetAttribute(kAtt_Malfunction, b2);
+    hdfw.GetAttribute(kAtt_LevelCount, n);
+    hdfw.GetAttribute(kAtt_RPM, f);
+    hdfw.GetAttribute(kAtt_Task, s1);
+    hdfw.GetAttribute(kAtt_System, s2);
+
+    cout << b1 << " " << b2 << " " << n << " " << f << " " << s1 << " " << s2 << endl;
+
     for (size_t i = 0; i < hdfr.GetScanCount(); ++i)
     {
       Volume::ScanConstPtr sr = hdfr.GetScan(i);

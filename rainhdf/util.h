@@ -162,44 +162,52 @@ namespace RainHDF
     , kAtt_Polarization       ///< Type of polarization transmitted by the radar (H,V)
   };
 
+  // Retrieve existing attributes
+  void GetAtt(hid_t hID, const char *pszName, bool &bVal);
+  void GetAtt(hid_t hID, const char *pszName, long &nVal);
+  void GetAtt(hid_t hID, const char *pszName, double &fVal);
+  void GetAtt(hid_t hID, const char *pszName, char *pszBuf, size_t nBufSize);
+  void GetAtt(hid_t hID, const char *pszName, std::string &strVal);
+  void GetAtt(hid_t hID, const char *pszNameDate, const char *pszNameTime, time_t &tVal);
+  void GetAtt(hid_t hID, const char *pszName, ObjectType &eVal);
+  void GetAtt(hid_t hID, const char *pszName, ProductType &eVal);
+  void GetAtt(hid_t hID, const char *pszName, Quantity &eVal);
+
   // Create new attributes
-  void NewAtt(hid_t hID, const char *pszName, const char *pszVal);
-  void NewAtt(hid_t hID, const char *pszName, const std::string &strVal);
+  void NewAtt(hid_t hID, const char *pszName, bool bVal);
   void NewAtt(hid_t hID, const char *pszName, long nVal);
   void NewAtt(hid_t hID, const char *pszName, double fVal);
+  void NewAtt(hid_t hID, const char *pszName, const char *pszVal);
+  void NewAtt(hid_t hID, const char *pszName, const std::string &strVal);
   void NewAtt(hid_t hID, const char *pszNameDate, const char *pszNameTime, time_t tVal);
   void NewAtt(hid_t hID, const char *pszName, ObjectType eVal);
   void NewAtt(hid_t hID, const char *pszName, ProductType eVal);
   void NewAtt(hid_t hID, const char *pszName, Quantity eVal);
 
   // Alter existing attributes (or create if not existing)
-  void SetAtt(hid_t hID, const char *pszName, const char *pszVal);
-  void SetAtt(hid_t hID, const char *pszName, const std::string &strVal);
+  void SetAtt(hid_t hID, const char *pszName, bool bVal);
   void SetAtt(hid_t hID, const char *pszName, long nVal);
   void SetAtt(hid_t hID, const char *pszName, double fVal);
+  void SetAtt(hid_t hID, const char *pszName, const char *pszVal);
+  void SetAtt(hid_t hID, const char *pszName, const std::string &strVal);
   void SetAtt(hid_t hID, const char *pszNameDate, const char *pszNameTime, time_t tVal);
   void SetAtt(hid_t hID, const char *pszName, ObjectType eVal);
   void SetAtt(hid_t hID, const char *pszName, ProductType eVal);
   void SetAtt(hid_t hID, const char *pszName, Quantity eVal);
 
-  // Retrieve existing attributes
-  void GetAtt(hid_t hID, const char *pszName, char *pszBuf, size_t nBufSize);
-  void GetAtt(hid_t hID, const char *pszName, std::string &strVal);
-  void GetAtt(hid_t hID, const char *pszName, long &nVal);
-  void GetAtt(hid_t hID, const char *pszName, double &fVal);
-  void GetAtt(hid_t hID, const char *pszNameDate, const char *pszNameTime, time_t &tVal);
-  void GetAtt(hid_t hID, const char *pszName, ObjectType &eVal);
-  void GetAtt(hid_t hID, const char *pszName, ProductType &eVal);
-  void GetAtt(hid_t hID, const char *pszName, Quantity &eVal);
+  // Get/set an optional quality attribute
+  bool GetHowAtt(const HID_Group &hHow, OptAttrib_Bool eAttr, bool &bVal);
+  bool GetHowAtt(const HID_Group &hHow, OptAttrib_Long eAttr, long &nVal);
+  bool GetHowAtt(const HID_Group &hHow, OptAttrib_Double eAttr, double &fVal);
+  bool GetHowAtt(const HID_Group &hHow, OptAttrib_Str eAttr, char *pszBuf, size_t nBufSize);
+  bool GetHowAtt(const HID_Group &hHow, OptAttrib_Str eAttr, std::string &strVal);
 
   // Set an optional quality attribute (and create 'how' group if needed)
+  void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Bool eAttr, bool bVal);
   void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Long eAttr, long nVal);
   void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Double eAttr, double fVal);
   void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Str eAttr, const char *pszVal);
   void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Str eAttr, const std::string &strVal);
-
-  // Get/set an optional quality attribute
-  bool GetHowAtt(const HID_Group &hHow, OptAttrib_Double eAttr, double &fVal);
 
   // Convenient value returning versions of above functions
   template <class T>
@@ -258,6 +266,8 @@ namespace RainHDF
   extern const char * kDat_Data;
 
   // Attribute value constants
+  extern const char * kVal_True;
+  extern const char * kVal_False;
   extern const char * kVal_Conventions;
   extern const char * kVal_Version;
   extern const char * kVal_Class;

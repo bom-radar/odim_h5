@@ -144,7 +144,7 @@ namespace RainHDF
     operator const hid_t &() const { return m_hID; }
 
     /// Check if a handle is valid
-    operator bool () const { printf("checking it yall\n");return m_hID >= 0; }
+    operator bool () const { return m_hID >= 0; }
 
   private:
     /// Disable copy construction
