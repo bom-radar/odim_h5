@@ -79,7 +79,24 @@ namespace RainHDF
     , NULL
   };
 
-  static const char * kAtt_OptAttrib_Bool[] =
+  static const char * kVal_Method[] =
+  {
+      "NEAREST"
+    , "INTERPOL"
+    , "AVERAGE"
+    , "RANDOM"
+    , "MDE"
+    , "LATEST"
+    , "MAXIMUM"
+    , "DOMAIN"
+    , "VAD"
+    , "VVP"
+    , "RGA"
+    , "???"
+    , NULL
+  };
+
+  static const char * kAtn_OptAttrib_Bool[] =
   {
       "simulated"
     , "dealiased"
@@ -88,7 +105,7 @@ namespace RainHDF
     , "BBC"
   };
 
-  static const char * kAtt_OptAttrib_Long[] =
+  static const char * kAtn_OptAttrib_Long[] =
   {
       "startepochs"
     , "endepochs"
@@ -96,7 +113,7 @@ namespace RainHDF
     , "levels"
   };
 
-  static const char * kAtt_OptAttrib_Double[] = 
+  static const char * kAtn_OptAttrib_Double[] = 
   {
       "zr_a"
     , "zr_b"
@@ -137,19 +154,23 @@ namespace RainHDF
     , "system"
     , "software"
     , "sw_version"
-//    , "azmethod"
-//    , "binmethod"
-//    , "azangles"
-//    , "elangles"
-//    , "aztimes"
-//    , "angles"
-//    , "arotation"
-//    , "camethod"
-//    , "nodes"
+    , "azangles"
+    , "elangles"
+    , "aztimes"
+    , "angles"
+    , "arotation"
+    , "nodes"
     , "radar_msg"
-//    , "Dclutter"
+    , "Dclutter"
     , "comment"
     , "polarization"
+  };
+
+  static const char * kAtt_OptAttrib_Method[] =
+  {
+      "azmethod"
+    , "binmethod"
+    , "camethod"
   };
 
   const char * kGrp_What = "what";
@@ -345,6 +366,21 @@ void RainHDF::GetAtt(hid_t hID, const char *pszName, Quantity &eVal)
   eVal = kQty_Unknown;
 }
 
+void RainHDF::GetAtt(hid_t hID, const char *pszName, Method &eVal)
+{
+  char pszBuf[16];
+  GetAtt(hID, pszName, pszBuf, sizeof(pszBuf));
+  for (int nVal = 0; kVal_Method[nVal] != NULL; ++nVal)
+  {
+    if (strcmp(kVal_Method[nVal], pszBuf) == 0)
+    {
+      eVal = static_cast<Method>(nVal);
+      return;
+    }
+  }
+  eVal = kMth_Unknown;
+}
+
 void RainHDF::NewAtt(hid_t hID, const char *pszName, bool bVal)
 {
   NewAtt(hID, pszName, bVal ? kVal_True : kVal_False);
@@ -356,7 +392,7 @@ void RainHDF::NewAtt(hid_t hID, const char *pszName, long nVal)
   HID_Space hSpace(kCreate);
 
   // Create and write the attribute
-  HID_Attr hAttr(hID, pszName, H5T_NATIVE_LONG, hSpace, kCreate);
+  HID_Attr hAttr(hID, pszName, H5T_STD_I64LE, hSpace, kCreate);
   if (H5Awrite(hAttr, H5T_NATIVE_LONG, &nVal) < 0)
     throw Error(hID, kErr_FailAttWrite, pszName);
 }
@@ -367,7 +403,7 @@ void RainHDF::NewAtt(hid_t hID, const char *pszName, double fVal)
   HID_Space hSpace(kCreate);
 
   // Create and write the attribute
-  HID_Attr hAttr(hID, pszName, H5T_NATIVE_DOUBLE, hSpace, kCreate);
+  HID_Attr hAttr(hID, pszName, H5T_IEEE_F64LE, hSpace, kCreate);
   if (H5Awrite(hAttr, H5T_NATIVE_DOUBLE, &fVal) < 0)
     throw Error(hID, kErr_FailAttWrite, pszName);
 }
@@ -445,6 +481,11 @@ void RainHDF::NewAtt(hid_t hID, const char *pszName, ProductType eVal)
 void RainHDF::NewAtt(hid_t hID, const char *pszName, Quantity eVal)
 {
   NewAtt(hID, pszName, kVal_Quantity[eVal]);
+}
+
+void RainHDF::NewAtt(hid_t hID, const char *pszName, Method eVal)
+{
+  NewAtt(hID, pszName, kVal_Method[eVal]);
 }
 
 void RainHDF::SetAtt(hid_t hID, const char *pszName, bool bVal)
@@ -554,9 +595,14 @@ void RainHDF::SetAtt(hid_t hID, const char *pszName, Quantity eVal)
   SetAtt(hID, pszName, kVal_Quantity[eVal]);
 }
 
+void RainHDF::SetAtt(hid_t hID, const char *pszName, Method eVal)
+{
+  SetAtt(hID, pszName, kVal_Method[eVal]);
+}
+
 bool RainHDF::GetHowAtt(const HID_Group &hHow, OptAttrib_Bool eAttr, bool &bVal)
 {
-  const char * pszName = kAtt_OptAttrib_Bool[eAttr];
+  const char * pszName = kAtn_OptAttrib_Bool[eAttr];
   if (!hHow) return false;
   htri_t ret = H5Aexists(hHow, pszName);
   if (ret < 0) throw Error(hHow, kErr_FailAttExists, pszName);
@@ -567,7 +613,7 @@ bool RainHDF::GetHowAtt(const HID_Group &hHow, OptAttrib_Bool eAttr, bool &bVal)
 
 bool RainHDF::GetHowAtt(const HID_Group &hHow, OptAttrib_Long eAttr, long &nVal)
 {
-  const char * pszName = kAtt_OptAttrib_Long[eAttr];
+  const char * pszName = kAtn_OptAttrib_Long[eAttr];
   if (!hHow) return false;
   htri_t ret = H5Aexists(hHow, pszName);
   if (ret < 0) throw Error(hHow, kErr_FailAttExists, pszName);
@@ -578,7 +624,7 @@ bool RainHDF::GetHowAtt(const HID_Group &hHow, OptAttrib_Long eAttr, long &nVal)
 
 bool RainHDF::GetHowAtt(const HID_Group &hHow, OptAttrib_Double eAttr, double &fVal)
 {
-  const char * pszName = kAtt_OptAttrib_Double[eAttr];
+  const char * pszName = kAtn_OptAttrib_Double[eAttr];
   if (!hHow) return false;
   htri_t ret = H5Aexists(hHow, pszName);
   if (ret < 0) throw Error(hHow, kErr_FailAttExists, pszName);
@@ -609,39 +655,50 @@ bool RainHDF::GetHowAtt(const HID_Group &hHow, OptAttrib_Str eAttr, std::string 
   return true;
 }
 
+bool RainHDF::GetHowAtt(const HID_Group &hHow, OptAttrib_Method eAttr, Method &eVal)
+{
+  const char * pszName = kAtt_OptAttrib_Method[eAttr];
+  if (!hHow) return false;
+  htri_t ret = H5Aexists(hHow, pszName);
+  if (ret < 0) throw Error(hHow, kErr_FailAttExists, pszName);
+  if (ret == 0) return false;
+  GetAtt(hHow, pszName, eVal);
+  return true;
+}
+
 void RainHDF::SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Bool eAttr, bool bVal)
 {
   if (hHow)
-    SetAtt(hHow, kAtt_OptAttrib_Bool[eAttr], bVal ? kVal_True : kVal_False);
+    SetAtt(hHow, kAtn_OptAttrib_Bool[eAttr], bVal ? kVal_True : kVal_False);
   else
   {
     HID_Group hNewHow(hParent, kGrp_How, kCreate);
     hHow = hNewHow;
-    NewAtt(hHow, kAtt_OptAttrib_Bool[eAttr], bVal ? kVal_True : kVal_False);
+    NewAtt(hHow, kAtn_OptAttrib_Bool[eAttr], bVal ? kVal_True : kVal_False);
   }
 }
 
 void RainHDF::SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Long eAttr, long nVal)
 {
   if (hHow)
-    SetAtt(hHow, kAtt_OptAttrib_Long[eAttr], nVal);
+    SetAtt(hHow, kAtn_OptAttrib_Long[eAttr], nVal);
   else
   {
     HID_Group hNewHow(hParent, kGrp_How, kCreate);
     hHow = hNewHow;
-    NewAtt(hHow, kAtt_OptAttrib_Long[eAttr], nVal);
+    NewAtt(hHow, kAtn_OptAttrib_Long[eAttr], nVal);
   }
 }
 
 void RainHDF::SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Double eAttr, double fVal)
 {
   if (hHow)
-    SetAtt(hHow, kAtt_OptAttrib_Double[eAttr], fVal);
+    SetAtt(hHow, kAtn_OptAttrib_Double[eAttr], fVal);
   else
   {
     HID_Group hNewHow(hParent, kGrp_How, kCreate);
     hHow = hNewHow;
-    NewAtt(hHow, kAtt_OptAttrib_Double[eAttr], fVal);
+    NewAtt(hHow, kAtn_OptAttrib_Double[eAttr], fVal);
   }
 }
 
@@ -666,6 +723,18 @@ void RainHDF::SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Str eAttr, con
     HID_Group hNewHow(hParent, kGrp_How, kCreate);
     hHow = hNewHow;
     NewAtt(hHow, kAtt_OptAttrib_Str[eAttr], strVal);
+  }
+}
+
+void RainHDF::SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Method eAttr, Method eVal)
+{
+  if (hHow)
+    SetAtt(hHow, kAtt_OptAttrib_Method[eAttr], eVal);
+  else
+  {
+    HID_Group hNewHow(hParent, kGrp_How, kCreate);
+    hHow = hNewHow;
+    NewAtt(hHow, kAtt_OptAttrib_Method[eAttr], eVal);
   }
 }
 

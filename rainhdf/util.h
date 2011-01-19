@@ -85,6 +85,24 @@ namespace RainHDF
     , kQty_Unknown ///< Invalid or unknown qualtity
   };
 
+  /// Methods supported by ODIM_H5
+  enum Method
+  {
+      kMth_Nearest        ///< Nearest neighbour or closest radar
+    , kMth_Interpolate    ///< Interpolation
+    , kMth_Average        ///< Average of all values
+    , kMth_Random         ///< Random
+    , kMth_MinDistEarth   ///< Minimum distance to earth
+    , kMth_Latest         ///< Most recent radar
+    , kMth_Maximum        ///< Maximum value
+    , kMth_Domain         ///< User-defined compositing
+    , kMth_VAD            ///< Velocity azimuth display
+    , kMth_VVP            ///< Volume velocity procesing
+    , kMth_GaugeAdjust    ///< Gauge-adjustment
+
+    , kMth_Unknown        ///< Invalid or unknown method
+  };
+
   /// Optional scalar quality attributes (bool)
   enum OptAttrib_Bool
   {
@@ -147,19 +165,24 @@ namespace RainHDF
     , kAtt_System             ///< Radar system
     , kAtt_Software           ///< Processing software
     , kAtt_SoftwareVersion    ///< Software version
-//enum    , kAtt_AzimuthMethod      ///< How raw data in azimuth are processed to arrive at given value
-//enum    , kAtt_RangeMethod        ///< How raw data in range are processed to arrive at given value
-//sequ    , kAtt_AzimuthAngles      ///< Azimuthal start and stop angles for each gate (degrees)
-//sequ    , kAtt_ElevationAngles    ///< Elevation angles for each azimuth (degrees)
-//sequ    , kAtt_AzimuthTimes       ///< Start/stop times for each azimuth gate in scan
-//sequ    , kAtt_Angles             ///< Elevation angles used to generate the product (degrees)
-//sequ    , kAtt_RotationSpeed      ///< Antenna rotation speed
-//enum    , kAtt_CartesianMethod    ///< How cartesian data are processed
-//sequ    , kAtt_Nodes              ///< Radar nodes that contributed to the composite
+    , kAtt_AzimuthAngles      ///< Azimuthal start and stop angles for each gate (degrees) (SEQUENCE)
+    , kAtt_ElevationAngles    ///< Elevation angles for each azimuth (degrees) (SEQUENCE)
+    , kAtt_AzimuthTimes       ///< Start/stop times for each azimuth gate in scan (SEQUENCE)
+    , kAtt_Angles             ///< Elevation angles used to generate the product (degrees) (SEQUENCE)
+    , kAtt_RotationSpeed      ///< Antenna rotation speed (SEQUENCE)
+    , kAtt_Nodes              ///< Radar nodes that contributed to the composite (SEQUENCE)
     , kAtt_MalfunctionMsg     ///< Radar malfunction message
-//sequ    , kAtt_DopplerFilters     ///< Doppler clutter filters used when collecting data
+    , kAtt_DopplerFilters     ///< Doppler clutter filters used when collecting data (SEQUENCE)
     , kAtt_Comment            ///< Free text description
     , kAtt_Polarization       ///< Type of polarization transmitted by the radar (H,V)
+  };
+
+  /// Optional scalar quality attributes (method enumerate)
+  enum OptAttrib_Method
+  {
+      kAtt_AzimuthMethod      ///< How raw data in azimuth are processed to arrive at given value
+    , kAtt_RangeMethod        ///< How raw data in range are processed to arrive at given value
+    , kAtt_CartesianMethod    ///< How cartesian data are processed
   };
 
   // Retrieve existing attributes
@@ -172,6 +195,7 @@ namespace RainHDF
   void GetAtt(hid_t hID, const char *pszName, ObjectType &eVal);
   void GetAtt(hid_t hID, const char *pszName, ProductType &eVal);
   void GetAtt(hid_t hID, const char *pszName, Quantity &eVal);
+  void GetAtt(hid_t hID, const char *pszName, Method &eVal);
 
   // Create new attributes
   void NewAtt(hid_t hID, const char *pszName, bool bVal);
@@ -183,6 +207,7 @@ namespace RainHDF
   void NewAtt(hid_t hID, const char *pszName, ObjectType eVal);
   void NewAtt(hid_t hID, const char *pszName, ProductType eVal);
   void NewAtt(hid_t hID, const char *pszName, Quantity eVal);
+  void NewAtt(hid_t hID, const char *pszName, Method eVal);
 
   // Alter existing attributes (or create if not existing)
   void SetAtt(hid_t hID, const char *pszName, bool bVal);
@@ -194,6 +219,7 @@ namespace RainHDF
   void SetAtt(hid_t hID, const char *pszName, ObjectType eVal);
   void SetAtt(hid_t hID, const char *pszName, ProductType eVal);
   void SetAtt(hid_t hID, const char *pszName, Quantity eVal);
+  void SetAtt(hid_t hID, const char *pszName, Method eVal);
 
   // Get/set an optional quality attribute
   bool GetHowAtt(const HID_Group &hHow, OptAttrib_Bool eAttr, bool &bVal);
@@ -201,6 +227,7 @@ namespace RainHDF
   bool GetHowAtt(const HID_Group &hHow, OptAttrib_Double eAttr, double &fVal);
   bool GetHowAtt(const HID_Group &hHow, OptAttrib_Str eAttr, char *pszBuf, size_t nBufSize);
   bool GetHowAtt(const HID_Group &hHow, OptAttrib_Str eAttr, std::string &strVal);
+  bool GetHowAtt(const HID_Group &hHow, OptAttrib_Method eAttr, Method &eVal);
 
   // Set an optional quality attribute (and create 'how' group if needed)
   void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Bool eAttr, bool bVal);
@@ -208,6 +235,7 @@ namespace RainHDF
   void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Double eAttr, double fVal);
   void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Str eAttr, const char *pszVal);
   void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Str eAttr, const std::string &strVal);
+  void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Method eAttr, Method eVal);
 
   // Convenient value returning versions of above functions
   template <class T>

@@ -47,17 +47,22 @@ int main(int argc, const char *argv[])
     hdfw.SetAttribute(kAtt_RPM, 2.5);
     hdfw.SetAttribute(kAtt_Task, "RainHDF Test Application");
     hdfw.SetAttribute(kAtt_System, std::string("Test string"));
+    hdfw.SetAttribute(kAtt_CartesianMethod, kMth_GaugeAdjust);
 
     // Get some quality attributes
-    bool b1, b2; long n; double f;
+    bool b1, b2; long n; double f; Method e;
     hdfw.GetAttribute(kAtt_Simulated, b1);
     hdfw.GetAttribute(kAtt_Malfunction, b2);
     hdfw.GetAttribute(kAtt_LevelCount, n);
     hdfw.GetAttribute(kAtt_RPM, f);
     hdfw.GetAttribute(kAtt_Task, s1);
     hdfw.GetAttribute(kAtt_System, s2);
+    hdfw.GetAttribute(kAtt_CartesianMethod, e);
 
-    cout << b1 << " " << b2 << " " << n << " " << f << " " << s1 << " " << s2 << endl;
+    cout << b1 << " " << b2 << " " << n 
+      << " " << f << " " << s1 << " " << s2 
+      << " " << e 
+      << endl;
 
     for (size_t i = 0; i < hdfr.GetScanCount(); ++i)
     {

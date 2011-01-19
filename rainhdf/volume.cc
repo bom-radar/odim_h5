@@ -13,7 +13,7 @@ using namespace RainHDF;
 
 namespace RainHDF
 {
-  static const int kDefScanCount = 16;
+  /// Compression factor used to compress layers (0 - 9, 9 = max compression)
   static const int kDefCompression = 6;
 }
 
