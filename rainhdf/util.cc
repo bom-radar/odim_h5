@@ -510,7 +510,8 @@ void RainHDF::SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Long eAttr, lo
     SetAtt(hHow, kAtt_OptAttrib_Long[eAttr], nVal);
   else
   {
-    hHow = HID_Group(hParent, kGrp_How, kCreate);
+    HID_Group hNewHow(hParent, kGrp_How, kCreate);
+    hHow = hNewHow;
     NewAtt(hHow, kAtt_OptAttrib_Long[eAttr], nVal);
   }
 }
@@ -521,7 +522,8 @@ void RainHDF::SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Double eAttr, 
     SetAtt(hHow, kAtt_OptAttrib_Double[eAttr], fVal);
   else
   {
-    hHow = HID_Group(hParent, kGrp_How, kCreate);
+    HID_Group hNewHow(hParent, kGrp_How, kCreate);
+    hHow = hNewHow;
     NewAtt(hHow, kAtt_OptAttrib_Double[eAttr], fVal);
   }
 }
@@ -532,7 +534,8 @@ void RainHDF::SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Str eAttr, con
     SetAtt(hHow, kAtt_OptAttrib_Str[eAttr], pszVal);
   else
   {
-    hHow = HID_Group(hParent, kGrp_How, kCreate);
+    HID_Group hNewHow(hParent, kGrp_How, kCreate);
+    hHow = hNewHow;
     NewAtt(hHow, kAtt_OptAttrib_Str[eAttr], pszVal);
   }
 }
@@ -543,7 +546,8 @@ void RainHDF::SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Str eAttr, con
     SetAtt(hHow, kAtt_OptAttrib_Str[eAttr], strVal);
   else
   {
-    hHow = HID_Group(hParent, kGrp_How, kCreate);
+    HID_Group hNewHow(hParent, kGrp_How, kCreate);
+    hHow = hNewHow;
     NewAtt(hHow, kAtt_OptAttrib_Str[eAttr], strVal);
   }
 }

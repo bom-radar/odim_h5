@@ -26,11 +26,6 @@ namespace RainHDF
       class Layer
       {
       public:
-        Layer(const Layer &layer) = delete;
-        Layer(Layer &&layer);
-        Layer & operator=(const Layer &layer) = delete;
-        Layer & operator=(Layer &&layer);
-
         /// Is this layer a quality layer?
         bool IsQualityLayer() const { return m_bIsQuality; }
 
@@ -66,6 +61,8 @@ namespace RainHDF
             , const float *pData
             , float fNoData
             , float fUndetect);
+        Layer(const Layer &layer);
+        Layer & operator=(const Layer &layer);
 
       private:
         bool              m_bIsQuality; ///< Is this a quality layer?
@@ -84,15 +81,6 @@ namespace RainHDF
       typedef std::auto_ptr<const Layer> LayerConstPtr;
 
     public:
-      /// Disable copy construction
-      Scan(const Scan &scan) = delete;
-      /// Move construction
-      Scan(Scan &&scan);
-      /// Disable copy assignment
-      Scan & operator=(const Scan &scan) = delete;
-      /// Move assignment
-      Scan & operator=(Scan &&scan);
-
       /// Get the elevation of this scan
       double GetElevation() const { return GetAtt<double>(m_hWhere, kAtt_Elevation); }
       /// Get the number of azimuths in scan
@@ -159,9 +147,11 @@ namespace RainHDF
           , time_t tStart         ///< Time scan started
           , time_t tEnd           ///< Time scan ended
           );
-
       /// Create handle to a scan that is existing in the file
       Scan(hid_t hParent, size_t nIndex);
+
+      Scan(const Scan &scan);
+      Scan & operator=(const Scan &scan);
 
     private:
       // Per scan groups
@@ -206,9 +196,6 @@ namespace RainHDF
     /// Open an existing HDF5 volume file
     Volume(const std::string &strFilename, bool bReadOnly);
 
-    /// Close the HDF5 volume file and destroy the handle
-    virtual ~Volume() = default;
-
     /// Read the station latitude
     double GetLatitude() const { return GetAtt<double>(m_hWhere, "lat"); }
     /// Write the station latitude
@@ -241,6 +228,10 @@ namespace RainHDF
         , time_t tStart         ///< Time scan started
         , time_t tEnd           ///< Time scan ended
         );
+
+  private:
+    // No need to make private copy contructor - base is already private
+    Volume & operator=(const Volume &vol);
 
   private:
     size_t    m_nScanCount;   ///< Number of scans in file

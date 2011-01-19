@@ -43,28 +43,6 @@ const char * Volume::Scan::kAtt_EndTime = "endtime";
 const char * Volume::Scan::kAtt_Elevation = "elangle";
 const char * Volume::Scan::kAtt_FirstAzimuth = "a1gate";
 
-Volume::Scan::Layer::Layer(Layer &&layer)
-  : m_bIsQuality(layer.m_bIsQuality)
-  , m_eQuantity(layer.m_eQuantity)
-  , m_hLayer(std::move(layer.m_hLayer))
-  , m_hWhat(std::move(layer.m_hWhat))
-  , m_hHow(std::move(layer.m_hHow))
-  , m_nSize(layer.m_nSize)
-{
-
-}
-
-Volume::Scan::Layer & Volume::Scan::Layer::operator=(Layer &&layer)
-{
-  m_bIsQuality = layer.m_bIsQuality;
-  m_eQuantity = layer.m_eQuantity;
-  m_hLayer = std::move(layer.m_hLayer);
-  m_hWhat = std::move(layer.m_hWhat);
-  m_hHow = std::move(layer.m_hHow);
-  m_nSize = layer.m_nSize;
-  return *this;
-}
-
 Volume::Scan::Layer::Layer(
       hid_t hParent
     , bool bIsQuality
@@ -119,6 +97,16 @@ Volume::Scan::Layer::Layer(
     throw Error("Failed to write layer data");
 }
 
+Volume::Scan::Layer::Layer(const Layer &layer)
+{
+  throw Error("ASSERT: Copy constructor called on Volume::Scan::Layer");
+}
+
+Volume::Scan::Layer & Volume::Scan::Layer::operator=(const Layer &layer)
+{
+  throw Error("ASSERT: Assignment operator called on Volume::Scan::Layer");
+}
+
 void Volume::Scan::Layer::Read(float *pData, float &fNoData, float &fUndetect) const
 {
   HID_Data hData(m_hLayer, kDat_Data, kOpen);
@@ -163,18 +151,6 @@ void Volume::Scan::Layer::Write(const float *pData, float fNoData, float fUndete
   SetAtt(m_hWhat, kAtt_Undetect, fUndetect);
   if (H5Dwrite(hData, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, pData) < 0)
     throw Error("Failed to write layer data");
-}
-
-Volume::Scan::Scan(Scan &&scan)
-  : m_hScan(std::move(scan.m_hScan))
-  , m_hWhat(std::move(scan.m_hWhat))
-  , m_hWhere(std::move(scan.m_hWhere))
-  , m_hHow(std::move(scan.m_hHow))
-  , m_nAzimuthCount(scan.m_nAzimuthCount)
-  , m_nRangeCount(scan.m_nRangeCount)
-  , m_LayerInfos(std::move(scan.m_LayerInfos))
-{
-
 }
 
 Volume::Scan::Scan(
@@ -273,16 +249,14 @@ Volume::Scan::Scan(hid_t hParent, size_t nIndex)
   }
 }
 
-Volume::Scan & Volume::Scan::operator=(Scan &&scan)
+Volume::Scan::Scan(const Scan &scan)
 {
-  m_hScan = std::move(scan.m_hScan);
-  m_hWhat = std::move(scan.m_hWhat);
-  m_hWhere = std::move(scan.m_hWhere);
-  m_hHow = std::move(scan.m_hHow);
-  m_nAzimuthCount = scan.m_nAzimuthCount;
-  m_nRangeCount = scan.m_nRangeCount;
-  m_LayerInfos = std::move(scan.m_LayerInfos);
-  return *this;
+  throw Error("ASSERT: Copy constructor called on Volume::Scan");
+}
+
+Volume::Scan & Volume::Scan::operator=(const Scan &scan)
+{
+  throw Error("ASSERT: Assignment operator called on Volume::Scan");
 }
 
 Volume::Scan::LayerPtr Volume::Scan::GetLayer(size_t nLayer)
@@ -409,5 +383,11 @@ Volume::Volume(const std::string &strFilename, bool bReadOnly)
 
   printf("determine there are %d scans\n", m_nScanCount);
 }
+
+Volume & Volume::operator=(const Volume &vol)
+{
+  throw Error("ASSERT: Assignment operator called on Volume");
+}
+
 
 

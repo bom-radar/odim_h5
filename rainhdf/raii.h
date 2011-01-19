@@ -40,28 +40,6 @@ namespace RainHDF
         throw Error("Failed to open HDF5 file '%s'", pszFile);
     }
 
-    /// Disable copy construction
-    HID_File(const HID_File &hid) = delete;
-
-    /// Move construction
-    HID_File(HID_File &&hid) 
-      : m_hID(hid.m_hID) 
-    { 
-      hid.m_hID = kInvalidHID;
-    }
-
-    /// Disable copy assignment
-    HID_File & operator=(const HID_File &hid) = delete;
-
-    /// Move assignment
-    HID_File & operator=(HID_File &&hid) 
-    { 
-      hid_t hTemp = m_hID;
-      m_hID = hid.m_hID; 
-      hid.m_hID = hTemp;
-      return *this; 
-    }
-
     /// Close the HDF5 file
     ~HID_File() 
     { 
@@ -74,6 +52,13 @@ namespace RainHDF
     { 
       return m_hID; 
     }
+
+  private:
+    /// Disable copy construction
+    HID_File(const HID_File &hid) { throw Error("ASSERT: Copy of RAII object"); }
+
+    /// Disable copy assignment
+    HID_File & operator=(const HID_File &hid) { throw Error("ASSERT: Assign of RAII object"); }
 
   private:
     hid_t m_hID;
@@ -138,26 +123,14 @@ namespace RainHDF
       }
     }
 
-    /// Disable copy construction
-    HID_Group(const HID_Group &hid) = delete;
-
-    /// Move construction
-    HID_Group(HID_Group &&hid) 
-      : m_hID(hid.m_hID) 
-    { 
+    /// Copy (move) assignment
+    HID_Group & operator=(HID_Group &hid)
+    {
+      if (m_hID >= 0)
+        H5Gclose(m_hID);
+      m_hID = hid.m_hID;
       hid.m_hID = kInvalidHID;
-    }
-
-    /// Disable copy assignment
-    HID_Group & operator=(const HID_Group &hid) = delete;
-
-    /// Move assignment
-    HID_Group & operator=(HID_Group &&hid) 
-    { 
-      hid_t hTemp = m_hID;
-      m_hID = hid.m_hID; 
-      hid.m_hID = hTemp;
-      return *this; 
+      return *this;
     }
 
     /// Close the HDF5 group
@@ -174,6 +147,10 @@ namespace RainHDF
     operator bool () const { printf("checking it yall\n");return m_hID >= 0; }
 
   private:
+    /// Disable copy construction
+    HID_Group(const HID_Group &hid) { throw Error("ASSERT: Copy of RAII object"); }
+
+  private:
     hid_t m_hID;
   };
 
@@ -188,28 +165,6 @@ namespace RainHDF
         throw Error("Failed to acquire type");
     }
 
-    /// Disable copy construction
-    HID_Type(const HID_Type &hid) = delete;
-
-    /// Move construction
-    HID_Type(HID_Type &&hid) 
-      : m_hID(hid.m_hID) 
-    { 
-      hid.m_hID = kInvalidHID;
-    }
-
-    /// Disable copy assignment
-    HID_Type & operator=(const HID_Type &hid) = delete;
-
-    /// Move assignment
-    HID_Type & operator=(HID_Type &&hid) 
-    { 
-      hid_t hTemp = m_hID;
-      m_hID = hid.m_hID; 
-      hid.m_hID = hTemp;
-      return *this; 
-    }
-
     /// Close the HDF5 type
     ~HID_Type() 
     { 
@@ -222,6 +177,13 @@ namespace RainHDF
     { 
       return m_hID; 
     }
+
+  private:
+    /// Disable copy construction
+    HID_Type(const HID_Type &hid) { throw Error("ASSERT: Copy of RAII object"); }
+
+    /// Disable copy assignment
+    HID_Type & operator=(const HID_Type &hid) { throw Error("ASSERT: Assign of RAII object"); }
 
   private:
     hid_t m_hID;
@@ -255,28 +217,6 @@ namespace RainHDF
         throw Error("Failed to acquire dataspace");
     }
 
-    /// Disable copy construction
-    HID_Space(const HID_Space &hid) = delete;
-
-    /// Move construction
-    HID_Space(HID_Space &&hid) 
-      : m_hID(hid.m_hID) 
-    { 
-      hid.m_hID = kInvalidHID;
-    }
-
-    /// Disable copy assignment
-    HID_Space & operator=(const HID_Space &hid) = delete;
-
-    /// Move assignment
-    HID_Space & operator=(HID_Space &&hid) 
-    { 
-      hid_t hTemp = m_hID;
-      m_hID = hid.m_hID; 
-      hid.m_hID = hTemp;
-      return *this; 
-    }
-
     /// Close the HDF5 dataspace
     ~HID_Space() 
     { 
@@ -289,6 +229,13 @@ namespace RainHDF
     { 
       return m_hID; 
     }
+
+  private:
+    /// Disable copy construction
+    HID_Space(const HID_Space &hid) { throw Error("ASSERT: Copy of RAII object"); }
+
+    /// Disable copy assignment
+    HID_Space & operator=(const HID_Space &hid) { throw Error("ASSERT: Assign of RAII object"); }
 
   private:
     hid_t m_hID;
@@ -319,28 +266,6 @@ namespace RainHDF
         throw Error(hParent, "Failed to open HDF5 attribute '%s'", pszName);
     }
 
-    /// Disable copy construction
-    HID_Attr(const HID_Attr &hid) = delete;
-
-    /// Move construction
-    HID_Attr(HID_Attr &&hid) 
-      : m_hID(hid.m_hID) 
-    { 
-      hid.m_hID = kInvalidHID;
-    }
-
-    /// Disable copy assignment
-    HID_Attr & operator=(const HID_Attr &hid) = delete;
-
-    /// Move assignment
-    HID_Attr & operator=(HID_Attr &&hid) 
-    { 
-      hid_t hTemp = m_hID;
-      m_hID = hid.m_hID; 
-      hid.m_hID = hTemp;
-      return *this; 
-    }
-
     /// Close the HDF5 attribute
     ~HID_Attr() 
     { 
@@ -353,6 +278,13 @@ namespace RainHDF
     { 
       return m_hID; 
     }
+
+  private:
+    /// Disable copy construction
+    HID_Attr(const HID_Attr &hid) { throw Error("ASSERT: Copy of RAII object"); }
+
+    /// Disable copy assignment
+    HID_Attr & operator=(const HID_Attr &hid) { throw Error("ASSERT: Assign of RAII object"); }
 
   private:
     hid_t m_hID;
@@ -370,28 +302,6 @@ namespace RainHDF
         throw Error("Failed to create property list for class %d", cls_id);
     }
 
-    /// Disable copy construction
-    HID_PList(const HID_PList &hid) = delete;
-
-    /// Move construction
-    HID_PList(HID_PList &&hid) 
-      : m_hID(hid.m_hID) 
-    { 
-      hid.m_hID = kInvalidHID;
-    }
-
-    /// Disable copy assignment
-    HID_PList & operator=(const HID_PList &hid) = delete;
-
-    /// Move assignment
-    HID_PList & operator=(HID_PList &&hid) 
-    { 
-      hid_t hTemp = m_hID;
-      m_hID = hid.m_hID; 
-      hid.m_hID = hTemp;
-      return *this; 
-    }
-
     /// Close the HDF5 property list
     ~HID_PList() 
     { 
@@ -404,6 +314,13 @@ namespace RainHDF
     { 
       return m_hID; 
     }
+
+  private:
+    /// Disable copy construction
+    HID_PList(const HID_PList &hid) { throw Error("ASSERT: Copy of RAII object"); }
+
+    /// Disable copy assignment
+    HID_PList & operator=(const HID_PList &hid) { throw Error("ASSERT: Assign of RAII object"); }
 
   private:
     hid_t m_hID;
@@ -435,28 +352,6 @@ namespace RainHDF
         throw Error(hParent, "Failed to open HDF5 dataset '%s'", pszName);
     }
 
-    /// Disable copy construction
-    HID_Data(const HID_Data &hid) = delete;
-
-    /// Move construction
-    HID_Data(HID_Data &&hid) 
-      : m_hID(hid.m_hID) 
-    { 
-      hid.m_hID = kInvalidHID;
-    }
-
-    /// Disable copy assignment
-    HID_Data & operator=(const HID_Data &hid) = delete;
-
-    /// Move assignment
-    HID_Data & operator=(HID_Data &&hid) 
-    { 
-      hid_t hTemp = m_hID;
-      m_hID = hid.m_hID; 
-      hid.m_hID = hTemp;
-      return *this; 
-    }
-
     /// Close the HDF5 dataset
     ~HID_Data() 
     { 
@@ -469,6 +364,13 @@ namespace RainHDF
     { 
       return m_hID; 
     }
+
+  private:
+    /// Disable copy construction
+    HID_Data(const HID_Data &hid) { throw Error("ASSERT: Copy of RAII object"); }
+
+    /// Disable copy assignment
+    HID_Data & operator=(const HID_Data &hid) { throw Error("ASSERT: Assign of RAII object"); }
 
   private:
     hid_t m_hID;

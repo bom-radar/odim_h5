@@ -21,6 +21,11 @@ namespace RainHDF
   static const char * kVal_Version = "H5rad 2.0";
 }
 
+Base::~Base()
+{
+
+}
+
 Base::Base(
     const std::string &strFilename, 
     ObjectType eType,
@@ -54,9 +59,15 @@ Base::Base(
     throw Error("ODIM_H5 object type mismatch");
 }
 
-Base::~Base()
+Base::Base(const Base &base)
+  : m_hFile("ASSERT", false, kOpen)
 {
+  throw Error("ASSERT: Copy constructor called on Base");
+}
 
+Base & Base::operator=(const Base &base)
+{
+  throw Error("ASSERT: Assignment operator called on Base");
 }
 
 void Base::GetSource(

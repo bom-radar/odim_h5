@@ -58,6 +58,12 @@ namespace RainHDF
     /// Open an existing ODIM_H5 compliant HDF file
     Base(const std::string & strFilename, bool bReadOnly, ObjectType eType);
 
+  private:
+    /// Disabled copy constructor
+    Base(const Base &base);
+    /// Disabled assignment operator
+    Base & operator=(const Base &base);
+
   protected:
     bool      m_bReadOnly;  ///< Is file read only?
     HID_File  m_hFile;      ///< HDF file identifier
