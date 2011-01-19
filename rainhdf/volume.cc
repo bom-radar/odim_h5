@@ -13,35 +13,9 @@ using namespace RainHDF;
 
 namespace RainHDF
 {
-  static const char * kAtt_Product = "product";
-  static const char * kAtt_AzimuthCount = "nrays";
-  static const char * kAtt_RangeCount = "nbins";
-
-  static const char * kAtt_Gain = "gain";
-  static const char * kAtt_Offset = "offset";
-  static const char * kAtt_NoData = "nodata";
-  static const char * kAtt_Undetect = "undetect";
-
-  static const char * kAtt_Class = "CLASS";
-  static const char * kAtt_ImageVersion = "IMAGE_VERSION";
-
-  static const char * kDat_Data = "data";
-
-  static const char * kVal_Class = "IMAGE";
-  static const char * kVal_ImageVersion = "1.2";
-
   static const int kDefScanCount = 16;
   static const int kDefCompression = 6;
 }
-
-const char * Volume::Scan::kAtt_RangeStart = "rstart";
-const char * Volume::Scan::kAtt_RangeScale = "rscale";
-const char * Volume::Scan::kAtt_StartDate = "startdate";
-const char * Volume::Scan::kAtt_StartTime = "starttime";
-const char * Volume::Scan::kAtt_EndDate = "enddate";
-const char * Volume::Scan::kAtt_EndTime = "endtime";
-const char * Volume::Scan::kAtt_Elevation = "elangle";
-const char * Volume::Scan::kAtt_FirstAzimuth = "a1gate";
 
 Volume::Scan::Layer::Layer(
       hid_t hParent
@@ -75,11 +49,11 @@ Volume::Scan::Layer::Layer(
   , m_nSize(pDims[0] * pDims[1])
 {
   // Fill in the 'what' parameters
-  NewAtt(m_hWhat, kAtt_Quantity, m_eQuantity);
-  NewAtt(m_hWhat, kAtt_Gain, 1.0);
-  NewAtt(m_hWhat, kAtt_Offset, 0.0);
-  NewAtt(m_hWhat, kAtt_NoData, fNoData);
-  NewAtt(m_hWhat, kAtt_Undetect, fUndetect);
+  NewAtt(m_hWhat, kAtn_Quantity, m_eQuantity);
+  NewAtt(m_hWhat, kAtn_Gain, 1.0);
+  NewAtt(m_hWhat, kAtn_Offset, 0.0);
+  NewAtt(m_hWhat, kAtn_NoData, fNoData);
+  NewAtt(m_hWhat, kAtn_Undetect, fUndetect);
 
   // Create the HDF dataset
   HID_Space hSpace(2, pDims, kCreate);
@@ -89,8 +63,8 @@ Volume::Scan::Layer::Layer(
   if (H5Pset_deflate(hPList, kDefCompression) < 0)
     throw Error(m_hLayer, "Failed to set compression level for layer");
   HID_Data hData(m_hLayer, kDat_Data, H5T_NATIVE_FLOAT, hSpace, hPList, kCreate);
-  NewAtt(hData, kAtt_Class, kVal_Class);
-  NewAtt(hData, kAtt_ImageVersion, kVal_ImageVersion);
+  NewAtt(hData, kAtn_Class, kVal_Class);
+  NewAtt(hData, kAtn_ImageVersion, kVal_ImageVersion);
 
   // Write the actual image data
   if (H5Dwrite(hData, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, pData) < 0)
@@ -117,14 +91,14 @@ void Volume::Scan::Layer::Read(float *pData, float &fNoData, float &fUndetect) c
     throw Error(hData, "Dataset dimension mismatch");
 
   // Read the raw data
-  fNoData = GetAtt<double>(m_hWhat, kAtt_NoData);
-  fUndetect = GetAtt<double>(m_hWhat, kAtt_Undetect);
+  fNoData = GetAtt<double>(m_hWhat, kAtn_NoData);
+  fUndetect = GetAtt<double>(m_hWhat, kAtn_Undetect);
   if (H5Dread(hData, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, pData) < 0)
     throw Error(m_hLayer, "Failed to read layer data");
 
   // Convert using gain and offset?
-  double fGain(GetAtt<double>(m_hWhat, kAtt_Gain));
-  double fOffset(GetAtt<double>(m_hWhat, kAtt_Offset));
+  double fGain(GetAtt<double>(m_hWhat, kAtn_Gain));
+  double fOffset(GetAtt<double>(m_hWhat, kAtn_Offset));
   if (   std::fabs(fGain - 1.0) > 0.000001
       || std::fabs(fOffset) > 0.000001)
   {
@@ -145,10 +119,10 @@ void Volume::Scan::Layer::Write(const float *pData, float fNoData, float fUndete
     throw Error(hData, "Dataset dimension mismatch");
 
   // Write the raw data
-  SetAtt(m_hWhat, kAtt_Gain, 1.0);
-  SetAtt(m_hWhat, kAtt_Offset, 0.0);
-  SetAtt(m_hWhat, kAtt_NoData, fNoData);
-  SetAtt(m_hWhat, kAtt_Undetect, fUndetect);
+  SetAtt(m_hWhat, kAtn_Gain, 1.0);
+  SetAtt(m_hWhat, kAtn_Offset, 0.0);
+  SetAtt(m_hWhat, kAtn_NoData, fNoData);
+  SetAtt(m_hWhat, kAtn_Undetect, fUndetect);
   if (H5Dwrite(hData, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, pData) < 0)
     throw Error("Failed to write layer data");
 }
@@ -170,16 +144,16 @@ Volume::Scan::Scan(
   , m_nAzimuthCount(nAzimuths)
   , m_nRangeCount(nRangeBins)
 {
-  NewAtt(m_hWhat, kAtt_Product, kPT_Scan);
-  NewAtt(m_hWhat, kAtt_StartDate, kAtt_StartTime, tStart);
-  NewAtt(m_hWhat, kAtt_EndDate, kAtt_EndTime, tEnd);
+  NewAtt(m_hWhat, kAtn_Product, kProd_Scan);
+  NewAtt(m_hWhat, kAtn_StartDate, kAtn_StartTime, tStart);
+  NewAtt(m_hWhat, kAtn_EndDate, kAtn_EndTime, tEnd);
 
-  NewAtt(m_hWhere, kAtt_Elevation, fElevation);
-  NewAtt(m_hWhere, kAtt_RangeCount, (long) m_nRangeCount);
-  NewAtt(m_hWhere, kAtt_RangeStart, fRangeStart);
-  NewAtt(m_hWhere, kAtt_RangeScale, fRangeScale);
-  NewAtt(m_hWhere, kAtt_AzimuthCount, (long) m_nAzimuthCount);
-  NewAtt(m_hWhere, kAtt_FirstAzimuth, (long) nFirstAzimuth);
+  NewAtt(m_hWhere, kAtn_Elevation, fElevation);
+  NewAtt(m_hWhere, kAtn_RangeCount, (long) m_nRangeCount);
+  NewAtt(m_hWhere, kAtn_RangeStart, fRangeStart);
+  NewAtt(m_hWhere, kAtn_RangeScale, fRangeScale);
+  NewAtt(m_hWhere, kAtn_AzimuthCount, (long) m_nAzimuthCount);
+  NewAtt(m_hWhere, kAtn_FirstAzimuth, (long) nFirstAzimuth);
 }
 
 Volume::Scan::Scan(hid_t hParent, size_t nIndex)
@@ -187,14 +161,14 @@ Volume::Scan::Scan(hid_t hParent, size_t nIndex)
   , m_hWhat(m_hScan, kGrp_What, kOpen)
   , m_hWhere(m_hScan, kGrp_Where, kOpen)
   , m_hHow(m_hScan, kGrp_How, kOpen, true)
-  , m_nAzimuthCount(GetAtt<long>(m_hWhere, kAtt_AzimuthCount))
-  , m_nRangeCount(GetAtt<long>(m_hWhere, kAtt_RangeCount))
+  , m_nAzimuthCount(GetAtt<long>(m_hWhere, kAtn_AzimuthCount))
+  , m_nRangeCount(GetAtt<long>(m_hWhere, kAtn_RangeCount))
 {
   hsize_t nObjs;
   char pszName[32];
 
   // Verify that this dataset is indeed a scan
-  if (GetAtt<ProductType>(m_hWhat, kAtt_Product) != kPT_Scan)
+  if (GetAtt<ProductType>(m_hWhat, kAtn_Product) != kProd_Scan)
     throw Error(m_hScan, "Scan product code mismatch");
 
   // Reserve some space in our layer info vector for efficency sake
@@ -221,7 +195,7 @@ Volume::Scan::Scan(hid_t hParent, size_t nIndex)
     LayerInfo li;
     li.m_bIsQuality = false;
     li.m_nIndex = i;
-    li.m_eQuantity = GetAtt<Quantity>(hLayerWhat, kAtt_Quantity);
+    li.m_eQuantity = GetAtt<Quantity>(hLayerWhat, kAtn_Quantity);
     m_LayerInfos.push_back(li);
   }
 
@@ -244,7 +218,7 @@ Volume::Scan::Scan(hid_t hParent, size_t nIndex)
     LayerInfo li;
     li.m_bIsQuality = true;
     li.m_nIndex = i;
-    li.m_eQuantity = GetAtt<Quantity>(hLayerWhat, kAtt_Quantity);
+    li.m_eQuantity = GetAtt<Quantity>(hLayerWhat, kAtn_Quantity);
     m_LayerInfos.push_back(li);
   }
 }
@@ -354,16 +328,16 @@ Volume::Volume(
     , double fLatitude
     , double fLongitude
     , double fHeight)
-  : Base(strFilename, kOT_VolumePolar, tValid)
+  : Base(strFilename, kObj_VolumePolar, tValid)
   , m_nScanCount(0)
 {
-  NewAtt(m_hWhere, "lat", fLatitude);
-  NewAtt(m_hWhere, "lon", fLongitude);
-  NewAtt(m_hWhere, "height", fHeight);
+  NewAtt(m_hWhere, kAtn_Latitude, fLatitude);
+  NewAtt(m_hWhere, kAtn_Longitude, fLongitude);
+  NewAtt(m_hWhere, kAtn_Height, fHeight);
 }
 
 Volume::Volume(const std::string &strFilename, bool bReadOnly)
-  : Base(strFilename, bReadOnly, kOT_VolumePolar)
+  : Base(strFilename, bReadOnly, kObj_VolumePolar)
 {
   // Determine the number of scans
   hsize_t nObjs;
@@ -388,6 +362,4 @@ Volume & Volume::operator=(const Volume &vol)
 {
   throw Error("ASSERT: Assignment operator called on Volume");
 }
-
-
 

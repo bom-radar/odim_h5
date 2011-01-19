@@ -10,17 +10,6 @@
 
 using namespace RainHDF;
 
-namespace RainHDF
-{
-  static const char * kAtt_Conventions = "Conventions";
-  static const char * kAtt_Object = "object";
-  static const char * kAtt_Version = "version";
-  static const char * kAtt_Source = "source";
-
-  static const char * kVal_Conventions = "ODIM_H5/V2_0";
-  static const char * kVal_Version = "H5rad 2.0";
-}
-
 Base::~Base()
 {
 
@@ -36,12 +25,12 @@ Base::Base(
   , m_hWhere(m_hFile, kGrp_Where, kCreate)
 {
   // Set the conventions value
-  NewAtt(m_hFile, kAtt_Conventions, kVal_Conventions);
+  NewAtt(m_hFile, kAtn_Conventions, kVal_Conventions);
 
   // Fill in the global 'what' group constants
-  NewAtt(m_hWhat, kAtt_Object, eType);
-  NewAtt(m_hWhat, kAtt_Version, kVal_Version);
-  NewAtt(m_hWhat, kAtt_Date, kAtt_Time, tValid);
+  NewAtt(m_hWhat, kAtn_Object, eType);
+  NewAtt(m_hWhat, kAtn_Version, kVal_Version);
+  NewAtt(m_hWhat, kAtn_Date, kAtn_Time, tValid);
 }
 
 Base::Base(
@@ -55,7 +44,7 @@ Base::Base(
   , m_hHow(m_hFile, kGrp_How, kOpen, true)
 {
   // Check the object type
-  if (GetAtt<ObjectType>(m_hWhat, kAtt_Object) != eType)
+  if (GetAtt<ObjectType>(m_hWhat, kAtn_Object) != eType)
     throw Error("ODIM_H5 object type mismatch");
 }
 
@@ -80,7 +69,7 @@ void Base::GetSource(
 {
   // Get the raw attribute
   char pszBuf[512];
-  GetAtt(m_hWhat, kAtt_Source, pszBuf, 512);
+  GetAtt(m_hWhat, kAtn_Source, pszBuf, 512);
 
   // Clear out the passed values
   strWMO.clear();
@@ -163,7 +152,7 @@ void Base::SetSource(
   if (!strComment.empty())
     strVal.append(strVal.empty() ? "CMT:" : ",CMT:").append(strCountry);
 
-  SetAtt(m_hWhat, kAtt_Source, strVal);
+  SetAtt(m_hWhat, kAtn_Source, strVal);
 }
 
 

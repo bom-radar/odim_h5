@@ -82,21 +82,21 @@ namespace RainHDF
 
     public:
       /// Get the elevation of this scan
-      double GetElevation() const { return GetAtt<double>(m_hWhere, kAtt_Elevation); }
+      double GetElevation() const { return GetAtt<double>(m_hWhere, kAtn_Elevation); }
       /// Get the number of azimuths in scan
       size_t GetAzimuthCount() const { return m_nAzimuthCount; }
       /// Get the number of range bins per azimuth
       size_t GetRangeBinCount() const { return m_nRangeCount; }
       /// Get the number of the first azimuth to be radiated
-      size_t GetFirstAzimuth() const { return GetAtt<long>(m_hWhere, kAtt_FirstAzimuth); }
+      size_t GetFirstAzimuth() const { return GetAtt<long>(m_hWhere, kAtn_FirstAzimuth); }
       /// Get the distance from sensor at the start of the first range bin
-      double GetRangeStart() const { return GetAtt<double>(m_hWhere, kAtt_RangeStart); }
+      double GetRangeStart() const { return GetAtt<double>(m_hWhere, kAtn_RangeStart); }
       /// Get the distance between consecutive range bins
-      double GetRangeScale() const { return GetAtt<double>(m_hWhere, kAtt_RangeScale); }
+      double GetRangeScale() const { return GetAtt<double>(m_hWhere, kAtn_RangeScale); }
       /// Get the time this scan commenced
-      time_t GetStartTime() const { return GetAtt<time_t>(m_hWhat, kAtt_StartDate, kAtt_StartTime); }
+      time_t GetStartTime() const { return GetAtt<time_t>(m_hWhat, kAtn_StartDate, kAtn_StartTime); }
       /// Get the time this scan completed
-      time_t GetEndTime() const { return GetAtt<time_t>(m_hWhat, kAtt_EndDate, kAtt_EndTime); }
+      time_t GetEndTime() const { return GetAtt<time_t>(m_hWhat, kAtn_EndDate, kAtn_EndTime); }
 
       /// Get the number of layers in the file
       size_t GetLayerCount() const { return m_LayerInfos.size(); }
@@ -167,16 +167,6 @@ namespace RainHDF
       // Handles to any data layers that are present
       LayerInfoStore_t  m_LayerInfos;       ///< Information about data/quality layers
 
-    private:
-      static const char * kAtt_RangeStart;
-      static const char * kAtt_RangeScale;
-      static const char * kAtt_StartDate;
-      static const char * kAtt_StartTime;
-      static const char * kAtt_EndDate;
-      static const char * kAtt_EndTime;
-      static const char * kAtt_Elevation;
-      static const char * kAtt_FirstAzimuth;
-
       friend class Volume;
     };
 
@@ -197,19 +187,19 @@ namespace RainHDF
     Volume(const std::string &strFilename, bool bReadOnly);
 
     /// Read the station latitude
-    double GetLatitude() const { return GetAtt<double>(m_hWhere, "lat"); }
+    double GetLatitude() const { return GetAtt<double>(m_hWhere, kAtn_Latitude); }
     /// Write the station latitude
-    void SetLatitude(double fLat) { SetAtt(m_hWhere, "lat", fLat); }
+    void SetLatitude(double fLat) { SetAtt(m_hWhere, kAtn_Latitude, fLat); }
 
     /// Read the station longitude
-    double GetLongitude() const { return GetAtt<double>(m_hWhere, "lon"); }
+    double GetLongitude() const { return GetAtt<double>(m_hWhere, kAtn_Longitude); }
     /// Write the station longitude
-    void SetLongitude(double fLon) { SetAtt(m_hWhere, "lon", fLon); }
+    void SetLongitude(double fLon) { SetAtt(m_hWhere, kAtn_Longitude, fLon); }
 
     /// Read the station elevation
-    double GetHeight() const { return GetAtt<double>(m_hWhere, "height"); }
+    double GetHeight() const { return GetAtt<double>(m_hWhere, kAtn_Height); }
     /// Write the station elevation
-    void SetHeight(double fHeight) { SetAtt(m_hWhere, "height", fHeight); }
+    void SetHeight(double fHeight) { SetAtt(m_hWhere, kAtn_Height, fHeight); }
 
     /// Get the number of scans in the volume
     size_t GetScanCount() const { return m_nScanCount; }

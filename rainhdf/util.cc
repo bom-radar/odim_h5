@@ -159,22 +159,40 @@ namespace RainHDF
   const char * kGrp_Data = "data";
   const char * kGrp_Quality = "quality";
 
-  const char * kAtt_Date = "date";
-  const char * kAtt_Time = "time";
-  const char * kAtt_Quantity = "quantity";
-}
+  const char * kAtn_Conventions = "Conventions";
+  const char * kAtn_Object = "object";
+  const char * kAtn_Version = "version";
+  const char * kAtn_Date = "date";
+  const char * kAtn_Time = "time";
+  const char * kAtn_Source = "source";
+  const char * kAtn_Latitude = "lat";
+  const char * kAtn_Longitude = "lon";
+  const char * kAtn_Height = "height";
+  const char * kAtn_Product = "product";
+  const char * kAtn_StartDate = "startdate";
+  const char * kAtn_StartTime = "starttime";
+  const char * kAtn_EndDate = "enddate";
+  const char * kAtn_EndTime = "endtime";
+  const char * kAtn_Elevation = "elangle";
+  const char * kAtn_FirstAzimuth = "a1gate";
+  const char * kAtn_RangeCount = "nbins";
+  const char * kAtn_RangeStart = "rstart";
+  const char * kAtn_RangeScale = "rscale";
+  const char * kAtn_AzimuthCount = "nrays";
+  const char * kAtn_Quantity = "quantity";
+  const char * kAtn_Gain = "gain";
+  const char * kAtn_Offset = "offset";
+  const char * kAtn_NoData = "nodata";
+  const char * kAtn_Undetect = "undetect";
+  const char * kAtn_Class = "CLASS";
+  const char * kAtn_ImageVersion = "IMAGE_VERSION";
 
-bool RainHDF::IndexedGroupExists(
-    hid_t hParent, 
-    const char *pszGroup,
-    int nIndex,
-    char *pszNameOut)
-{
-  sprintf(pszNameOut, "%s%d", pszGroup, nIndex);
-  htri_t ret = H5Lexists(hParent, pszNameOut, H5P_DEFAULT);
-  if (ret < 0)
-    throw Error(hParent, "Failed to verify existance of group '%s'", pszNameOut);
-  return ret != 0;
+  const char * kDat_Data = "data";
+
+  const char * kVal_Conventions = "ODIM_H5/V2_0";
+  const char * kVal_Version = "H5rad 2.0";
+  const char * kVal_Class = "IMAGE";
+  const char * kVal_ImageVersion = "1.2";
 }
 
 void RainHDF::NewAtt(hid_t hID, const char *pszName, const char *pszVal)
@@ -471,7 +489,7 @@ void RainHDF::GetAtt(hid_t hID, const char *pszName, ObjectType &eVal)
       return;
     }
   }
-  eVal = kOT_Unknown;
+  eVal = kObj_Unknown;
 }
 
 void RainHDF::GetAtt(hid_t hID, const char *pszName, ProductType &eVal)
@@ -486,7 +504,7 @@ void RainHDF::GetAtt(hid_t hID, const char *pszName, ProductType &eVal)
       return;
     }
   }
-  eVal = kPT_Unknown;
+  eVal = kProd_Unknown;
 }
 
 void RainHDF::GetAtt(hid_t hID, const char *pszName, Quantity &eVal)

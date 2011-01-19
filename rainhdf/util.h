@@ -18,42 +18,42 @@ namespace RainHDF
   /// List of supported ODIM_H5 object types
   enum ObjectType
   {
-      kOT_VolumePolar       ///< Polar volume
-    , kOT_VolumeCartesian   ///< Cartesian volume
-    , kOT_Scan              ///< Polar scan
-    , kOT_Ray               ///< Single polar ray
-    , kOT_Azimuth           ///< Azimuthal object
-    , kOT_Image             ///< 2-D cartesian image
-    , kOT_CompositeImage    ///< Cartesian composite images(s)
-    , kOT_CrossSection      ///< 2-D vertical cross sections(s)
-    , kOT_VerticalProfile   ///< 1-D vertical profile
-    , kOT_Picture           ///< Embedded graphical image
+      kObj_VolumePolar        ///< Polar volume
+    , kObj_VolumeCartesian    ///< Cartesian volume
+    , kObj_Scan               ///< Polar scan
+    , kObj_Ray                ///< Single polar ray
+    , kObj_Azimuth            ///< Azimuthal object
+    , kObj_Image              ///< 2-D cartesian image
+    , kObj_CompositeImage     ///< Cartesian composite images(s)
+    , kObj_CrossSection       ///< 2-D vertical cross sections(s)
+    , kObj_VerticalProfile    ///< 1-D vertical profile
+    , kObj_Picture            ///< Embedded graphical image
 
-    , kOT_Unknown           ///< Invalid or unknown object type
+    , kObj_Unknown            ///< Invalid or unknown object type
   };
 
   /// Product types supported by ODIM_H5
   enum ProductType
   {
-      kPT_Scan                  ///< Scan of polar data
-    , kPT_PPI                   ///< Plan position indicator
-    , kPT_CAPPI                 ///< Constant altitude PPI
-    , kPT_PsuedoCAPPI           ///< Psuedo-CAPPI
-    , kPT_EchoTop               ///< Echo top
-    , kPT_Maximum               ///< Maximum
-    , kPT_Accumulation          ///< Accumulation
-    , kPT_VIL                   ///< Vertically integrated liquid water
-    , kPT_Composite             ///< Composite
-    , kPT_VerticalProfile       ///< Vertical profile
-    , kPT_RangeHeight           ///< Range height indicator
-    , kPT_VerticalSlice         ///< Arbitrary vertical slice
-    , kPT_VerticalSidePanel     ///< Vertical side panel
-    , kPT_HorizontalSidePanel   ///< Horizontal side panel
-    , kPT_Ray                   ///< Ray
-    , kPT_Azimuth               ///< Azimuthal type product
-    , kPT_Quality               ///< Quality metric
+      kProd_Scan                  ///< Scan of polar data
+    , kProd_PPI                   ///< Plan position indicator
+    , kProd_CAPPI                 ///< Constant altitude PPI
+    , kProd_PsuedoCAPPI           ///< Psuedo-CAPPI
+    , kProd_EchoTop               ///< Echo top
+    , kProd_Maximum               ///< Maximum
+    , kProd_Accumulation          ///< Accumulation
+    , kProd_VIL                   ///< Vertically integrated liquid water
+    , kProd_Composite             ///< Composite
+    , kProd_VerticalProfile       ///< Vertical profile
+    , kProd_RangeHeight           ///< Range height indicator
+    , kProd_VerticalSlice         ///< Arbitrary vertical slice
+    , kProd_VerticalSidePanel     ///< Vertical side panel
+    , kProd_HorizontalSidePanel   ///< Horizontal side panel
+    , kProd_Ray                   ///< Ray
+    , kProd_Azimuth               ///< Azimuthal type product
+    , kProd_Quality               ///< Quality metric
     
-    , kPT_Unknown               ///< Invalid or unknown product type
+    , kProd_Unknown               ///< Invalid or unknown product type
   };
 
   /// Variable quantities supported by ODIM_H5
@@ -162,22 +162,6 @@ namespace RainHDF
     , kAtt_Polarization       ///< Type of polarization transmitted by the radar (H,V)
   };
 
-  // Common group names
-  extern const char * kGrp_What;
-  extern const char * kGrp_Where;
-  extern const char * kGrp_How;
-  extern const char * kGrp_Dataset;
-  extern const char * kGrp_Data;
-  extern const char * kGrp_Quality;
-
-  // Common attribute names
-  extern const char * kAtt_Date;
-  extern const char * kAtt_Time;
-  extern const char * kAtt_Quantity;
-
-  // Check if a numbered group exists
-  bool IndexedGroupExists(hid_t hParent, const char *pszGroup, int nIndex, char *pszNameOut);
-
   // Create new attributes
   void NewAtt(hid_t hID, const char *pszName, const char *pszVal);
   void NewAtt(hid_t hID, const char *pszName, const std::string &strVal);
@@ -232,6 +216,52 @@ namespace RainHDF
     GetAtt(hID, pszName1, pszName2, t);
     return t;
   }
+
+  // Group name constants
+  extern const char * kGrp_What;
+  extern const char * kGrp_Where;
+  extern const char * kGrp_How;
+  extern const char * kGrp_Dataset;
+  extern const char * kGrp_Data;
+  extern const char * kGrp_Quality;
+
+  // Attribute name constants
+  extern const char * kAtn_Conventions;
+  extern const char * kAtn_Object;
+  extern const char * kAtn_Version;
+  extern const char * kAtn_Date;
+  extern const char * kAtn_Time;
+  extern const char * kAtn_Source;
+  extern const char * kAtn_Latitude;
+  extern const char * kAtn_Longitude;
+  extern const char * kAtn_Height;
+  extern const char * kAtn_Product;
+  extern const char * kAtn_StartDate;
+  extern const char * kAtn_StartTime;
+  extern const char * kAtn_EndDate;
+  extern const char * kAtn_EndTime;
+  extern const char * kAtn_Elevation;
+  extern const char * kAtn_FirstAzimuth;
+  extern const char * kAtn_RangeCount;
+  extern const char * kAtn_RangeStart;
+  extern const char * kAtn_RangeScale;
+  extern const char * kAtn_AzimuthCount;
+  extern const char * kAtn_Quantity;
+  extern const char * kAtn_Gain;
+  extern const char * kAtn_Offset;
+  extern const char * kAtn_NoData;
+  extern const char * kAtn_Undetect;
+  extern const char * kAtn_Class;
+  extern const char * kAtn_ImageVersion;
+
+  // Dataset name constants
+  extern const char * kDat_Data;
+
+  // Attribute value constants
+  extern const char * kVal_Conventions;
+  extern const char * kVal_Version;
+  extern const char * kVal_Class;
+  extern const char * kVal_ImageVersion;
 }
 
 #endif
