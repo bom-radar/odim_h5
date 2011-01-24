@@ -28,6 +28,8 @@ Volume::Scan::Layer::Layer(
   , m_hLayer(hParent, m_bIsQuality ? kGrp_Quality : kGrp_Data, nIndex, kOpen)
   , m_hWhat(m_hLayer, kGrp_What, kOpen)
   , m_hHow(m_hLayer, kGrp_How, kOpen, true)
+  , m_fGain(GetAtt<double>(m_hWhat, kAtn_Gain))
+  , m_fOffset(GetAtt<double>(m_hWhat, kAtn_Offset))
   , m_nSize(pDims[0] * pDims[1])
 {
 
@@ -46,12 +48,14 @@ Volume::Scan::Layer::Layer(
   , m_eQuantity(eQuantity)
   , m_hLayer(hParent, m_bIsQuality ? kGrp_Quality : kGrp_Data, nIndex, kCreate)
   , m_hWhat(m_hLayer, kGrp_What, kCreate)
+  , m_fGain(1.0f)
+  , m_fOffset(0.0f)
   , m_nSize(pDims[0] * pDims[1])
 {
   // Fill in the 'what' parameters
   NewAtt(m_hWhat, kAtn_Quantity, m_eQuantity);
-  NewAtt(m_hWhat, kAtn_Gain, 1.0);
-  NewAtt(m_hWhat, kAtn_Offset, 0.0);
+  NewAtt(m_hWhat, kAtn_Gain, m_fGain);
+  NewAtt(m_hWhat, kAtn_Offset, m_fOffset);
   NewAtt(m_hWhat, kAtn_NoData, fNoData);
   NewAtt(m_hWhat, kAtn_Undetect, fUndetect);
 
@@ -97,15 +101,13 @@ void Volume::Scan::Layer::Read(float *pData, float &fNoData, float &fUndetect) c
     throw Error(m_hLayer, "Failed to read layer data");
 
   // Convert using gain and offset?
-  double fGain(GetAtt<double>(m_hWhat, kAtn_Gain));
-  double fOffset(GetAtt<double>(m_hWhat, kAtn_Offset));
-  if (   std::fabs(fGain - 1.0) > 0.000001
-      || std::fabs(fOffset) > 0.000001)
+  if (   std::fabs(m_fGain - 1.0) > 0.000001
+      || std::fabs(m_fOffset) > 0.000001)
   {
-    fNoData = (fNoData * fGain) + fOffset;
-    fUndetect = (fUndetect * fGain) + fOffset;
+    fNoData = (fNoData * m_fGain) + m_fOffset;
+    fUndetect = (fUndetect * m_fGain) + m_fOffset;
     for (size_t i = 0; i < m_nSize; ++i)
-      pData[i] = (pData[i] * fGain) + fOffset;
+      pData[i] = (pData[i] * m_fGain) + m_fOffset;
   }
 }
 
@@ -118,13 +120,34 @@ void Volume::Scan::Layer::Write(const float *pData, float fNoData, float fUndete
   if (H5Sget_simple_extent_npoints(hSpace) != m_nSize)
     throw Error(hData, "Dataset dimension mismatch");
 
-  // Write the raw data
-  SetAtt(m_hWhat, kAtn_Gain, 1.0);
-  SetAtt(m_hWhat, kAtn_Offset, 0.0);
-  SetAtt(m_hWhat, kAtn_NoData, fNoData);
-  SetAtt(m_hWhat, kAtn_Undetect, fUndetect);
-  if (H5Dwrite(hData, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, pData) < 0)
-    throw Error("Failed to write layer data");
+  // Do we have to convert the data?
+  if (   std::fabs(m_fGain - 1.0f) > 0.000001
+      || std::fabs(m_fOffset) > 0.000001)
+  {
+    float fGainMult = 1.0f / m_fGain;
+    fNoData = (fNoData - m_fOffset) * fGainMult;
+    fUndetect = (fUndetect - m_fOffset) * fGainMult;
+
+    std::vector<float> vecData;
+    vecData.reserve(m_nSize);
+    vecData.assign(pData, pData + m_nSize);
+    for (std::vector<float>::iterator i = vecData.begin(); i != vecData.end(); ++i)
+      *i = (*i - m_fOffset) * fGainMult;
+
+    // Write the converted data
+    SetAtt(m_hWhat, kAtn_NoData, fNoData);
+    SetAtt(m_hWhat, kAtn_Undetect, fUndetect);
+    if (H5Dwrite(hData, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &vecData[0]) < 0)
+      throw Error("Failed to write layer data");
+  }
+  else
+  {
+    // Write the raw data
+    SetAtt(m_hWhat, kAtn_NoData, fNoData);
+    SetAtt(m_hWhat, kAtn_Undetect, fUndetect);
+    if (H5Dwrite(hData, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, pData) < 0)
+      throw Error("Failed to write layer data");
+  }
 }
 
 Volume::Scan::Scan(

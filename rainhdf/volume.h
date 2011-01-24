@@ -32,6 +32,9 @@ namespace RainHDF
         /// Get the quantity stored by this layer
         Quantity GetQuantity() const { return m_eQuantity; }
 
+        /// Get the number of elements in the layer data image
+        size_t GetSize() const { return m_nSize; }
+
         /// Read the layer data
         void Read(float *pData, float &fNoData, float &fUndetect) const;
         /// Write the layer data
@@ -70,6 +73,9 @@ namespace RainHDF
         HID_Group         m_hLayer;     ///< Handle to the 'dataX' group
         HID_Group         m_hWhat;      ///< Compulsory 'what' group
         HID_Group         m_hHow;       ///< The optional 'how' group
+
+        float             m_fGain;      ///< Gain (a), in ax+b layer unpacking function
+        float             m_fOffset;    ///< Offset (b), in ax+b layer unpacking function
 
         // Cached values
         size_t            m_nSize;      ///< Number of elements in dataset
