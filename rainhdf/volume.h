@@ -95,9 +95,9 @@ namespace RainHDF
       size_t GetRangeBinCount() const { return m_nRangeCount; }
       /// Get the number of the first azimuth to be radiated
       size_t GetFirstAzimuth() const { return GetAtt<long>(m_hWhere, kAtn_FirstAzimuth); }
-      /// Get the distance from sensor at the start of the first range bin
-      double GetRangeStart() const { return GetAtt<double>(m_hWhere, kAtn_RangeStart); }
-      /// Get the distance between consecutive range bins
+      /// Get the distance from sensor at the start of the first range bin in meters
+      double GetRangeStart() const { return GetAtt<double>(m_hWhere, kAtn_RangeStart) * 1000.0; }
+      /// Get the distance between consecutive range bins in meters
       double GetRangeScale() const { return GetAtt<double>(m_hWhere, kAtn_RangeScale); }
       /// Get the time this scan commenced
       time_t GetStartTime() const { return GetAtt<time_t>(m_hWhat, kAtn_StartDate, kAtn_StartTime); }
@@ -148,7 +148,7 @@ namespace RainHDF
           , size_t nAzimuths      ///< Number of azimuths in scan
           , size_t nRangeBins     ///< Number of range bins per azimuth
           , size_t nFirstAzimuth  ///< Index of first azimuth to be radiated
-          , double fRangeStart    ///< Range of start of first bin (km)
+          , double fRangeStart    ///< Range of start of first bin (m)
           , double fRangeScale    ///< Distance between bins (m)
           , time_t tStart         ///< Time scan started
           , time_t tEnd           ///< Time scan ended
@@ -219,7 +219,7 @@ namespace RainHDF
         , size_t nAzimuths      ///< Number of azimuths scanned
         , size_t nRangeBins     ///< Number of range bins
         , size_t nFirstAzimuth  ///< Index of first azimuth to be radiated
-        , double fRangeStart    ///< Range of start of first bin (km)
+        , double fRangeStart    ///< Range of start of first bin (m)
         , double fRangeScale    ///< Distance between bins (m)
         , time_t tStart         ///< Time scan started
         , time_t tEnd           ///< Time scan ended

@@ -173,7 +173,7 @@ Volume::Scan::Scan(
 
   NewAtt(m_hWhere, kAtn_Elevation, fElevation);
   NewAtt(m_hWhere, kAtn_RangeCount, (long) m_nRangeCount);
-  NewAtt(m_hWhere, kAtn_RangeStart, fRangeStart);
+  NewAtt(m_hWhere, kAtn_RangeStart, fRangeStart / 1000.0);
   NewAtt(m_hWhere, kAtn_RangeScale, fRangeScale);
   NewAtt(m_hWhere, kAtn_AzimuthCount, (long) m_nAzimuthCount);
   NewAtt(m_hWhere, kAtn_FirstAzimuth, (long) nFirstAzimuth);
