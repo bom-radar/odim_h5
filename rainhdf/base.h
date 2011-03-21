@@ -14,7 +14,7 @@ namespace RainHDF
   /// Base class for a single level in a ODIM_H5 product hierarchy
   class Base
   {
-  protected:
+  public:
     /// Create a new level as the root of a file
     Base(const std::string &strFilename, CreateFlag);
 
@@ -33,19 +33,19 @@ namespace RainHDF
     /// Open a level by appending an index to a name
     Base(const Base &parent, const char *pszName, int nIndex, OpenFlag);
 
-  public:
     /// Destroy this object
     virtual ~Base();
 
-#if 0
+    /// Get the set of attributes that are available at this level
+    const AttFlags & GetAttributeFlags() const { return m_AttFlags; }
+
     /// Read an optional attribute
-    template <class E, class T>
-    bool GetAttribute(E eAtt, T &val) const { return GetHowAtt(m_hHow, eAtt, val); }
+    template <class T>
+    bool GetAttribute(Attribute eAtt, T &val) const;
 
     /// Write an optional attribute
-    template <class E, class T>
-    void SetAttribute(E eAtt, const T &val) { SetHowAtt(m_hFile, m_hHow, eAtt, val); }
-#endif
+    template <class T>
+    void SetAttribute(Attribute eAtt, const T &val);
 
   protected:
     const Base *  m_pParent;    ///< Parent level (used to recursive search attributes)
@@ -55,6 +55,31 @@ namespace RainHDF
     HID_Handle    m_hHow;       ///< How group
     AttFlags      m_AttFlags;   ///< Flags to indicate presence of 'how' group attributes
   };
+
+  template <class T>
+  bool Base::GetAttribute(Attribute eAtt, T &val) const 
+  { 
+    // TODO - manually verify type of attribute? (will throw read error if reading wrong type)
+    for (const Base * pLevel = this; pLevel != NULL; pLevel = pLevel->m_pParent)
+    {
+      if (pLevel->m_AttFlags.test(eAtt))
+      {
+        GetAtt(pLevel->m_hHow, kAtn_Attribute[eAtt], val);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  template <class T>
+  void Base::SetAttribute(Attribute eAtt, const T &val)
+  {
+    // TODO - manually verify type of attribute? (will allow writing of non-standard type)
+    if (!m_hHow)
+      m_hHow = HID_Handle(kHID_Group, m_hThis, kGrp_How, kCreate);
+    SetAtt(m_hHow, kAtn_Attribute[eAtt], val);
+    m_AttFlags.set(eAtt);
+  }
 }
 
 #endif

@@ -58,7 +58,6 @@ Base::Base(const Base &parent, const char *pszName, OpenFlag)
   , m_hWhat(kHID_Group, m_hThis, kGrp_What, kOpen, true)
   , m_hWhere(kHID_Group, m_hThis, kGrp_Where, kOpen, true)
   , m_hHow(kHID_Group, m_hThis, kGrp_How, kOpen, true)
-  , m_AttFlags(m_pParent->m_AttFlags)
 {
   // Note presence of any 'how' attributes
   if (m_hHow)
@@ -71,7 +70,6 @@ Base::Base(const Base &parent, const char *pszName, int nIndex, OpenFlag)
   , m_hWhat(kHID_Group, m_hThis, kGrp_What, kOpen, true)
   , m_hWhere(kHID_Group, m_hThis, kGrp_Where, kOpen, true)
   , m_hHow(kHID_Group, m_hThis, kGrp_How, kOpen, true)
-  , m_AttFlags(m_pParent->m_AttFlags)
 {
   // Note presence of any 'how' attributes
   if (m_hHow)

@@ -42,14 +42,14 @@ int main(int argc, const char *argv[])
       << "cmt " << s6 << endl;
 
     // Set some quality attributes
-#if 0
     hdfw.SetAttribute(kAtt_Simulated, true);
     hdfw.SetAttribute(kAtt_Malfunction, false);
-    hdfw.SetAttribute(kAtt_LevelCount, 1234);
+    hdfw.SetAttribute(kAtt_LevelCount, 1234L);
     hdfw.SetAttribute(kAtt_RPM, 2.5);
     hdfw.SetAttribute(kAtt_Task, "RainHDF Test Application");
     hdfw.SetAttribute(kAtt_System, std::string("Test string"));
     hdfw.SetAttribute(kAtt_CartesianMethod, kMth_GaugeAdjust);
+    hdfw.SetAttribute(kAtt_NyquistVelocity, 1.0);
 
     // Get some quality attributes
     bool b1, b2; long n; double f; Method e;
@@ -65,7 +65,6 @@ int main(int argc, const char *argv[])
       << " " << f << " " << s1 << " " << s2 
       << " " << e 
       << endl;
-#endif
 
     for (size_t i = 0; i < hdfr.GetScanCount(); ++i)
     {
@@ -98,9 +97,6 @@ int main(int argc, const char *argv[])
               &vecData[0],
               fNoData,
               fUndetect);
-#if 0
-        lw->SetAttribute(kAtt_NyquistVelocity, 2.5);
-#endif
 
         // Now go through and filter our reflectivity (only)
         if (lr->GetQuantity() == kQty_DBZH)

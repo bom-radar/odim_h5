@@ -217,25 +217,7 @@ namespace RainHDF
   // Determine which 'how' attributes are present for an object
   void DetermineAttributePresence(hid_t hID, AttFlags &flags);
 
-#if 0
-  // Get/set an optional quality attribute
-  bool GetHowAtt(const HID_Group &hHow, OptAttrib_Bool eAttr, bool &bVal);
-  bool GetHowAtt(const HID_Group &hHow, OptAttrib_Long eAttr, long &nVal);
-  bool GetHowAtt(const HID_Group &hHow, OptAttrib_Double eAttr, double &fVal);
-  bool GetHowAtt(const HID_Group &hHow, OptAttrib_Str eAttr, char *pszBuf, size_t nBufSize);
-  bool GetHowAtt(const HID_Group &hHow, OptAttrib_Str eAttr, std::string &strVal);
-  bool GetHowAtt(const HID_Group &hHow, OptAttrib_Method eAttr, Method &eVal);
-
-  // Set an optional quality attribute (and create 'how' group if needed)
-  void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Bool eAttr, bool bVal);
-  void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Long eAttr, long nVal);
-  void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Double eAttr, double fVal);
-  void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Str eAttr, const char *pszVal);
-  void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Str eAttr, const std::string &strVal);
-  void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Method eAttr, Method eVal);
-#endif
-
-  // Convenient value returning versions of above functions
+  // Convenient value returning versions of above functions (for use in initializer lists)
   template <class T>
   inline T GetAtt(hid_t hID, const char *pszName)
   {
@@ -287,6 +269,8 @@ namespace RainHDF
   extern const char * kAtn_Undetect;
   extern const char * kAtn_Class;
   extern const char * kAtn_ImageVersion;
+
+  extern const char * kAtn_Attribute[];
 
   // Dataset name constants
   extern const char * kDat_Data;
