@@ -12,7 +12,7 @@ using namespace RainHDF;
 
 namespace RainHDF
 {
-  static const char * kVal_ObjectType[] = 
+  const char * kVal_ObjectType[] = 
   {
       "PVOL"
     , "CVOL"
@@ -102,81 +102,66 @@ namespace RainHDF
     , NULL
   };
 
-  static const char * kAtn_OptAttrib_Bool[] =
+  static const char * kAtn_Attribute[] =
   {
-      "simulated"
-    , "dealiased"
-    , "malfunc"
-    , "VPRCorr"
-    , "BBC"
-  };
-
-  static const char * kAtn_OptAttrib_Long[] =
-  {
-      "startepochs"
+      "task"
+    , "startepochs"
     , "endepochs"
-    , "ACCnum"
-    , "levels"
-  };
-
-  static const char * kAtn_OptAttrib_Double[] = 
-  {
-      "zr_a"
+    , "system"
+    , "software"
+    , "sw_version"
+    , "zr_a"
     , "zr_b"
     , "kr_a"
     , "kr_b"
+    , "simulated"
     , "beamwidth"
     , "wavelength"
     , "rpm"
     , "pulsewidth"
     , "lowprf"
     , "highprf"
-    , "minrange"
-    , "maxrange"
-    , "NI"
-    , "pointaccEL"
-    , "pointaccAZ"
-    , "radhoriz"
-    , "MDS"
-    , "OUR"
-    , "SQI"
-    , "CSR"
-    , "LOG"
-    , "freeze"
-    , "min"
-    , "max"
-    , "step"
-    , "peakpwr"
-    , "avgpwr"
-    , "dynrange"
-    , "RAC"
-    , "PAC"
-    , "S2N"
-  };
-
-  static const char * kAtt_OptAttrib_Str[] =
-  {
-      "task"
-    , "system"
-    , "software"
-    , "sw_version"
+    , "azmethod"
+    , "binmethod"
     , "azangles"
     , "elangles"
     , "aztimes"
     , "angles"
     , "arotation"
+    , "camethod"
     , "nodes"
+    , "ACCnum"
+    , "minrange"
+    , "maxrange"
+    , "NI"
+    , "dealiased"
+    , "pointaccEL"
+    , "pointaccAZ"
+    , "malfunc"
     , "radar_msg"
+    , "radhoriz"
+    , "MDS"
+    , "OUR"
     , "Dclutter"
     , "comment"
+    , "SQI"
+    , "CSR"
+    , "LOG"
+    , "VPRCorr"
+    , "freeze"
+    , "min"
+    , "max"
+    , "step"
+    , "levels"
+    , "peakpwr"
+    , "avgpwr"
+    , "dynrange"
+    , "RAC"
+    , "BBC"
+    , "PAC"
+    , "S2N"
     , "polarization"
-  };
-
-  static const char * kAtt_OptAttrib_Method[] =
-  {
-      "azmethod"
-    , "binmethod"
-    , "camethod"
+    , NULL
   };
 
   const char * kGrp_What = "what";
@@ -246,22 +231,22 @@ void RainHDF::GetAtt(hid_t hID, const char *pszName, bool &bVal)
 
 void RainHDF::GetAtt(hid_t hID, const char *pszName, long &nVal)
 {
-  HID_Attr hAttr(hID, pszName, kOpen);
+  HID_Handle hAttr(kHID_Attr, hID, pszName, kOpen);
   if (H5Aread(hAttr, H5T_NATIVE_LONG, &nVal) < 0)
     throw Error(hID, kErr_FailAttRead, pszName);
 }
 
 void RainHDF::GetAtt(hid_t hID, const char *pszName, double &fVal)
 {
-  HID_Attr hAttr(hID, pszName, kOpen);
+  HID_Handle hAttr(kHID_Attr, hID, pszName, kOpen);
   if (H5Aread(hAttr, H5T_NATIVE_DOUBLE, &fVal) < 0)
     throw Error(hID, kErr_FailAttRead, pszName);
 }
 
 void RainHDF::GetAtt(hid_t hID, const char *pszName, char *pszBuf, size_t nBufSize)
 {
-  HID_Attr hAttr(hID, pszName, kOpen);
-  HID_Type hType(H5Aget_type(hAttr));
+  HID_Handle hAttr(kHID_Attr, hID, pszName, kOpen);
+  HID_Handle hType(kHID_Type, H5Aget_type(hAttr));
   if (H5Tget_class(hType) != H5T_STRING)
     throw Error(hID, kErr_FailAttType, pszName);
   if (H5Tget_size(hType) > nBufSize)
@@ -276,8 +261,8 @@ void RainHDF::GetAtt(hid_t hID, const char *pszName, std::string &strVal)
   static const int kAttBufSize = 2048;
   char pszBuf[kAttBufSize];
 
-  HID_Attr hAttr(hID, pszName, kOpen);
-  HID_Type hType(H5Aget_type(hAttr));
+  HID_Handle hAttr(kHID_Attr, hID, pszName, kOpen);
+  HID_Handle hType(kHID_Type, H5Aget_type(hAttr));
   if (H5Tget_class(hType) != H5T_STRING)
     throw Error(hID, kErr_FailAttType, pszName);
   if (H5Tget_size(hType) > kAttBufSize)
@@ -395,10 +380,10 @@ void RainHDF::NewAtt(hid_t hID, const char *pszName, bool bVal)
 void RainHDF::NewAtt(hid_t hID, const char *pszName, long nVal)
 {
   // Create a dataspace for the variable
-  HID_Space hSpace(kCreate);
+  HID_Handle hSpace(kHID_Space, kCreate);
 
   // Create and write the attribute
-  HID_Attr hAttr(hID, pszName, H5T_STD_I64LE, hSpace, kCreate);
+  HID_Handle hAttr(kHID_Attr, hID, pszName, H5T_STD_I64LE, hSpace, kCreate);
   if (H5Awrite(hAttr, H5T_NATIVE_LONG, &nVal) < 0)
     throw Error(hID, kErr_FailAttWrite, pszName);
 }
@@ -406,10 +391,10 @@ void RainHDF::NewAtt(hid_t hID, const char *pszName, long nVal)
 void RainHDF::NewAtt(hid_t hID, const char *pszName, double fVal)
 {
   // Create a dataspace for the variable
-  HID_Space hSpace(kCreate);
+  HID_Handle hSpace(kHID_Space, kCreate);
 
   // Create and write the attribute
-  HID_Attr hAttr(hID, pszName, H5T_IEEE_F64LE, hSpace, kCreate);
+  HID_Handle hAttr(kHID_Attr, hID, pszName, H5T_IEEE_F64LE, hSpace, kCreate);
   if (H5Awrite(hAttr, H5T_NATIVE_DOUBLE, &fVal) < 0)
     throw Error(hID, kErr_FailAttWrite, pszName);
 }
@@ -417,17 +402,17 @@ void RainHDF::NewAtt(hid_t hID, const char *pszName, double fVal)
 void RainHDF::NewAtt(hid_t hID, const char *pszName, const char *pszVal)
 {
   // Setup a new type for the string
-  HID_Type hType(H5Tcopy(H5T_C_S1));
+  HID_Handle hType(kHID_Type, H5Tcopy(H5T_C_S1));
   if (H5Tset_size(hType, strlen(pszVal) + 1) < 0)
     throw Error(hID, "Unable to set string size for atttribute '%s'", pszName);
   if (H5Tset_strpad(hType, H5T_STR_NULLTERM) < 0)
     throw Error(hID, "Unable to set nullterm property of attribute '%s'", pszName);
 
   // Setup the dataspace for the attribute
-  HID_Space hSpace(kCreate);
+  HID_Handle hSpace(kHID_Space, kCreate);
 
   // Create and write the attribute
-  HID_Attr hAttr(hID, pszName, hType, hSpace, kCreate);
+  HID_Handle hAttr(kHID_Attr, hID, pszName, hType, hSpace, kCreate);
   if (H5Awrite(hAttr, hType, pszVal) < 0)
     throw Error(hID, kErr_FailAttWrite, pszName);
 }
@@ -435,17 +420,17 @@ void RainHDF::NewAtt(hid_t hID, const char *pszName, const char *pszVal)
 void RainHDF::NewAtt(hid_t hID, const char *pszName, const std::string &strVal)
 {
   // Setup a new type for the string
-  HID_Type hType(H5Tcopy(H5T_C_S1));
+  HID_Handle hType(kHID_Type, H5Tcopy(H5T_C_S1));
   if (H5Tset_size(hType, strVal.size() + 1) < 0)
     throw Error(hID, "Unable to set string size for atttribute '%s'", pszName);
   if (H5Tset_strpad(hType, H5T_STR_NULLTERM) < 0)
     throw Error(hID, "Unable to set nullterm property of attribute '%s'", pszName);
 
   // Setup the dataspace for the attribute
-  HID_Space hSpace(kCreate);
+  HID_Handle hSpace(kHID_Space, kCreate);
 
   // Create and write the attribute
-  HID_Attr hAttr(hID, pszName, hType, hSpace, kCreate);
+  HID_Handle hAttr(kHID_Attr, hID, pszName, hType, hSpace, kCreate);
   if (H5Awrite(hAttr, hType, strVal.c_str()) < 0)
     throw Error(hID, kErr_FailAttWrite, pszName);
 }
@@ -510,7 +495,7 @@ void RainHDF::SetAtt(hid_t hID, const char *pszName, long nVal)
   else
   {
     // Okay, it's existing - just open and write
-    HID_Attr hAttr(hID, pszName, kOpen);
+    HID_Handle hAttr(kHID_Attr, hID, pszName, kOpen);
     if (H5Awrite(hAttr, H5T_NATIVE_LONG, &nVal) < 0)
       throw Error(hID, kErr_FailAttWrite, pszName);
   }
@@ -527,7 +512,7 @@ void RainHDF::SetAtt(hid_t hID, const char *pszName, double fVal)
   else
   {
     // Okay, it's existing - just open and write
-    HID_Attr hAttr(hID, pszName, kOpen);
+    HID_Handle hAttr(kHID_Attr, hID, pszName, kOpen);
     if (H5Awrite(hAttr, H5T_NATIVE_DOUBLE, &fVal) < 0)
       throw Error(hID, kErr_FailAttWrite, pszName);
   }
@@ -606,6 +591,20 @@ void RainHDF::SetAtt(hid_t hID, const char *pszName, Method eVal)
   SetAtt(hID, pszName, kVal_Method[eVal]);
 }
 
+static herr_t DetAttCallback(hid_t hID, const char *pszName, const H5A_info_t *pInfo, void *pData)
+{
+  for (int i = 0; kAtn_Attribute[i] != NULL; ++i)
+    if (strcmp(pszName, kAtn_Attribute[i]) == 0)
+      static_cast<AttFlags*>(pData)->set(i);
+}
+
+void RainHDF::DetermineAttributePresence(hid_t hID, AttFlags &flags)
+{
+  hsize_t n;
+  H5Aiterate(hID, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, &n, DetAttCallback, &flags);
+}
+
+#if 0
 bool RainHDF::GetHowAtt(const HID_Group &hHow, OptAttrib_Bool eAttr, bool &bVal)
 {
   const char * pszName = kAtn_OptAttrib_Bool[eAttr];
@@ -743,5 +742,6 @@ void RainHDF::SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Method eAttr, 
     NewAtt(hHow, kAtt_OptAttrib_Method[eAttr], eVal);
   }
 }
+#endif
 
 

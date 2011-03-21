@@ -12,6 +12,7 @@
 
 #include <hdf5.h>
 #include <string>
+#include <bitset>
 
 namespace RainHDF
 {
@@ -110,87 +111,72 @@ namespace RainHDF
     , kMth_Unknown        ///< Invalid or unknown method
   };
 
-  /// Optional scalar quality attributes (bool)
-  enum OptAttrib_Bool
-  {
-      kAtt_Simulated          ///< True if data is simulated
-    , kAtt_Dealiased          ///< True if data has been dealiased
-    , kAtt_Malfunction        ///< Radar malfunction indicator (true indicates malfunction)
-    , kAtt_VPRCorrection      ///< True if VPR correction has been applied
-    , kAtt_BBCorrection       ///< True if bright-band correction has been applied
-  };
-
   /// Optional scalar quality attributes (longs)
-  enum OptAttrib_Long
+  enum Attribute
   {
-      kAtt_StartEpoch         ///< Product start time (UNIX epoch)
+      kAtt_Task               ///< Name of the acquisition task or product generator
+    , kAtt_StartEpoch         ///< Product start time (UNIX epoch)
     , kAtt_EndEpoch           ///< Product end time (UNIX epoch)
-    , kAtt_AccumImgCount      ///< Number of images used in precipitation accumulation
-    , kAtt_LevelCount         ///< Number of levels in discrete data legend
-  };
-
-  /// Optional scalar quality attributes (doubles)
-  enum OptAttrib_Double
-  {
-      kAtt_ZR_A               ///< Z-R constant A in Z = AR^b
+    , kAtt_System             ///< Radar system
+    , kAtt_Software           ///< Processing software
+    , kAtt_SoftwareVersion    ///< Software version
+    , kAtt_ZR_A               ///< Z-R constant A in Z = AR^b
     , kAtt_ZR_B               ///< Z-R exponent b in Z = AR^b
     , kAtt_KR_A               ///< K-R constant A in R = AK^b
     , kAtt_KR_B               ///< K-R exponent b in R = AK^b
+    , kAtt_Simulated          ///< True if data is simulated
     , kAtt_BeamWidth          ///< Radar half power beam width (degrees)
     , kAtt_Wavelength         ///< Wavelength (cm)
     , kAtt_RPM                ///< Antenna revolutions per minute
     , kAtt_PulseWidth         ///< Pulse width in micro-seconds (us)
     , kAtt_LowPRF             ///< Low pulse repetition frequency (Hz)
     , kAtt_HighPRF            ///< High pulse repitition frequency (Hz)
-    , kAtt_MinRange           ///< Minimum range of data used when generating a profile (km)
-    , kAtt_MaxRange           ///< Maximum range of data used when generating a profile (km)
-    , kAtt_NyquistVelocity    ///< Unambiguous velocity (Nyquist) interval (+-m/s)
-    , kAtt_ElevationAccuracy  ///< Antenna pointing accuracy in elevation (degrees)
-    , kAtt_AzimuthAccuracy    ///< Antenna pointing accuracy in azimuth (degrees)
-    , kAtt_RadarHorizon       ///< Radar horizon - maximum range (km)
-    , kAtt_MDS                ///< Minimum detectable signal at 10km (dBm)
-    , kAtt_OUR                ///< Overall uptime reliability (%)
-    , kAtt_SQI                ///< Signal Quality Index threshold value
-    , kAtt_CSR                ///< Clutter-to-signal ratio threshold value
-    , kAtt_LOG                ///< Security distance above mean noise level threshold value (dB)
-    , kAtt_FreezeLevel        ///< Freezing level above sea level (km)
-    , kAtt_Min                ///< Minimum value for continuous quality data
-    , kAtt_Max                ///< Maximum value for continuous quality data
-    , kAtt_Step               ///< Step value for continuous quality data
-    , kAtt_PeakPower          ///< Peak power (kW)
-    , kAtt_AveragePower       ///< Average power (W)
-    , kAtt_DynamicRange       ///< Dynamic range (dB)
-    , kAtt_RAC                ///< Range attenuation correction (dBm)
-    , kAtt_PAC                ///< Precipitation attenuation correction (dBm)
-    , kAtt_SignalToNoise      ///< Signal-to-noise ratio threshold value (dB)
-  };
-
-  /// Optional scalar quality attributes (strings)
-  enum OptAttrib_Str
-  {
-      kAtt_Task               ///< Name of the acquisition task or product generator
-    , kAtt_System             ///< Radar system
-    , kAtt_Software           ///< Processing software
-    , kAtt_SoftwareVersion    ///< Software version
+    , kAtt_AzimuthMethod      ///< How raw data in azimuth are processed to arrive at given value
+    , kAtt_RangeMethod        ///< How raw data in range are processed to arrive at given value
     , kAtt_AzimuthAngles      ///< Azimuthal start and stop angles for each gate (degrees) (SEQUENCE)
     , kAtt_ElevationAngles    ///< Elevation angles for each azimuth (degrees) (SEQUENCE)
     , kAtt_AzimuthTimes       ///< Start/stop times for each azimuth gate in scan (SEQUENCE)
     , kAtt_Angles             ///< Elevation angles used to generate the product (degrees) (SEQUENCE)
     , kAtt_RotationSpeed      ///< Antenna rotation speed (SEQUENCE)
+    , kAtt_CartesianMethod    ///< How cartesian data are processed
     , kAtt_Nodes              ///< Radar nodes that contributed to the composite (SEQUENCE)
+    , kAtt_AccumImgCount      ///< Number of images used in precipitation accumulation
+    , kAtt_MinRange           ///< Minimum range of data used when generating a profile (km)
+    , kAtt_MaxRange           ///< Maximum range of data used when generating a profile (km)
+    , kAtt_NyquistVelocity    ///< Unambiguous velocity (Nyquist) interval (+-m/s)
+    , kAtt_Dealiased          ///< True if data has been dealiased
+    , kAtt_ElevationAccuracy  ///< Antenna pointing accuracy in elevation (degrees)
+    , kAtt_AzimuthAccuracy    ///< Antenna pointing accuracy in azimuth (degrees)
+    , kAtt_Malfunction        ///< Radar malfunction indicator (true indicates malfunction)
     , kAtt_MalfunctionMsg     ///< Radar malfunction message
+    , kAtt_RadarHorizon       ///< Radar horizon - maximum range (km)
+    , kAtt_MDS                ///< Minimum detectable signal at 10km (dBm)
+    , kAtt_OUR                ///< Overall uptime reliability (%)
     , kAtt_DopplerFilters     ///< Doppler clutter filters used when collecting data (SEQUENCE)
     , kAtt_Comment            ///< Free text description
+    , kAtt_SQI                ///< Signal Quality Index threshold value
+    , kAtt_CSR                ///< Clutter-to-signal ratio threshold value
+    , kAtt_LOG                ///< Security distance above mean noise level threshold value (dB)
+    , kAtt_VPRCorrection      ///< True if VPR correction has been applied
+    , kAtt_FreezeLevel        ///< Freezing level above sea level (km)
+    , kAtt_Min                ///< Minimum value for continuous quality data
+    , kAtt_Max                ///< Maximum value for continuous quality data
+    , kAtt_Step               ///< Step value for continuous quality data
+    , kAtt_LevelCount         ///< Number of levels in discrete data legend
+    , kAtt_PeakPower          ///< Peak power (kW)
+    , kAtt_AveragePower       ///< Average power (W)
+    , kAtt_DynamicRange       ///< Dynamic range (dB)
+    , kAtt_RAC                ///< Range attenuation correction (dBm)
+    , kAtt_BBCorrection       ///< True if bright-band correction has been applied
+    , kAtt_PAC                ///< Precipitation attenuation correction (dBm)
+    , kAtt_SignalToNoise      ///< Signal-to-noise ratio threshold value (dB)
     , kAtt_Polarization       ///< Type of polarization transmitted by the radar (H,V)
+
+    , kAttCount
   };
 
-  /// Optional scalar quality attributes (method enumerate)
-  enum OptAttrib_Method
-  {
-      kAtt_AzimuthMethod      ///< How raw data in azimuth are processed to arrive at given value
-    , kAtt_RangeMethod        ///< How raw data in range are processed to arrive at given value
-    , kAtt_CartesianMethod    ///< How cartesian data are processed
-  };
+  /// Type used to store presence flags for optional attributes
+  typedef std::bitset<kAttCount> AttFlags;
 
   // Retrieve existing attributes
   void GetAtt(hid_t hID, const char *pszName, bool &bVal);
@@ -228,6 +214,10 @@ namespace RainHDF
   void SetAtt(hid_t hID, const char *pszName, Quantity eVal);
   void SetAtt(hid_t hID, const char *pszName, Method eVal);
 
+  // Determine which 'how' attributes are present for an object
+  void DetermineAttributePresence(hid_t hID, AttFlags &flags);
+
+#if 0
   // Get/set an optional quality attribute
   bool GetHowAtt(const HID_Group &hHow, OptAttrib_Bool eAttr, bool &bVal);
   bool GetHowAtt(const HID_Group &hHow, OptAttrib_Long eAttr, long &nVal);
@@ -243,6 +233,7 @@ namespace RainHDF
   void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Str eAttr, const char *pszVal);
   void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Str eAttr, const std::string &strVal);
   void SetHowAtt(hid_t hParent, HID_Group &hHow, OptAttrib_Method eAttr, Method eVal);
+#endif
 
   // Convenient value returning versions of above functions
   template <class T>
@@ -307,6 +298,9 @@ namespace RainHDF
   extern const char * kVal_Version;
   extern const char * kVal_Class;
   extern const char * kVal_ImageVersion;
+
+  extern const char * kVal_ObjectType[];
+
 }
 
 #endif

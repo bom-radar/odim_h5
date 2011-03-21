@@ -19,6 +19,7 @@ int main(int argc, const char *argv[])
   {
     // Open an existing volume for reading
     const Volume hdfr("201001221325Kurnell.h5", false);
+    printf("opened file\n");
 
     // Create a new volume to copy it into
     Volume hdfw(
@@ -41,6 +42,7 @@ int main(int argc, const char *argv[])
       << "cmt " << s6 << endl;
 
     // Set some quality attributes
+#if 0
     hdfw.SetAttribute(kAtt_Simulated, true);
     hdfw.SetAttribute(kAtt_Malfunction, false);
     hdfw.SetAttribute(kAtt_LevelCount, 1234);
@@ -63,6 +65,7 @@ int main(int argc, const char *argv[])
       << " " << f << " " << s1 << " " << s2 
       << " " << e 
       << endl;
+#endif
 
     for (size_t i = 0; i < hdfr.GetScanCount(); ++i)
     {
@@ -95,7 +98,9 @@ int main(int argc, const char *argv[])
               &vecData[0],
               fNoData,
               fUndetect);
+#if 0
         lw->SetAttribute(kAtt_NyquistVelocity, 2.5);
+#endif
 
         // Now go through and filter our reflectivity (only)
         if (lr->GetQuantity() == kQty_DBZH)

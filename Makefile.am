@@ -15,6 +15,7 @@ lib_LTLIBRARIES = librainhdf.la
 nobase_include_HEADERS = \
   rainhdf/base.h \
   rainhdf/error.h \
+  rainhdf/product.h \
   rainhdf/raii.h \
   rainhdf/rainhdf.h \
   rainhdf/util.h \
@@ -23,6 +24,7 @@ nobase_include_HEADERS = \
 librainhdf_la_SOURCES = \
   rainhdf/base.cc \
   rainhdf/error.cc \
+  rainhdf/product.cc \
   rainhdf/util.cc \
   rainhdf/volume.cc
 librainhdf_la_CPPFLAGS = -g $(DEPS_CFLAGS)

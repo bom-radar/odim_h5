@@ -17,26 +17,13 @@ namespace RainHDF
   static const int kDefCompression = 6;
 }
 
-Volume::Scan::Layer::Layer(
-      hid_t hParent
-    , bool bIsQuality
-    , size_t nIndex
-    , Quantity eQuantity
-    , const hsize_t *pDims)
-  : m_bIsQuality(bIsQuality)
-  , m_eQuantity(eQuantity)
-  , m_hLayer(hParent, m_bIsQuality ? kGrp_Quality : kGrp_Data, nIndex, kOpen)
-  , m_hWhat(m_hLayer, kGrp_What, kOpen)
-  , m_hHow(m_hLayer, kGrp_How, kOpen, true)
-  , m_fGain(GetAtt<double>(m_hWhat, kAtn_Gain))
-  , m_fOffset(GetAtt<double>(m_hWhat, kAtn_Offset))
-  , m_nSize(pDims[0] * pDims[1])
+Volume::Scan::Layer::~Layer()
 {
 
 }
 
 Volume::Scan::Layer::Layer(
-      hid_t hParent
+      const Base &parent
     , bool bIsQuality
     , size_t nIndex
     , Quantity eQuantity
@@ -44,10 +31,9 @@ Volume::Scan::Layer::Layer(
     , const float *pData
     , float fNoData
     , float fUndetect)
-  : m_bIsQuality(bIsQuality)
+  : Base(parent, bIsQuality ? kGrp_Quality : kGrp_Data, nIndex, kCreate)
+  , m_bIsQuality(bIsQuality)
   , m_eQuantity(eQuantity)
-  , m_hLayer(hParent, m_bIsQuality ? kGrp_Quality : kGrp_Data, nIndex, kCreate)
-  , m_hWhat(m_hLayer, kGrp_What, kCreate)
   , m_fGain(1.0f)
   , m_fOffset(0.0f)
   , m_nSize(pDims[0] * pDims[1])
@@ -60,13 +46,13 @@ Volume::Scan::Layer::Layer(
   NewAtt(m_hWhat, kAtn_Undetect, fUndetect);
 
   // Create the HDF dataset
-  HID_Space hSpace(2, pDims, kCreate);
-  HID_PList hPList(H5P_DATASET_CREATE, kCreate);
+  HID_Handle hSpace(kHID_Space, 2, pDims, kCreate);
+  HID_Handle hPList(kHID_PList, H5P_DATASET_CREATE, kCreate);
   if (H5Pset_chunk(hPList, 2, pDims) < 0)
-    throw Error(m_hLayer, "Failed to set chunk parameters for layer");
+    throw Error(m_hThis, "Failed to set chunk parameters for layer");
   if (H5Pset_deflate(hPList, kDefCompression) < 0)
-    throw Error(m_hLayer, "Failed to set compression level for layer");
-  HID_Data hData(m_hLayer, kDat_Data, H5T_NATIVE_FLOAT, hSpace, hPList, kCreate);
+    throw Error(m_hThis, "Failed to set compression level for layer");
+  HID_Handle hData(kHID_Data, m_hThis, kDat_Data, H5T_NATIVE_FLOAT, hSpace, hPList, kCreate);
   NewAtt(hData, kAtn_Class, kVal_Class);
   NewAtt(hData, kAtn_ImageVersion, kVal_ImageVersion);
 
@@ -75,22 +61,28 @@ Volume::Scan::Layer::Layer(
     throw Error("Failed to write layer data");
 }
 
-Volume::Scan::Layer::Layer(const Layer &layer)
+Volume::Scan::Layer::Layer(
+      const Base &parent
+    , bool bIsQuality
+    , size_t nIndex
+    , Quantity eQuantity
+    , const hsize_t *pDims)
+  : Base(parent, bIsQuality ? kGrp_Quality : kGrp_Data, nIndex, kOpen)
+  , m_bIsQuality(bIsQuality)
+  , m_eQuantity(eQuantity)
+  , m_fGain(GetAtt<double>(m_hWhat, kAtn_Gain))
+  , m_fOffset(GetAtt<double>(m_hWhat, kAtn_Offset))
+  , m_nSize(pDims[0] * pDims[1])
 {
-  throw Error("ASSERT: Copy constructor called on Volume::Scan::Layer");
-}
 
-Volume::Scan::Layer & Volume::Scan::Layer::operator=(const Layer &layer)
-{
-  throw Error("ASSERT: Assignment operator called on Volume::Scan::Layer");
 }
 
 void Volume::Scan::Layer::Read(float *pData, float &fNoData, float &fUndetect) const
 {
-  HID_Data hData(m_hLayer, kDat_Data, kOpen);
+  HID_Handle hData(kHID_Data, m_hThis, kDat_Data, kOpen);
 
   // Verify the correct dimension to prevent memory corruption
-  HID_Space hSpace(H5Dget_space(hData));
+  HID_Handle hSpace(kHID_Space, H5Dget_space(hData));
   if (H5Sget_simple_extent_npoints(hSpace) != m_nSize)
     throw Error(hData, "Dataset dimension mismatch");
 
@@ -98,7 +90,7 @@ void Volume::Scan::Layer::Read(float *pData, float &fNoData, float &fUndetect) c
   fNoData = GetAtt<double>(m_hWhat, kAtn_NoData);
   fUndetect = GetAtt<double>(m_hWhat, kAtn_Undetect);
   if (H5Dread(hData, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, pData) < 0)
-    throw Error(m_hLayer, "Failed to read layer data");
+    throw Error(m_hThis, "Failed to read layer data");
 
   // Convert using gain and offset?
   if (   std::fabs(m_fGain - 1.0) > 0.000001
@@ -113,10 +105,10 @@ void Volume::Scan::Layer::Read(float *pData, float &fNoData, float &fUndetect) c
 
 void Volume::Scan::Layer::Write(const float *pData, float fNoData, float fUndetect)
 {
-  HID_Data hData(m_hLayer, kDat_Data, kOpen);
+  HID_Handle hData(kHID_Data, m_hThis, kDat_Data, kOpen);
 
   // Verify the correct dimension to prevent memory corruption
-  HID_Space hSpace(H5Dget_space(hData));
+  HID_Handle hSpace(kHID_Space, H5Dget_space(hData));
   if (H5Sget_simple_extent_npoints(hSpace) != m_nSize)
     throw Error(hData, "Dataset dimension mismatch");
 
@@ -150,8 +142,13 @@ void Volume::Scan::Layer::Write(const float *pData, float fNoData, float fUndete
   }
 }
 
+Volume::Scan::~Scan()
+{
+
+}
+
 Volume::Scan::Scan(
-      hid_t hParent
+      const Base &parent
     , size_t nIndex
     , double fElevation
     , size_t nAzimuths
@@ -161,9 +158,7 @@ Volume::Scan::Scan(
     , double fRangeScale
     , time_t tStart
     , time_t tEnd)
-  : m_hScan(hParent, kGrp_Dataset, nIndex, kCreate)
-  , m_hWhat(m_hScan, kGrp_What, kCreate)
-  , m_hWhere(m_hScan, kGrp_Where, kCreate)
+  : Base(parent, kGrp_Dataset, nIndex, kCreate)
   , m_nAzimuthCount(nAzimuths)
   , m_nRangeCount(nRangeBins)
 {
@@ -179,11 +174,8 @@ Volume::Scan::Scan(
   NewAtt(m_hWhere, kAtn_FirstAzimuth, (long) nFirstAzimuth);
 }
 
-Volume::Scan::Scan(hid_t hParent, size_t nIndex)
-  : m_hScan(hParent, kGrp_Dataset, nIndex, kOpen)
-  , m_hWhat(m_hScan, kGrp_What, kOpen)
-  , m_hWhere(m_hScan, kGrp_Where, kOpen)
-  , m_hHow(m_hScan, kGrp_How, kOpen, true)
+Volume::Scan::Scan(const Base &parent, size_t nIndex)
+  : Base(parent, kGrp_Dataset, nIndex, kOpen)
   , m_nAzimuthCount(GetAtt<long>(m_hWhere, kAtn_AzimuthCount))
   , m_nRangeCount(GetAtt<long>(m_hWhere, kAtn_RangeCount))
 {
@@ -192,11 +184,11 @@ Volume::Scan::Scan(hid_t hParent, size_t nIndex)
 
   // Verify that this dataset is indeed a scan
   if (GetAtt<ProductType>(m_hWhat, kAtn_Product) != kProd_Scan)
-    throw Error(m_hScan, "Scan product code mismatch");
+    throw Error(m_hThis, "Scan product code mismatch");
 
   // Reserve some space in our layer info vector for efficency sake
-  if (H5Gget_num_objs(m_hScan, &nObjs) < 0)
-    throw Error(m_hScan, "Failed to determine number of objects in group");
+  if (H5Gget_num_objs(m_hThis, &nObjs) < 0)
+    throw Error(m_hThis, "Failed to determine number of objects in group");
   m_LayerInfos.reserve(nObjs);
 
   // Check for any data layers
@@ -204,15 +196,15 @@ Volume::Scan::Scan(hid_t hParent, size_t nIndex)
   {
     // Do we have this 'dataX'?
     sprintf(pszName, "%s%d", kGrp_Data, i);
-    htri_t ret = H5Lexists(m_hScan, pszName, H5P_DEFAULT);
+    htri_t ret = H5Lexists(m_hThis, pszName, H5P_DEFAULT);
     if (ret < 0)
-      throw Error(m_hScan, "Failed to verify existence of group '%s'", pszName);
+      throw Error(m_hThis, "Failed to verify existence of group '%s'", pszName);
     if (!ret)
       break;
 
     // Yes - open it up for inspection
-    HID_Group hLayer(m_hScan, pszName, kOpen);
-    HID_Group hLayerWhat(hLayer, kGrp_What, kOpen);
+    HID_Handle hLayer(kHID_Group, m_hThis, pszName, kOpen);
+    HID_Handle hLayerWhat(kHID_Group, hLayer, kGrp_What, kOpen);
 
     // Store some vitals
     LayerInfo li;
@@ -227,15 +219,15 @@ Volume::Scan::Scan(hid_t hParent, size_t nIndex)
   {
     // Do we have this 'dataX'?
     sprintf(pszName, "%s%d", kGrp_Quality, i);
-    htri_t ret = H5Lexists(m_hScan, pszName, H5P_DEFAULT);
+    htri_t ret = H5Lexists(m_hThis, pszName, H5P_DEFAULT);
     if (ret < 0)
-      throw Error(m_hScan, "Failed to verify existence of group '%s'", pszName);
+      throw Error(m_hThis, "Failed to verify existence of group '%s'", pszName);
     if (!ret)
       break;
 
     // Yes - open it up for inspection
-    HID_Group hLayer(m_hScan, pszName, kOpen);
-    HID_Group hLayerWhat(hLayer, kGrp_What, kOpen);
+    HID_Handle hLayer(kHID_Group, m_hThis, pszName, kOpen);
+    HID_Handle hLayerWhat(kHID_Group, hLayer, kGrp_What, kOpen);
 
     // Store some vitals
     LayerInfo li;
@@ -246,21 +238,11 @@ Volume::Scan::Scan(hid_t hParent, size_t nIndex)
   }
 }
 
-Volume::Scan::Scan(const Scan &scan)
-{
-  throw Error("ASSERT: Copy constructor called on Volume::Scan");
-}
-
-Volume::Scan & Volume::Scan::operator=(const Scan &scan)
-{
-  throw Error("ASSERT: Assignment operator called on Volume::Scan");
-}
-
 Volume::Scan::LayerPtr Volume::Scan::GetLayer(size_t nLayer)
 {
   return LayerPtr(
       new Layer(
-          m_hScan, 
+          *this, 
           m_LayerInfos[nLayer].m_bIsQuality,
           m_LayerInfos[nLayer].m_nIndex,
           m_LayerInfos[nLayer].m_eQuantity,
@@ -271,7 +253,7 @@ Volume::Scan::LayerConstPtr Volume::Scan::GetLayer(size_t nLayer) const
 {
   return LayerConstPtr(
       new Layer(
-          m_hScan, 
+          *this, 
           m_LayerInfos[nLayer].m_bIsQuality,
           m_LayerInfos[nLayer].m_nIndex,
           m_LayerInfos[nLayer].m_eQuantity,
@@ -284,7 +266,7 @@ Volume::Scan::LayerPtr Volume::Scan::GetLayer(Quantity eQuantity)
     if (i->m_eQuantity == eQuantity)
       return LayerPtr(
           new Layer(
-              m_hScan, 
+              *this, 
               i->m_bIsQuality, 
               i->m_nIndex,
               i->m_eQuantity,
@@ -298,7 +280,7 @@ Volume::Scan::LayerConstPtr Volume::Scan::GetLayer(Quantity eQuantity) const
     if (i->m_eQuantity == eQuantity)
       return LayerConstPtr(
           new Layer(
-              m_hScan, 
+              *this, 
               i->m_bIsQuality, 
               i->m_nIndex,
               i->m_eQuantity,
@@ -330,7 +312,7 @@ Volume::Scan::LayerPtr Volume::Scan::AddLayer(
 
   LayerPtr pLayer(
       new Layer(
-          m_hScan,
+          *this,
           li.m_bIsQuality,
           li.m_nIndex,
           li.m_eQuantity,
@@ -351,7 +333,7 @@ Volume::Volume(
     , double fLatitude
     , double fLongitude
     , double fHeight)
-  : Base(strFilename, kObj_VolumePolar, tValid)
+  : Product(strFilename, kObj_VolumePolar, tValid)
   , m_nScanCount(0)
 {
   NewAtt(m_hWhere, kAtn_Latitude, fLatitude);
@@ -360,27 +342,23 @@ Volume::Volume(
 }
 
 Volume::Volume(const std::string &strFilename, bool bReadOnly)
-  : Base(strFilename, bReadOnly, kObj_VolumePolar)
+  : Product(strFilename, kObj_VolumePolar, bReadOnly)
 {
   // Determine the number of scans
   hsize_t nObjs;
-  if (H5Gget_num_objs(m_hFile, &nObjs) < 0)
-    throw Error(m_hFile, "Failed to determine number of objects in group");
+  if (H5Gget_num_objs(m_hThis, &nObjs) < 0)
+    throw Error(m_hThis, "Failed to determine number of objects in group");
   for (nObjs; nObjs > 0; --nObjs)
   {
     char pszName[32];
     sprintf(pszName, "%s%d", kGrp_Dataset, (int) nObjs);
-    htri_t ret = H5Lexists(m_hFile, pszName, H5P_DEFAULT);
+    htri_t ret = H5Lexists(m_hThis, pszName, H5P_DEFAULT);
     if (ret < 0)
-      throw Error(m_hFile, "Failed to verify existance of group '%s'", pszName);
+      throw Error(m_hThis, "Failed to verify existance of group '%s'", pszName);
     else if (ret)
       break;
   }
   m_nScanCount = nObjs;
 }
 
-Volume & Volume::operator=(const Volume &vol)
-{
-  throw Error("ASSERT: Assignment operator called on Volume");
-}
 

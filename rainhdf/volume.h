@@ -7,6 +7,7 @@
 #ifndef RAINHDF_VOLUME_H
 #define RAINHDF_VOLUME_H
 
+#include "product.h"
 #include "base.h"
 
 #include <memory>
@@ -15,17 +16,19 @@
 namespace RainHDF
 {
   /// ODIM_H5 compliant polar volume file manipulator
-  class Volume : public Base
+  class Volume : public Product
   {
   public:
     /// Unique handle to a scan in the HDF5 file
-    class Scan
+    class Scan : public Base
     {
     public:
       /// Single layer (image) of data used by a scan
-      class Layer
+      class Layer : public Base
       {
       public:
+        virtual ~Layer();
+
         /// Is this layer a quality layer?
         bool IsQualityLayer() const { return m_bIsQuality; }
 
@@ -40,23 +43,9 @@ namespace RainHDF
         /// Write the layer data
         void Write(const float *pData, float fNoData, float fUndetect);
 
-        /// Read an optional attribute
-        template <class E, class T>
-        bool GetAttribute(E eAtt, T &val) const { return GetHowAtt(m_hHow, eAtt, val); }
-
-        /// Write an optional attribute
-        template <class E, class T>
-        void SetAttribute(E eAtt, const T &val) { SetHowAtt(m_hLayer, m_hHow, eAtt, val); }
-
       private:
         Layer(
-              hid_t hParent
-            , bool bIsQuality
-            , size_t nIndex
-            , Quantity eQuantity
-            , const hsize_t *pDims);
-        Layer(
-              hid_t hParent
+              const Base &parent
             , bool bIsQuality
             , size_t nIndex
             , Quantity eQuantity
@@ -64,16 +53,16 @@ namespace RainHDF
             , const float *pData
             , float fNoData
             , float fUndetect);
-        Layer(const Layer &layer);
-        Layer & operator=(const Layer &layer);
+        Layer(
+              const Base &parent
+            , bool bIsQuality
+            , size_t nIndex
+            , Quantity eQuantity
+            , const hsize_t *pDims);
 
       private:
         bool              m_bIsQuality; ///< Is this a quality layer?
         Quantity          m_eQuantity;  ///< Quantity stored by this layer
-        HID_Group         m_hLayer;     ///< Handle to the 'dataX' group
-        HID_Group         m_hWhat;      ///< Compulsory 'what' group
-        HID_Group         m_hHow;       ///< The optional 'how' group
-
         float             m_fGain;      ///< Gain (a), in ax+b layer unpacking function
         float             m_fOffset;    ///< Offset (b), in ax+b layer unpacking function
 
@@ -87,6 +76,8 @@ namespace RainHDF
       typedef std::auto_ptr<const Layer> LayerConstPtr;
 
     public:
+      virtual ~Scan();
+
       /// Get the elevation of this scan
       double GetElevation() const { return GetAtt<double>(m_hWhere, kAtn_Elevation); }
       /// Get the number of azimuths in scan
@@ -122,14 +113,6 @@ namespace RainHDF
           , float fNoData
           , float fUndetect);
 
-      /// Read an optional attribute
-      template <class E, class T>
-      bool GetAttribute(E eAtt, T &val) const { return GetHowAtt(m_hHow, eAtt, val); }
-
-      /// Write an optional attribute
-      template <class E, class T>
-      void SetAttribute(E eAtt, const T &val) { SetHowAtt(m_hScan, m_hHow, eAtt, val); }
-
     private:
       struct LayerInfo
       {
@@ -142,7 +125,7 @@ namespace RainHDF
     private:
       /// Create new scan in file
       Scan(
-            hid_t hParent
+            const Base &parent
           , size_t nIndex         ///< Scan number in file (datasetX)
           , double fElevation     ///< Scan elevation angle (degrees above horizon)
           , size_t nAzimuths      ///< Number of azimuths in scan
@@ -154,18 +137,9 @@ namespace RainHDF
           , time_t tEnd           ///< Time scan ended
           );
       /// Create handle to a scan that is existing in the file
-      Scan(hid_t hParent, size_t nIndex);
-
-      Scan(const Scan &scan);
-      Scan & operator=(const Scan &scan);
+      Scan(const Base &parent, size_t nIndex);
 
     private:
-      // Per scan groups
-      HID_Group         m_hScan;            ///< Handle to the 'datasetX' group
-      HID_Group         m_hWhat;            ///< The compulsory 'what' group
-      HID_Group         m_hWhere;           ///< The compulsory 'where' group
-      HID_Group         m_hHow;             ///< The optional 'how' group
-
       // Size required by data layers
       hsize_t           m_nAzimuthCount,    ///< Number of azimuths
                         m_nRangeCount;      ///< Number of range bins
@@ -180,7 +154,7 @@ namespace RainHDF
     typedef std::auto_ptr<const Scan> ScanConstPtr;
 
   public:
-    /// Create a new HDF5 volume file
+    /// Create a new volume product
     Volume(
           const std::string &strFilename
         , time_t tValid
@@ -189,7 +163,7 @@ namespace RainHDF
         , double fHeight
         );
 
-    /// Open an existing HDF5 volume file
+    /// Open an existing volume product
     Volume(const std::string &strFilename, bool bReadOnly);
 
     /// Read the station latitude
@@ -210,9 +184,9 @@ namespace RainHDF
     /// Get the number of scans in the volume
     size_t GetScanCount() const { return m_nScanCount; }
     /// Get the 'nth' scan
-    ScanPtr GetScan(size_t nScan) { return ScanPtr(new Scan(m_hFile, nScan + 1)); }
+    ScanPtr GetScan(size_t nScan) { return ScanPtr(new Scan(*this, nScan + 1)); }
     /// Get the 'nth' scan
-    ScanConstPtr GetScan(size_t nScan) const { return ScanConstPtr(new Scan(m_hFile, nScan + 1)); }
+    ScanConstPtr GetScan(size_t nScan) const { return ScanConstPtr(new Scan(*this, nScan + 1)); }
     /// Add a new scan to the file
     ScanPtr AddScan(
           double fElevation     ///< Scan elevation angle (degrees above horizon)
@@ -224,10 +198,6 @@ namespace RainHDF
         , time_t tStart         ///< Time scan started
         , time_t tEnd           ///< Time scan ended
         );
-
-  private:
-    // No need to make private copy contructor - base is already private
-    Volume & operator=(const Volume &vol);
 
   private:
     size_t    m_nScanCount;   ///< Number of scans in file
@@ -245,7 +215,7 @@ namespace RainHDF
   {
     return ScanPtr(
         new Scan(
-            m_hFile,
+            *this,
             ++m_nScanCount,
             fElevation,
             nAzimuths,
