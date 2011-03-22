@@ -7,12 +7,12 @@
 #ifndef RAINHDF_UTIL_H
 #define RAINHDF_UTIL_H
 
+#include "enum.h"
 #include "error.h"
 #include "raii.h"
 
 #include <hdf5.h>
 #include <string>
-#include <bitset>
 
 namespace RainHDF
 {
@@ -30,8 +30,9 @@ namespace RainHDF
     , kObj_VerticalProfile    ///< 1-D vertical profile
     , kObj_Picture            ///< Embedded graphical image
 
-    , kObj_Unknown            ///< Invalid or unknown object type
+    , kObjectTypeCount
   };
+  BASIC_ENUM(ObjectType, kObjectTypeCount);
 
   /// Product types supported by ODIM_H5
   enum ProductType
@@ -54,8 +55,9 @@ namespace RainHDF
     , kProd_Azimuth               ///< Azimuthal type product
     , kProd_Quality               ///< Quality metric
     
-    , kProd_Unknown               ///< Invalid or unknown product type
+    , kProductTypeCount
   };
+  BASIC_ENUM(ProductType, kProductTypeCount);
 
   /// Variable quantities supported by ODIM_H5
   enum Quantity
@@ -90,8 +92,9 @@ namespace RainHDF
     , kQty_ClutterProb    ///< Probability that bin is clutter [0-1]
     , kQty_HailProb       ///< Probability that bin is hail [0-1]
 
-    , kQty_Unknown ///< Invalid or unknown qualtity
+    , kQuantityCount
   };
+  BASIC_ENUM(Quantity, kQuantityCount);
 
   /// Methods supported by ODIM_H5
   enum Method
@@ -108,8 +111,9 @@ namespace RainHDF
     , kMth_VVP            ///< Volume velocity procesing
     , kMth_GaugeAdjust    ///< Gauge-adjustment
 
-    , kMth_Unknown        ///< Invalid or unknown method
+    , kMethodCount
   };
+  BASIC_ENUM(Method, kMethodCount);
 
   /// Optional scalar quality attributes (longs)
   enum Attribute
@@ -172,61 +176,86 @@ namespace RainHDF
     , kAtt_SignalToNoise      ///< Signal-to-noise ratio threshold value (dB)
     , kAtt_Polarization       ///< Type of polarization transmitted by the radar (H,V)
 
-    , kAttCount
+    , kAttributeCount
   };
+  BASIC_ENUM(Attribute, kAttributeCount);
 
   /// Type used to store presence flags for optional attributes
-  typedef std::bitset<kAttCount> AttFlags;
+  typedef bitset<Attribute> AttFlags;
 
   // Retrieve existing attributes
-  void GetAtt(hid_t hID, const char *pszName, bool &bVal);
-  void GetAtt(hid_t hID, const char *pszName, long &nVal);
-  void GetAtt(hid_t hID, const char *pszName, double &fVal);
-  void GetAtt(hid_t hID, const char *pszName, char *pszBuf, size_t nBufSize);
-  void GetAtt(hid_t hID, const char *pszName, std::string &strVal);
-  void GetAtt(hid_t hID, const char *pszNameDate, const char *pszNameTime, time_t &tVal);
-  void GetAtt(hid_t hID, const char *pszName, ObjectType &eVal);
-  void GetAtt(hid_t hID, const char *pszName, ProductType &eVal);
-  void GetAtt(hid_t hID, const char *pszName, Quantity &eVal);
-  void GetAtt(hid_t hID, const char *pszName, Method &eVal);
+  void GetAtt(const HID_Handle &hID, const char *pszName, bool &bVal);
+  void GetAtt(const HID_Handle &hID, const char *pszName, long &nVal);
+  void GetAtt(const HID_Handle &hID, const char *pszName, double &fVal);
+  void GetAtt(const HID_Handle &hID, const char *pszName, char *pszBuf, size_t nBufSize);
+  void GetAtt(const HID_Handle &hID, const char *pszName, std::string &strVal);
+  void GetAtt(const HID_Handle &hID, const char *pszNameDate, const char *pszNameTime, time_t &tVal);
 
   // Create new attributes
-  void NewAtt(hid_t hID, const char *pszName, bool bVal);
-  void NewAtt(hid_t hID, const char *pszName, long nVal);
-  void NewAtt(hid_t hID, const char *pszName, double fVal);
-  void NewAtt(hid_t hID, const char *pszName, const char *pszVal);
-  void NewAtt(hid_t hID, const char *pszName, const std::string &strVal);
-  void NewAtt(hid_t hID, const char *pszNameDate, const char *pszNameTime, time_t tVal);
-  void NewAtt(hid_t hID, const char *pszName, ObjectType eVal);
-  void NewAtt(hid_t hID, const char *pszName, ProductType eVal);
-  void NewAtt(hid_t hID, const char *pszName, Quantity eVal);
-  void NewAtt(hid_t hID, const char *pszName, Method eVal);
+  void NewAtt(const HID_Handle &hID, const char *pszName, bool bVal);
+  void NewAtt(const HID_Handle &hID, const char *pszName, long nVal);
+  void NewAtt(const HID_Handle &hID, const char *pszName, double fVal);
+  void NewAtt(const HID_Handle &hID, const char *pszName, const char *pszVal);
+  void NewAtt(const HID_Handle &hID, const char *pszName, const std::string &strVal);
+  void NewAtt(const HID_Handle &hID, const char *pszNameDate, const char *pszNameTime, time_t tVal);
+  inline void NewAtt(const HID_Handle &hID, const char *pszName, float fVal)
+  {
+    NewAtt(hID, pszName, (double) fVal);
+  }
+  inline void NewAtt(const HID_Handle &hID, const char *pszName, char *pszVal)
+  {
+    NewAtt(hID, pszName, (const char *) pszVal);
+  }
 
   // Alter existing attributes (or create if not existing)
-  void SetAtt(hid_t hID, const char *pszName, bool bVal);
-  void SetAtt(hid_t hID, const char *pszName, long nVal);
-  void SetAtt(hid_t hID, const char *pszName, double fVal);
-  void SetAtt(hid_t hID, const char *pszName, const char *pszVal);
-  void SetAtt(hid_t hID, const char *pszName, const std::string &strVal);
-  void SetAtt(hid_t hID, const char *pszNameDate, const char *pszNameTime, time_t tVal);
-  void SetAtt(hid_t hID, const char *pszName, ObjectType eVal);
-  void SetAtt(hid_t hID, const char *pszName, ProductType eVal);
-  void SetAtt(hid_t hID, const char *pszName, Quantity eVal);
-  void SetAtt(hid_t hID, const char *pszName, Method eVal);
+  void SetAtt(const HID_Handle &hID, const char *pszName, bool bVal);
+  void SetAtt(const HID_Handle &hID, const char *pszName, long nVal);
+  void SetAtt(const HID_Handle &hID, const char *pszName, double fVal);
+  void SetAtt(const HID_Handle &hID, const char *pszName, const char *pszVal);
+  void SetAtt(const HID_Handle &hID, const char *pszName, const std::string &strVal);
+  void SetAtt(const HID_Handle &hID, const char *pszNameDate, const char *pszNameTime, time_t tVal);
+  inline void SetAtt(const HID_Handle &hID, const char *pszName, float fVal)
+  {
+    SetAtt(hID, pszName, (double) fVal);
+  }
+  inline void SetAtt(const HID_Handle &hID, const char *pszName, char *pszVal) 
+  { 
+    SetAtt(hID, pszName, (const char *) pszVal); 
+  }
+
+  template <typename T>
+  void GetAtt(const HID_Handle &hID, const char *pszName, T &eVal)
+  {
+    char pszBuf[128];
+    GetAtt(hID, pszName, pszBuf, sizeof(pszBuf));
+    eVal = from_string<T>(pszBuf);
+  }
+
+  template <typename T>
+  void NewAtt(const HID_Handle &hID, const char *pszName, T eVal)
+  {
+    NewAtt(hID, pszName, to_string(eVal));
+  }
+
+  template <typename T>
+  void SetAtt(const HID_Handle &hID, const char *pszName, T eVal)
+  {
+    SetAtt(hID, pszName, to_string(eVal));
+  }
 
   // Determine which 'how' attributes are present for an object
-  void DetermineAttributePresence(hid_t hID, AttFlags &flags);
+  void DetermineAttributePresence(const HID_Handle &hID, AttFlags &flags);
 
   // Convenient value returning versions of above functions (for use in initializer lists)
   template <class T>
-  inline T GetAtt(hid_t hID, const char *pszName)
+  inline T GetAtt(const HID_Handle &hID, const char *pszName)
   {
     T t;
     GetAtt(hID, pszName, t);
     return t;
   }
   template <class T>
-  inline T GetAtt(hid_t hID, const char *pszName1, const char *pszName2)
+  inline T GetAtt(const HID_Handle &hID, const char *pszName1, const char *pszName2)
   {
     T t;
     GetAtt(hID, pszName1, pszName2, t);

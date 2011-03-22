@@ -14,6 +14,7 @@ lib_LTLIBRARIES = librainhdf.la
 
 nobase_include_HEADERS = \
   rainhdf/base.h \
+  rainhdf/enum.h \
   rainhdf/error.h \
   rainhdf/product.h \
   rainhdf/raii.h \

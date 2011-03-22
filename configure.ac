@@ -6,8 +6,8 @@
 #-------------------------------------------------------------------------------
 
 # Initialization and sanity checks
-AC_INIT(rainhdf, 0.0.2, [m.curtis@bom.gov.au])
-SHARED_LIB_VERSION="1:0:0" # current:revision:age
+AC_INIT(rainhdf, 1.0.3, [m.curtis@bom.gov.au])
+SHARED_LIB_VERSION="1:3:0" # current:revision:age
 AM_INIT_AUTOMAKE([foreign -Wall])
 AC_PREREQ(2.53)
 AC_CONFIG_SRCDIR(rainhdf/rainhdf.h)
