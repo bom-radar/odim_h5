@@ -13,16 +13,16 @@ using namespace RainHDF;
 
 namespace RainHDF
 {
-  /// Compression factor used to compress layers (0 - 9, 9 = max compression)
+  /// Compression factor used to compress data (0 - 9, 9 = max compression)
   static const int kDefCompression = 6;
 }
 
-Volume::Scan::Layer::~Layer()
+Volume::Scan::Data::~Data()
 {
 
 }
 
-Volume::Scan::Layer::Layer(
+Volume::Scan::Data::Data(
       const Base &parent
     , bool bIsQuality
     , size_t nIndex
@@ -49,19 +49,19 @@ Volume::Scan::Layer::Layer(
   HID_Handle hSpace(kHID_Space, 2, pDims, kCreate);
   HID_Handle hPList(kHID_PList, H5P_DATASET_CREATE, kCreate);
   if (H5Pset_chunk(hPList, 2, pDims) < 0)
-    throw Error(m_hThis, "Failed to set chunk parameters for layer");
+    throw Error(m_hThis, "Failed to set chunk parameters for data");
   if (H5Pset_deflate(hPList, kDefCompression) < 0)
-    throw Error(m_hThis, "Failed to set compression level for layer");
+    throw Error(m_hThis, "Failed to set compression level for data");
   HID_Handle hData(kHID_Data, m_hThis, kDat_Data, H5T_NATIVE_FLOAT, hSpace, hPList, kCreate);
   NewAtt(hData, kAtn_Class, kVal_Class);
   NewAtt(hData, kAtn_ImageVersion, kVal_ImageVersion);
 
   // Write the actual image data
   if (H5Dwrite(hData, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, pData) < 0)
-    throw Error("Failed to write layer data");
+    throw Error("Failed to write data");
 }
 
-Volume::Scan::Layer::Layer(
+Volume::Scan::Data::Data(
       const Base &parent
     , bool bIsQuality
     , size_t nIndex
@@ -77,7 +77,7 @@ Volume::Scan::Layer::Layer(
 
 }
 
-void Volume::Scan::Layer::Read(float *pData, float &fNoData, float &fUndetect) const
+void Volume::Scan::Data::Read(float *pData, float &fNoData, float &fUndetect) const
 {
   HID_Handle hData(kHID_Data, m_hThis, kDat_Data, kOpen);
 
@@ -90,7 +90,7 @@ void Volume::Scan::Layer::Read(float *pData, float &fNoData, float &fUndetect) c
   fNoData = GetAtt<double>(m_hWhat, kAtn_NoData);
   fUndetect = GetAtt<double>(m_hWhat, kAtn_Undetect);
   if (H5Dread(hData, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, pData) < 0)
-    throw Error(m_hThis, "Failed to read layer data");
+    throw Error(m_hThis, "Failed to read data");
 
   // Convert using gain and offset?
   if (   std::fabs(m_fGain - 1.0) > 0.000001
@@ -103,7 +103,7 @@ void Volume::Scan::Layer::Read(float *pData, float &fNoData, float &fUndetect) c
   }
 }
 
-void Volume::Scan::Layer::Write(const float *pData, float fNoData, float fUndetect)
+void Volume::Scan::Data::Write(const float *pData, float fNoData, float fUndetect)
 {
   HID_Handle hData(kHID_Data, m_hThis, kDat_Data, kOpen);
 
@@ -130,7 +130,7 @@ void Volume::Scan::Layer::Write(const float *pData, float fNoData, float fUndete
     SetAtt(m_hWhat, kAtn_NoData, fNoData);
     SetAtt(m_hWhat, kAtn_Undetect, fUndetect);
     if (H5Dwrite(hData, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &vecData[0]) < 0)
-      throw Error("Failed to write layer data");
+      throw Error("Failed to write data");
   }
   else
   {
@@ -138,7 +138,7 @@ void Volume::Scan::Layer::Write(const float *pData, float fNoData, float fUndete
     SetAtt(m_hWhat, kAtn_NoData, fNoData);
     SetAtt(m_hWhat, kAtn_Undetect, fUndetect);
     if (H5Dwrite(hData, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, pData) < 0)
-      throw Error("Failed to write layer data");
+      throw Error("Failed to write data");
   }
 }
 
@@ -186,10 +186,10 @@ Volume::Scan::Scan(const Base &parent, size_t nIndex)
   if (GetAtt<ProductType>(m_hWhat, kAtn_Product) != kProd_Scan)
     throw Error(m_hThis, "Scan product code mismatch");
 
-  // Reserve some space in our layer info vector for efficency sake
+  // Reserve some space in our data info vector for efficency sake
   if (H5Gget_num_objs(m_hThis, &nObjs) < 0)
     throw Error(m_hThis, "Failed to determine number of objects in group");
-  m_LayerInfos.reserve(nObjs);
+  m_DataInfos.reserve(nObjs);
 
   // Check for any data layers
   for (size_t i = 1; true; ++i)
@@ -203,15 +203,15 @@ Volume::Scan::Scan(const Base &parent, size_t nIndex)
       break;
 
     // Yes - open it up for inspection
-    HID_Handle hLayer(kHID_Group, m_hThis, pszName, kOpen);
-    HID_Handle hLayerWhat(kHID_Group, hLayer, kGrp_What, kOpen);
+    HID_Handle hData(kHID_Group, m_hThis, pszName, kOpen);
+    HID_Handle hDataWhat(kHID_Group, hData, kGrp_What, kOpen);
 
     // Store some vitals
-    LayerInfo li;
+    DataInfo li;
     li.m_bIsQuality = false;
     li.m_nIndex = i;
-    li.m_eQuantity = GetAtt<Quantity>(hLayerWhat, kAtn_Quantity);
-    m_LayerInfos.push_back(li);
+    li.m_eQuantity = GetAtt<Quantity>(hDataWhat, kAtn_Quantity);
+    m_DataInfos.push_back(li);
   }
 
   // Check for any quality layers
@@ -226,80 +226,80 @@ Volume::Scan::Scan(const Base &parent, size_t nIndex)
       break;
 
     // Yes - open it up for inspection
-    HID_Handle hLayer(kHID_Group, m_hThis, pszName, kOpen);
-    HID_Handle hLayerWhat(kHID_Group, hLayer, kGrp_What, kOpen);
+    HID_Handle hData(kHID_Group, m_hThis, pszName, kOpen);
+    HID_Handle hDataWhat(kHID_Group, hData, kGrp_What, kOpen);
 
     // Store some vitals
-    LayerInfo li;
+    DataInfo li;
     li.m_bIsQuality = true;
     li.m_nIndex = i;
-    li.m_eQuantity = GetAtt<Quantity>(hLayerWhat, kAtn_Quantity);
-    m_LayerInfos.push_back(li);
+    li.m_eQuantity = GetAtt<Quantity>(hDataWhat, kAtn_Quantity);
+    m_DataInfos.push_back(li);
   }
 }
 
-Volume::Scan::LayerPtr Volume::Scan::GetLayer(size_t nLayer)
+Volume::Scan::DataPtr Volume::Scan::GetData(size_t nLayer)
 {
-  return LayerPtr(
-      new Layer(
+  return DataPtr(
+      new Data(
           *this, 
-          m_LayerInfos[nLayer].m_bIsQuality,
-          m_LayerInfos[nLayer].m_nIndex,
-          m_LayerInfos[nLayer].m_eQuantity,
+          m_DataInfos[nLayer].m_bIsQuality,
+          m_DataInfos[nLayer].m_nIndex,
+          m_DataInfos[nLayer].m_eQuantity,
           &m_nAzimuthCount));
 }
 
-Volume::Scan::LayerConstPtr Volume::Scan::GetLayer(size_t nLayer) const
+Volume::Scan::DataConstPtr Volume::Scan::GetData(size_t nLayer) const
 {
-  return LayerConstPtr(
-      new Layer(
+  return DataConstPtr(
+      new Data(
           *this, 
-          m_LayerInfos[nLayer].m_bIsQuality,
-          m_LayerInfos[nLayer].m_nIndex,
-          m_LayerInfos[nLayer].m_eQuantity,
+          m_DataInfos[nLayer].m_bIsQuality,
+          m_DataInfos[nLayer].m_nIndex,
+          m_DataInfos[nLayer].m_eQuantity,
           &m_nAzimuthCount));
 }
 
-Volume::Scan::LayerPtr Volume::Scan::GetLayer(Quantity eQuantity)
+Volume::Scan::DataPtr Volume::Scan::GetData(Quantity eQuantity)
 {
-  for (LayerInfoStore_t::iterator i = m_LayerInfos.begin(); i != m_LayerInfos.end(); ++i)
+  for (DataInfoStore_t::iterator i = m_DataInfos.begin(); i != m_DataInfos.end(); ++i)
     if (i->m_eQuantity == eQuantity)
-      return LayerPtr(
-          new Layer(
+      return DataPtr(
+          new Data(
               *this, 
               i->m_bIsQuality, 
               i->m_nIndex,
               i->m_eQuantity,
               &m_nAzimuthCount));
-  return LayerPtr(NULL);
+  return DataPtr(NULL);
 }
 
-Volume::Scan::LayerConstPtr Volume::Scan::GetLayer(Quantity eQuantity) const
+Volume::Scan::DataConstPtr Volume::Scan::GetData(Quantity eQuantity) const
 {
-  for (LayerInfoStore_t::const_iterator i = m_LayerInfos.begin(); i != m_LayerInfos.end(); ++i)
+  for (DataInfoStore_t::const_iterator i = m_DataInfos.begin(); i != m_DataInfos.end(); ++i)
     if (i->m_eQuantity == eQuantity)
-      return LayerConstPtr(
-          new Layer(
+      return DataConstPtr(
+          new Data(
               *this, 
               i->m_bIsQuality, 
               i->m_nIndex,
               i->m_eQuantity,
               &m_nAzimuthCount));
-  return LayerConstPtr(NULL);
+  return DataConstPtr(NULL);
 }
 
-Volume::Scan::LayerPtr Volume::Scan::AddLayer(
+Volume::Scan::DataPtr Volume::Scan::AddData(
       Quantity eQuantity
     , bool bIsQuality
     , const float *pData
     , float fNoData
     , float fUndetect)
 {
-  LayerInfo li;
+  DataInfo li;
   li.m_bIsQuality = bIsQuality;
   li.m_nIndex = 1;
-  for (LayerInfoStore_t::reverse_iterator i = m_LayerInfos.rbegin(); 
-       i != m_LayerInfos.rend(); 
+  for (DataInfoStore_t::reverse_iterator i = m_DataInfos.rbegin(); 
+       i != m_DataInfos.rend(); 
        ++i)
   {
     if (i->m_bIsQuality == li.m_bIsQuality)
@@ -310,8 +310,8 @@ Volume::Scan::LayerPtr Volume::Scan::AddLayer(
   }
   li.m_eQuantity = eQuantity;
 
-  LayerPtr pLayer(
-      new Layer(
+  DataPtr pLayer(
+      new Data(
           *this,
           li.m_bIsQuality,
           li.m_nIndex,
@@ -323,7 +323,7 @@ Volume::Scan::LayerPtr Volume::Scan::AddLayer(
 
   // Must do the push_back last so that exceptions don't screw with our 
   // layer count
-  m_LayerInfos.push_back(li);
+  m_DataInfos.push_back(li);
   return pLayer;
 }
 

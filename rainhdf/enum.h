@@ -16,12 +16,12 @@
 namespace RainHDF
 {
   /// Macro to declare a basic enumerate with serialization features
-  #define BASIC_ENUM(x, c) \
+  #define RAINHDF_ENUM_TRAITS(x, c) \
     template <> \
     struct enum_traits<x> \
     { \
+      enum { kCount = (int) c }; \
       static const char * s_pszName; \
-      static const int s_nCount = (int) c; \
       static const char ** s_pszStrings; \
     };
 
@@ -30,7 +30,7 @@ namespace RainHDF
    * \param x The enumerate type
    * \param s Static constant array holding enumerate strings
    */
-  #define BASIC_ENUM_DEFN(x, s) \
+  #define RAINHDF_ENUM_TRAITS_IMPL(x, s) \
     const char * enum_traits<x>::s_pszName = #x; \
     const char ** enum_traits<x>::s_pszStrings = s
 
@@ -38,8 +38,8 @@ namespace RainHDF
   template <typename T>
   struct enum_traits 
   { 
+    // enum { kCount };                     // Number of enumerates
     // static const char *  s_pszName;      // Name of enumerate
-    // static const int     s_nCount;       // Number of entries
     // static const char ** s_pszStrings;   // String representation
     // static const char ** s_pszLabels;    // User friendly labels (optional)
   };
@@ -55,18 +55,18 @@ namespace RainHDF
   template <typename T>
   T from_string(const char *pszVal)
   {
-    for (int i = 0; i < enum_traits<T>::s_nCount; ++i)
+    for (int i = 0; i < enum_traits<T>::kCount; ++i)
       if (std::strcmp(pszVal, enum_traits<T>::s_pszStrings[i]) == 0)
         return (T) i;
     throw Error("Invalid %s enumerate '%s'", enum_traits<T>::s_pszName, pszVal);
   }
 
   /// Extended bitset class that allows using the enumerate as flags
-  template <typename T>
-  class bitset : public std::bitset<enum_traits<T>::s_nCount>
+  template <typename T, int C = enum_traits<T>::kCount >
+  class bitset : public std::bitset<C>
   {
   private:
-    typedef std::bitset<enum_traits<T>::s_nCount> base;
+    typedef std::bitset<C> base;
 
   public:
     // Allow access via integer types

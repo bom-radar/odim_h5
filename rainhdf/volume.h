@@ -23,28 +23,28 @@ namespace RainHDF
     class Scan : public Base
     {
     public:
-      /// Single layer (image) of data used by a scan
-      class Layer : public Base
+      /// Single data layer (image) of data used by a scan
+      class Data : public Base
       {
       public:
-        virtual ~Layer();
+        virtual ~Data();
 
-        /// Is this layer a quality layer?
-        bool IsQualityLayer() const { return m_bIsQuality; }
+        /// Is this layer quality data?
+        bool IsQualityData() const { return m_bIsQuality; }
 
-        /// Get the quantity stored by this layer
+        /// Get the quantity stored by this data
         Quantity GetQuantity() const { return m_eQuantity; }
 
-        /// Get the number of elements in the layer data image
+        /// Get the number of elements in the data image
         size_t GetSize() const { return m_nSize; }
 
-        /// Read the layer data
+        /// Read the data
         void Read(float *pData, float &fNoData, float &fUndetect) const;
-        /// Write the layer data
+        /// Write the data
         void Write(const float *pData, float fNoData, float fUndetect);
 
       private:
-        Layer(
+        Data(
               const Base &parent
             , bool bIsQuality
             , size_t nIndex
@@ -53,7 +53,7 @@ namespace RainHDF
             , const float *pData
             , float fNoData
             , float fUndetect);
-        Layer(
+        Data(
               const Base &parent
             , bool bIsQuality
             , size_t nIndex
@@ -62,9 +62,9 @@ namespace RainHDF
 
       private:
         bool              m_bIsQuality; ///< Is this a quality layer?
-        Quantity          m_eQuantity;  ///< Quantity stored by this layer
-        float             m_fGain;      ///< Gain (a), in ax+b layer unpacking function
-        float             m_fOffset;    ///< Offset (b), in ax+b layer unpacking function
+        Quantity          m_eQuantity;  ///< Quantity stored by this data layer
+        float             m_fGain;      ///< Gain (a), in ax+b data unpacking function
+        float             m_fOffset;    ///< Offset (b), in ax+b data unpacking function
 
         // Cached values
         size_t            m_nSize;      ///< Number of elements in dataset
@@ -72,8 +72,8 @@ namespace RainHDF
         friend class Scan;
       };
 
-      typedef std::auto_ptr<Layer> LayerPtr;
-      typedef std::auto_ptr<const Layer> LayerConstPtr;
+      typedef std::auto_ptr<Data> DataPtr;
+      typedef std::auto_ptr<const Data> DataConstPtr;
 
     public:
       virtual ~Scan();
@@ -95,18 +95,18 @@ namespace RainHDF
       /// Get the time this scan completed
       time_t GetEndTime() const { return GetAtt<time_t>(m_hWhat, kAtn_EndDate, kAtn_EndTime); }
 
-      /// Get the number of layers in the file
-      size_t GetLayerCount() const { return m_LayerInfos.size(); }
-      /// Get the 'nth' layer
-      LayerPtr GetLayer(size_t nLayer);
-      /// Get the 'nth' layer
-      LayerConstPtr GetLayer(size_t nLayer) const;
-      /// Get a layer based on it's quantity (or NULL if no such layer)
-      LayerPtr GetLayer(Quantity eQuantity);
-      LayerConstPtr GetLayer(Quantity eQuantity) const;
+      /// Get the number of data layers in the scan
+      size_t GetDataCount() const { return m_DataInfos.size(); }
+      /// Get the 'nth' data layer
+      DataPtr GetData(size_t nLayer);
+      /// Get the 'nth' data layer
+      DataConstPtr GetData(size_t nLayer) const;
+      /// Get a data layer based on it's quantity (or NULL if no such data)
+      DataPtr GetData(Quantity eQuantity);
+      DataConstPtr GetData(Quantity eQuantity) const;
 
       /// Add a new data or quality layer to the scan
-      LayerPtr AddLayer(
+      DataPtr AddData(
             Quantity eQuantity
           , bool bIsQuality
           , const float *pData
@@ -114,13 +114,13 @@ namespace RainHDF
           , float fUndetect);
 
     private:
-      struct LayerInfo
+      struct DataInfo
       {
         bool      m_bIsQuality;   ///< True if data, false if quality
         size_t    m_nIndex;       ///< Index of dataX/qualityX in file
-        Quantity  m_eQuantity;    ///< Quantity stored by layer
+        Quantity  m_eQuantity;    ///< Quantity stored by data layer
       };
-      typedef std::vector<LayerInfo> LayerInfoStore_t;
+      typedef std::vector<DataInfo> DataInfoStore_t;
 
     private:
       /// Create new scan in file
@@ -145,7 +145,7 @@ namespace RainHDF
                         m_nRangeCount;      ///< Number of range bins
 
       // Handles to any data layers that are present
-      LayerInfoStore_t  m_LayerInfos;       ///< Information about data/quality layers
+      DataInfoStore_t   m_DataInfos;       ///< Information about data/quality layers
 
       friend class Volume;
     };

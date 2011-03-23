@@ -83,17 +83,17 @@ int main(int argc, const char *argv[])
       float fNoData, fUndetect;
       vector<float> vecData(sr->GetAzimuthCount() * sr->GetRangeBinCount());
 
-      for (size_t j = 0; j < sr->GetLayerCount(); ++j)
+      for (size_t j = 0; j < sr->GetDataCount(); ++j)
       {
         // Read the layer data
-        Volume::Scan::LayerConstPtr lr = sr->GetLayer(j);
+        Volume::Scan::DataConstPtr lr = sr->GetData(j);
         lr->Read(&vecData[0], fNoData, fUndetect);
 
         // Write it out as a new layer
-        Volume::Scan::LayerPtr lw = 
-          sw->AddLayer(
+        Volume::Scan::DataPtr lw = 
+          sw->AddData(
               lr->GetQuantity(),
-              lr->IsQualityLayer(),
+              lr->IsQualityData(),
               &vecData[0],
               fNoData,
               fUndetect);
@@ -105,7 +105,7 @@ int main(int argc, const char *argv[])
             if (*i < 10)
               *i = 0;
 
-          sw->AddLayer(
+          sw->AddData(
               lr->GetQuantity(),
               true,
               &vecData[0],

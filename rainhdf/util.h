@@ -32,7 +32,7 @@ namespace RainHDF
 
     , kObjectTypeCount
   };
-  BASIC_ENUM(ObjectType, kObjectTypeCount);
+  RAINHDF_ENUM_TRAITS(ObjectType, kObjectTypeCount);
 
   /// Product types supported by ODIM_H5
   enum ProductType
@@ -57,7 +57,7 @@ namespace RainHDF
     
     , kProductTypeCount
   };
-  BASIC_ENUM(ProductType, kProductTypeCount);
+  RAINHDF_ENUM_TRAITS(ProductType, kProductTypeCount);
 
   /// Variable quantities supported by ODIM_H5
   enum Quantity
@@ -94,7 +94,7 @@ namespace RainHDF
 
     , kQuantityCount
   };
-  BASIC_ENUM(Quantity, kQuantityCount);
+  RAINHDF_ENUM_TRAITS(Quantity, kQuantityCount);
 
   /// Methods supported by ODIM_H5
   enum Method
@@ -113,7 +113,7 @@ namespace RainHDF
 
     , kMethodCount
   };
-  BASIC_ENUM(Method, kMethodCount);
+  RAINHDF_ENUM_TRAITS(Method, kMethodCount);
 
   /// Optional scalar quality attributes (longs)
   enum Attribute
@@ -178,7 +178,7 @@ namespace RainHDF
 
     , kAttributeCount
   };
-  BASIC_ENUM(Attribute, kAttributeCount);
+  RAINHDF_ENUM_TRAITS(Attribute, kAttributeCount);
 
   /// Type used to store presence flags for optional attributes
   typedef bitset<Attribute> AttFlags;
@@ -299,8 +299,6 @@ namespace RainHDF
   extern const char * kAtn_Class;
   extern const char * kAtn_ImageVersion;
 
-  extern const char * kAtn_Attribute[];
-
   // Dataset name constants
   extern const char * kDat_Data;
 
@@ -311,9 +309,6 @@ namespace RainHDF
   extern const char * kVal_Version;
   extern const char * kVal_Class;
   extern const char * kVal_ImageVersion;
-
-  extern const char * kVal_ObjectType[];
-
 }
 
 #endif

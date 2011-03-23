@@ -12,7 +12,7 @@ using namespace RainHDF;
 
 namespace RainHDF
 {
-  const char * kVal_ObjectType[] = 
+  static const char * kVal_ObjectType[] = 
   {
       "PVOL"
     , "CVOL"
@@ -25,7 +25,7 @@ namespace RainHDF
     , "VP"
     , "PIC"
   };
-  BASIC_ENUM_DEFN(ObjectType, kVal_ObjectType);
+  RAINHDF_ENUM_TRAITS_IMPL(ObjectType, kVal_ObjectType);
 
   static const char * kVal_ProductType[] = 
   {
@@ -47,7 +47,7 @@ namespace RainHDF
     , "AZIM"
     , "QUAL"
   };
-  BASIC_ENUM_DEFN(ProductType, kVal_ProductType);
+  RAINHDF_ENUM_TRAITS_IMPL(ProductType, kVal_ProductType);
 
   static const char * kVal_Quantity[] =
   {
@@ -79,7 +79,7 @@ namespace RainHDF
     , "CPROB"
     , "HPROB"
   };
-  BASIC_ENUM_DEFN(Quantity, kVal_Quantity);
+  RAINHDF_ENUM_TRAITS_IMPL(Quantity, kVal_Quantity);
 
   static const char * kVal_Method[] =
   {
@@ -95,9 +95,9 @@ namespace RainHDF
     , "VVP"
     , "RGA"
   };
-  BASIC_ENUM_DEFN(Method, kVal_Method);
+  RAINHDF_ENUM_TRAITS_IMPL(Method, kVal_Method);
 
-  const char * kAtn_Attribute[] =
+  static const char * kAtn_Attribute[] =
   {
       "task"
     , "startepochs"
@@ -157,7 +157,7 @@ namespace RainHDF
     , "S2N"
     , "polarization"
   };
-  BASIC_ENUM_DEFN(Attribute, kAtn_Attribute);
+  RAINHDF_ENUM_TRAITS_IMPL(Attribute, kAtn_Attribute);
 
   const char * kGrp_What = "what";
   const char * kGrp_Where = "where";

@@ -64,7 +64,7 @@ namespace RainHDF
     {
       if (pLevel->m_AttFlags.test(eAtt))
       {
-        GetAtt(pLevel->m_hHow, kAtn_Attribute[eAtt], val);
+        GetAtt(pLevel->m_hHow, to_string(eAtt), val);
         return true;
       }
     }
@@ -77,7 +77,7 @@ namespace RainHDF
     // TODO - manually verify type of attribute? (will allow writing of non-standard type)
     if (!m_hHow)
       m_hHow = HID_Handle(kHID_Group, m_hThis, kGrp_How, kCreate);
-    SetAtt(m_hHow, kAtn_Attribute[eAtt], val);
+    SetAtt(m_hHow, to_string(eAtt), val);
     m_AttFlags.set(eAtt);
   }
 }
