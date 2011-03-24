@@ -78,6 +78,8 @@ namespace RainHDF
     , "ATTEN"
     , "CPROB"
     , "HPROB"
+
+    , "GENERIC"
   };
   RAINHDF_ENUM_TRAITS_IMPL(Quantity, kVal_Quantity);
 
@@ -488,14 +490,20 @@ void RainHDF::SetAtt(const HID_Handle &hID, const char *pszNameDate, const char 
 
 static herr_t DetAttCallback(hid_t hID, const char *pszName, const H5A_info_t *pInfo, void *pData)
 {
-  for (int i = 0; kAtn_Attribute[i] != NULL; ++i)
+  for (int i = 0; i < enum_traits<Attribute>::kCount; ++i)
+  {
     if (strcmp(pszName, kAtn_Attribute[i]) == 0)
+    {
       static_cast<AttFlags*>(pData)->set(i);
+      break;
+    }
+  }
+  return 0;
 }
 
 void RainHDF::DetermineAttributePresence(const HID_Handle &hID, AttFlags &flags)
 {
-  hsize_t n;
+  hsize_t n = 0;
   H5Aiterate(hID, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, &n, DetAttCallback, &flags);
 }
 

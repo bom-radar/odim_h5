@@ -36,7 +36,7 @@ namespace RainHDF
     /// Destroy this object
     virtual ~Base();
 
-    /// Get the set of attributes that are available at this level
+    /// Get the set of attributes that are local to this level
     const AttFlags & GetAttributeFlags() const { return m_AttFlags; }
 
     /// Read an optional attribute

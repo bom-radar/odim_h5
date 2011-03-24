@@ -92,6 +92,8 @@ namespace RainHDF
     , kQty_ClutterProb    ///< Probability that bin is clutter [0-1]
     , kQty_HailProb       ///< Probability that bin is hail [0-1]
 
+    , kQty_Generic        ///< Generic quantity for general purpose use
+
     , kQuantityCount
   };
   RAINHDF_ENUM_TRAITS(Quantity, kQuantityCount);
