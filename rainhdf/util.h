@@ -92,6 +92,9 @@ namespace RainHDF
     , kQty_ClutterProb    ///< Probability that bin is clutter [0-1]
     , kQty_HailProb       ///< Probability that bin is hail [0-1]
 
+    , kQty_CleanDBZH      ///< Copy of DBZH that has been cleaned
+    , kQty_CleanVRAD      ///< Copy of VRAD that has been cleaned
+
     , kQty_Generic        ///< Generic quantity for general purpose use
 
     , kQuantityCount

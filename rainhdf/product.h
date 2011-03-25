@@ -15,6 +15,7 @@ namespace RainHDF
   class Product : public Base
   {
   protected:
+    // TODO - source is mandatory and should be in the constructor
     /// Create a new product
     Product(const std::string &strFilename, ObjectType eType, time_t tValid);
     /// Open an existing ODIM_H5 product

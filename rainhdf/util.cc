@@ -79,6 +79,9 @@ namespace RainHDF
     , "CPROB"
     , "HPROB"
 
+    , "DBZH_CLEAN"
+    , "VRAD_CLEAN"
+
     , "GENERIC"
   };
   RAINHDF_ENUM_TRAITS_IMPL(Quantity, kVal_Quantity);

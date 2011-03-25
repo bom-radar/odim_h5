@@ -20,6 +20,9 @@ Product::Product(const std::string &strFilename, ObjectType eType, time_t tValid
   NewAtt(m_hWhat, kAtn_Object, eType);
   NewAtt(m_hWhat, kAtn_Version, kVal_Version);
   NewAtt(m_hWhat, kAtn_Date, kAtn_Time, tValid);
+
+  // Initialize source to be empty to ensure structural conformance
+  NewAtt(m_hWhat, kAtn_Source, "");
 }
 
 Product::Product(const std::string &strFilename, ObjectType eType, bool bReadOnly)
