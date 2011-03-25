@@ -161,6 +161,7 @@ namespace RainHDF
     , "PAC"
     , "S2N"
     , "polarization"
+    , "config_qc"
   };
   RAINHDF_ENUM_TRAITS_IMPL(Attribute, kAtn_Attribute);
 

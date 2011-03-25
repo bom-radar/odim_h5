@@ -181,6 +181,9 @@ namespace RainHDF
     , kAtt_SignalToNoise      ///< Signal-to-noise ratio threshold value (dB)
     , kAtt_Polarization       ///< Type of polarization transmitted by the radar (H,V)
 
+    // Extended scalars unique to BOM
+    , kAtt_ConfigurationQC    ///< Configuration parameters for system used to perform QC
+
     , kAttributeCount
   };
   RAINHDF_ENUM_TRAITS(Attribute, kAttributeCount);
