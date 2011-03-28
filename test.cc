@@ -68,8 +68,8 @@ int main(int argc, const char *argv[])
 
     for (size_t i = 0; i < hdfr.GetScanCount(); ++i)
     {
-      Volume::ScanConstPtr sr = hdfr.GetScan(i);
-      Volume::ScanPtr sw = 
+      Scan::ConstPtr sr = hdfr.GetScan(i);
+      Scan::Ptr sw = 
           hdfw.AddScan(
               sr->GetElevation(),
               sr->GetAzimuthCount(),
@@ -86,11 +86,11 @@ int main(int argc, const char *argv[])
       for (size_t j = 0; j < sr->GetDataCount(); ++j)
       {
         // Read the layer data
-        Volume::Scan::DataConstPtr lr = sr->GetData(j);
+        Data::ConstPtr lr = sr->GetData(j);
         lr->Read(&vecData[0], fNoData, fUndetect);
 
         // Write it out as a new layer
-        Volume::Scan::DataPtr lw = 
+        Data::Ptr lw = 
           sw->AddData(
               lr->GetQuantity(),
               lr->IsQualityData(),

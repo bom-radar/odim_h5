@@ -66,8 +66,8 @@ namespace RainHDF
  *   return;
  * }
  *
- * RainHDF::Volume::ScanPtr scan = vol.GetScan(2);
- * RainHDF::Volume::Scan::LayerPtr dbz = scan.GetLayer(kQty_DBZH);
+ * RainHDF::Scan::Ptr scan = vol.GetScan(2);
+ * RainHDF::Data::Ptr dbz = scan.GetData(kQty_DBZH);
  * if (dbz.get() == NULL)
  * {
  *   cerr << "No reflectivity data in file" << endl;
@@ -122,7 +122,7 @@ namespace RainHDF
  *     36.8,                // Station longitude
  *     10.0);               // Station height
  *      
- * RainHDF::Volume::ScanPtr scan = vol.AddScan(
+ * RainHDF::Scan::Ptr scan = vol.AddScan(
  *     0.2,                 // elevation angle
  *     azimuths,            // no of azimuths
  *     bins,                // no of range bins
@@ -131,7 +131,7 @@ namespace RainHDF
  *     time(NULL) - 30,     // scan start time
  *     time(NULL));         // scan end time
  *               
- * RainHDF::Volume::Scan::LayerPtr layer = scan.AddLayer(
+ * RainHDF::Data::Ptr layer = scan.AddData(
  *     kQty_DBZH,           // quantity stored by this layer
  *     false,               // data or quality information (false == data)
  *     data,                // layer data to write
@@ -158,7 +158,7 @@ namespace RainHDF
  * {
  *   // Attempt to open a non-existant scan
  *   RainHDF::Volume vol("my_volume_file.h5", true);
- *   RainHDF::Volume::ScanConstPtr scan = vol.GetScan(vol.GetScanCount());
+ *   RainHDF::Scan::ConstPtr scan = vol.GetScan(vol.GetScanCount());
  * }
  * catch (std::exception &err)
  * {
