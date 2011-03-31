@@ -17,32 +17,32 @@ namespace RainHDF
   protected:
     // TODO - source is mandatory and should be in the constructor
     /// Create a new product
-    Product(const std::string &strFilename, ObjectType eType, time_t tValid);
+    Product(const std::string& file, ObjectType type, time_t valid_time);
     /// Open an existing ODIM_H5 product
-    Product(const std::string &strFilename, ObjectType eType, bool bReadOnly);
+    Product(const std::string& file, ObjectType type, bool read_only);
 
   public:
     /// Get the nominal (valid) time of the data/product
-    time_t GetTime() const { return GetAtt<time_t>(m_hWhat, kAtn_Date, kAtn_Time); }
+    time_t valid_time() const { return get_att<time_t>(hnd_what_, kAtn_Date, kAtn_Time); }
     /// Write the nominal (valid) time of the data/product
-    void SetTime(time_t tValid) { SetAtt(m_hWhat, kAtn_Date, kAtn_Time, tValid); }
+    void set_valid_time(time_t valid_time) { set_att(hnd_what_, kAtn_Date, kAtn_Time, valid_time); }
 
     /// Read the source attribute values
-    void GetSource(
-          std::string &strWMO
-        , std::string &strRadar
-        , std::string &strOrigCentre
-        , std::string &strPlace
-        , std::string &strCountry
-        , std::string &strComment) const;
+    void get_source(
+          std::string& wmo
+        , std::string& radar
+        , std::string& orig_centre
+        , std::string& place
+        , std::string& country
+        , std::string& comment) const;
     /// Write the data source attriubte
-    void SetSource(
-          const std::string &strWMO
-        , const std::string &strRadar
-        , const std::string &strOrigCentre
-        , const std::string &strPlace
-        , const std::string &strCountry
-        , const std::string &strComment);
+    void set_source(
+          const std::string& wmo
+        , const std::string& radar
+        , const std::string& orig_centre
+        , const std::string& place
+        , const std::string& country
+        , const std::string& comment);
   };
 }
 

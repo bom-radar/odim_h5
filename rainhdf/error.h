@@ -24,19 +24,19 @@ namespace RainHDF
   {
   public:
     /// Construct an error using printf style arguments
-    Error(const char * pszFormat, ...);
+    Error(const char* format, ...);
 
     /// Construct an error using printf style arguments and a file location
-    Error(hid_t hLoc, const char * pszFormat, ...);
+    Error(hid_t loc, const char* format, ...);
 
     /// Error destructor
     virtual ~Error() throw();
 
     /// Get the description of the error
-    virtual const char * what() const throw();
+    virtual const char* what() const throw();
 
   private:
-    std::string   m_strDescription;       ///< Description of the error
+    std::string description_; ///< Description of the error
   };
 }
 

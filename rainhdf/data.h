@@ -23,44 +23,44 @@ namespace RainHDF
     virtual ~Data();
 
     /// Is this layer quality data?
-    bool IsQualityData() const { return m_bIsQuality; }
+    bool is_quality() const { return is_quality_; }
 
     /// Get the quantity stored by this data
-    Quantity GetQuantity() const { return m_eQuantity; }
+    Quantity quantity() const { return quantity_; }
 
     /// Get the number of elements in the data image
-    size_t GetSize() const { return m_nSize; }
+    size_t size() const { return size_; }
 
     /// Read the data
-    void Read(float *pData, float &fNoData, float &fUndetect) const;
+    void read(float* data, float& no_data, float& undetect) const;
     /// Write the data
-    void Write(const float *pData, float fNoData, float fUndetect);
+    void write(const float* data, float no_data, float undetect);
 
   private:
     Data(
           const Base &parent
-        , bool bIsQuality
-        , size_t nIndex
-        , Quantity eQuantity
-        , const hsize_t *pDims
-        , const float *pData
-        , float fNoData
-        , float fUndetect);
+        , bool is_quality
+        , size_t index
+        , Quantity quantity
+        , const hsize_t* dims
+        , const float* data
+        , float no_data
+        , float undetect);
     Data(
           const Base &parent
-        , bool bIsQuality
-        , size_t nIndex
-        , Quantity eQuantity
-        , const hsize_t *pDims);
+        , bool is_quality
+        , size_t index
+        , Quantity quantity
+        , const hsize_t* dims);
 
   private:
-    bool              m_bIsQuality; ///< Is this a quality layer?
-    Quantity          m_eQuantity;  ///< Quantity stored by this data layer
-    float             m_fGain;      ///< Gain (a), in ax+b data unpacking function
-    float             m_fOffset;    ///< Offset (b), in ax+b data unpacking function
+    bool      is_quality_;  ///< Is this a quality layer?
+    Quantity  quantity_;    ///< Quantity stored by this data layer
+    float     gain_;        ///< Gain (a), in ax+b data unpacking function
+    float     offset_;      ///< Offset (b), in ax+b data unpacking function
 
     // Cached values
-    size_t            m_nSize;      ///< Number of elements in dataset
+    size_t    size_;        ///< Number of elements in dataset
 
     friend class Scan;
   };

@@ -44,9 +44,9 @@ namespace RainHDF
  * \code
  * RainHDF::Volume vol("my_volume_file.h5", true);
  *
- * float lat = vol.GetLatitude();
- * float lon = vol.GetLongitude();
- * int nscan = vol.GetScanCount();
+ * float lat = vol.latitude();
+ * float lon = vol.longitude();
+ * int nscan = vol.scan_count();
  *
  * cout << "volume at (" << lat << ", " << lon << ") contains " << nscan << " scans\n";
  * \endcode
@@ -60,14 +60,14 @@ namespace RainHDF
  *
  * \code
  * RainHDF::Volume vol("my_volume_file.h5", false);
- * if (vol.GetScanCount() < 3)
+ * if (vol.scan_count() < 3)
  * {
  *   cerr << "Insufficient scans" << endl;
  *   return;
  * }
  *
- * RainHDF::Scan::Ptr scan = vol.GetScan(2);
- * RainHDF::Data::Ptr dbz = scan.GetData(kQty_DBZH);
+ * RainHDF::Scan::Ptr scan = vol.scan(2);
+ * RainHDF::Data::Ptr dbz = scan.layer(kQty_DBZH);
  * if (dbz.get() == NULL)
  * {
  *   cerr << "No reflectivity data in file" << endl;
@@ -75,9 +75,9 @@ namespace RainHDF
  * }
  *
  * float no_data, undetect;
- * std::vector<float> data(scan.GetAzimuthCount() * scan.GetRangeBinCount());
+ * std::vector<float> data(scan.azimuth_count() * scan.range_bin_count());
  *
- * dbz.Read(&data[0], no_data, undetect);
+ * dbz.read(&data[0], no_data, undetect);
  * // data, no_data and undetect now contain valid values
  * \endcode
  *
@@ -87,7 +87,7 @@ namespace RainHDF
  * one time, smart pointers are used to automatically close datasets that are
  * no longer being inspected.
  *
- * Upon calling Volume::GetScan, the HDF5 resources associated with
+ * Upon calling Volume::scan, the HDF5 resources associated with
  * the scan are opened.  These resources remain open until the smart pointer is
  * destroyed.
  *
@@ -122,7 +122,7 @@ namespace RainHDF
  *     36.8,                // Station longitude
  *     10.0);               // Station height
  *      
- * RainHDF::Scan::Ptr scan = vol.AddScan(
+ * RainHDF::Scan::Ptr scan = vol.add_scan(
  *     0.2,                 // elevation angle
  *     azimuths,            // no of azimuths
  *     bins,                // no of range bins
@@ -131,7 +131,7 @@ namespace RainHDF
  *     time(NULL) - 30,     // scan start time
  *     time(NULL));         // scan end time
  *               
- * RainHDF::Data::Ptr layer = scan.AddData(
+ * RainHDF::Data::Ptr layer = scan.add_layer(
  *     kQty_DBZH,           // quantity stored by this layer
  *     false,               // data or quality information (false == data)
  *     data,                // layer data to write
@@ -158,7 +158,7 @@ namespace RainHDF
  * {
  *   // Attempt to open a non-existant scan
  *   RainHDF::Volume vol("my_volume_file.h5", true);
- *   RainHDF::Scan::ConstPtr scan = vol.GetScan(vol.GetScanCount());
+ *   RainHDF::Scan::ConstPtr scan = vol.scan(vol.scan_count());
  * }
  * catch (std::exception &err)
  * {

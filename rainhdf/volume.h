@@ -18,75 +18,75 @@ namespace RainHDF
   public:
     /// Create a new volume product
     Volume(
-          const std::string &strFilename
-        , time_t tValid
-        , double fLatitude
-        , double fLongitude
-        , double fHeight
+          const std::string& file
+        , time_t valid_time
+        , double latitude
+        , double longitude
+        , double height
         );
 
     /// Open an existing volume product
-    Volume(const std::string &strFilename, bool bReadOnly);
+    Volume(const std::string& file, bool read_only);
 
     /// Read the station latitude
-    double GetLatitude() const { return GetAtt<double>(m_hWhere, kAtn_Latitude); }
+    double latitude() const { return get_att<double>(hnd_where_, kAtn_Latitude); }
     /// Write the station latitude
-    void SetLatitude(double fLat) { SetAtt(m_hWhere, kAtn_Latitude, fLat); }
+    void set_latitude(double latitude) { set_att(hnd_where_, kAtn_Latitude, latitude); }
 
     /// Read the station longitude
-    double GetLongitude() const { return GetAtt<double>(m_hWhere, kAtn_Longitude); }
+    double longitude() const { return get_att<double>(hnd_where_, kAtn_Longitude); }
     /// Write the station longitude
-    void SetLongitude(double fLon) { SetAtt(m_hWhere, kAtn_Longitude, fLon); }
+    void set_longitude(double longitude) { set_att(hnd_where_, kAtn_Longitude, longitude); }
 
     /// Read the station elevation
-    double GetHeight() const { return GetAtt<double>(m_hWhere, kAtn_Height); }
+    double height() const { return get_att<double>(hnd_where_, kAtn_Height); }
     /// Write the station elevation
-    void SetHeight(double fHeight) { SetAtt(m_hWhere, kAtn_Height, fHeight); }
+    void set_height(double height) { set_att(hnd_where_, kAtn_Height, height); }
 
     /// Get the number of scans in the volume
-    size_t GetScanCount() const { return m_nScanCount; }
+    size_t scan_count() const { return scan_count_; }
     /// Get the 'nth' scan
-    Scan::Ptr GetScan(size_t nScan) { return Scan::Ptr(new Scan(*this, nScan + 1)); }
+    Scan::Ptr scan(size_t i) { return Scan::Ptr(new Scan(*this, i + 1)); }
     /// Get the 'nth' scan
-    Scan::ConstPtr GetScan(size_t nScan) const { return Scan::ConstPtr(new Scan(*this, nScan + 1)); }
+    Scan::ConstPtr scan(size_t i) const { return Scan::ConstPtr(new Scan(*this, i + 1)); }
     /// Add a new scan to the file
-    Scan::Ptr AddScan(
-          double fElevation     ///< Scan elevation angle (degrees above horizon)
-        , size_t nAzimuths      ///< Number of azimuths scanned
-        , size_t nRangeBins     ///< Number of range bins
-        , size_t nFirstAzimuth  ///< Index of first azimuth to be radiated
-        , double fRangeStart    ///< Range of start of first bin (m)
-        , double fRangeScale    ///< Distance between bins (m)
-        , time_t tStart         ///< Time scan started
-        , time_t tEnd           ///< Time scan ended
+    Scan::Ptr add_scan(
+          double elevation        ///< Scan elevation angle (degrees above horizon)
+        , size_t azimuth_count    ///< Number of azimuths scanned
+        , size_t range_bin_count  ///< Number of range bins
+        , size_t first_azimuth    ///< Index of first azimuth to be radiated
+        , double range_start      ///< Range of start of first bin (m)
+        , double range_scale      ///< Distance between bins (m)
+        , time_t start_time       ///< Time scan started
+        , time_t end_time         ///< Time scan ended
         );
 
   private:
-    size_t    m_nScanCount;   ///< Number of scans in file
+    size_t scan_count_; ///< Number of scans in file
   };
 
-  inline Scan::Ptr Volume::AddScan(
-        double fElevation
-      , size_t nAzimuths
-      , size_t nRangeBins
-      , size_t nFirstAzimuth
-      , double fRangeStart
-      , double fRangeScale
-      , time_t tStart
-      , time_t tEnd)
+  inline Scan::Ptr Volume::add_scan(
+        double elevation
+      , size_t azimuth_count
+      , size_t range_bin_count
+      , size_t first_azimuth
+      , double range_start
+      , double range_scale
+      , time_t start_time
+      , time_t end_time)
   {
     return Scan::Ptr(
         new Scan(
             *this,
-            ++m_nScanCount,
-            fElevation,
-            nAzimuths,
-            nRangeBins,
-            nFirstAzimuth,
-            fRangeStart,
-            fRangeScale,
-            tStart,
-            tEnd));
+            ++scan_count_,
+            elevation,
+            azimuth_count,
+            range_bin_count,
+            first_azimuth,
+            range_start,
+            range_scale,
+            start_time,
+            end_time));
   }
 };
 

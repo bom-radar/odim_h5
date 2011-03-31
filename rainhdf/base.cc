@@ -10,70 +10,70 @@
 
 using namespace RainHDF;
 
-Base::Base(const std::string &strFilename, CreateFlag)
-  : m_pParent(NULL)
-  , m_hThis(kHID_File, strFilename.c_str(), kCreate)
-  , m_hWhat(kHID_Group, m_hThis, kGrp_What, kCreate)
-  , m_hWhere(kHID_Group, m_hThis, kGrp_Where, kCreate)
-  , m_hHow(kHID_Group, m_hThis, kGrp_How, kCreate)
+Base::Base(const std::string& file, CreateFlag)
+  : parent_(NULL)
+  , hnd_this_(kHID_File, file.c_str(), kCreate)
+  , hnd_what_(kHID_Group, hnd_this_, kGrp_What, kCreate)
+  , hnd_where_(kHID_Group, hnd_this_, kGrp_Where, kCreate)
+  , hnd_how_(kHID_Group, hnd_this_, kGrp_How, kCreate)
 {
 
 }
 
-Base::Base(const Base &parent, const char *pszName, CreateFlag)
-  : m_pParent(&parent)
-  , m_hThis(kHID_Group, m_pParent->m_hThis, pszName, kCreate)
-  , m_hWhat(kHID_Group, m_hThis, kGrp_What, kCreate)
-  , m_hWhere(kHID_Group, m_hThis, kGrp_Where, kCreate)
-  , m_hHow(kHID_Group, m_hThis, kGrp_How, kCreate)
+Base::Base(const Base& parent, const char *name, CreateFlag)
+  : parent_(&parent)
+  , hnd_this_(kHID_Group, parent_->hnd_this_, name, kCreate)
+  , hnd_what_(kHID_Group, hnd_this_, kGrp_What, kCreate)
+  , hnd_where_(kHID_Group, hnd_this_, kGrp_Where, kCreate)
+  , hnd_how_(kHID_Group, hnd_this_, kGrp_How, kCreate)
 {
 
 }
 
-Base::Base(const Base &parent, const char *pszName, int nIndex, CreateFlag)
-  : m_pParent(&parent)
-  , m_hThis(kHID_Group, m_pParent->m_hThis, pszName, nIndex, kCreate)
-  , m_hWhat(kHID_Group, m_hThis, kGrp_What, kCreate)
-  , m_hWhere(kHID_Group, m_hThis, kGrp_Where, kCreate)
-  , m_hHow(kHID_Group, m_hThis, kGrp_How, kCreate)
+Base::Base(const Base& parent, const char *name, int index, CreateFlag)
+  : parent_(&parent)
+  , hnd_this_(kHID_Group, parent_->hnd_this_, name, index, kCreate)
+  , hnd_what_(kHID_Group, hnd_this_, kGrp_What, kCreate)
+  , hnd_where_(kHID_Group, hnd_this_, kGrp_Where, kCreate)
+  , hnd_how_(kHID_Group, hnd_this_, kGrp_How, kCreate)
 {
 
 }
 
-Base::Base(const std::string &strFilename, bool bReadOnly, OpenFlag)
-  : m_pParent(NULL)
-  , m_hThis(kHID_File, strFilename.c_str(), bReadOnly, kOpen)
-  , m_hWhat(kHID_Group, m_hThis, kGrp_What, kOpen, true)
-  , m_hWhere(kHID_Group, m_hThis, kGrp_Where, kOpen, true)
-  , m_hHow(kHID_Group, m_hThis, kGrp_How, kOpen, true)
+Base::Base(const std::string& file, bool read_only, OpenFlag)
+  : parent_(NULL)
+  , hnd_this_(kHID_File, file.c_str(), read_only, kOpen)
+  , hnd_what_(kHID_Group, hnd_this_, kGrp_What, kOpen, true)
+  , hnd_where_(kHID_Group, hnd_this_, kGrp_Where, kOpen, true)
+  , hnd_how_(kHID_Group, hnd_this_, kGrp_How, kOpen, true)
 {
   // Note presence of any 'how' attributes
-  if (m_hHow)
-    DetermineAttributePresence(m_hHow, m_AttFlags);
+  if (hnd_how_)
+    check_attribs_presence(hnd_how_, att_flags_);
 }
 
-Base::Base(const Base &parent, const char *pszName, OpenFlag)
-  : m_pParent(&parent)
-  , m_hThis(kHID_Group, m_pParent->m_hThis, pszName, kOpen)
-  , m_hWhat(kHID_Group, m_hThis, kGrp_What, kOpen, true)
-  , m_hWhere(kHID_Group, m_hThis, kGrp_Where, kOpen, true)
-  , m_hHow(kHID_Group, m_hThis, kGrp_How, kOpen, true)
+Base::Base(const Base& parent, const char *name, OpenFlag)
+  : parent_(&parent)
+  , hnd_this_(kHID_Group, parent_->hnd_this_, name, kOpen)
+  , hnd_what_(kHID_Group, hnd_this_, kGrp_What, kOpen, true)
+  , hnd_where_(kHID_Group, hnd_this_, kGrp_Where, kOpen, true)
+  , hnd_how_(kHID_Group, hnd_this_, kGrp_How, kOpen, true)
 {
   // Note presence of any 'how' attributes
-  if (m_hHow)
-    DetermineAttributePresence(m_hHow, m_AttFlags);
+  if (hnd_how_)
+    check_attribs_presence(hnd_how_, att_flags_);
 }
 
-Base::Base(const Base &parent, const char *pszName, int nIndex, OpenFlag)
-  : m_pParent(&parent)
-  , m_hThis(kHID_Group, m_pParent->m_hThis, pszName, nIndex, kOpen)
-  , m_hWhat(kHID_Group, m_hThis, kGrp_What, kOpen, true)
-  , m_hWhere(kHID_Group, m_hThis, kGrp_Where, kOpen, true)
-  , m_hHow(kHID_Group, m_hThis, kGrp_How, kOpen, true)
+Base::Base(const Base& parent, const char *name, int index, OpenFlag)
+  : parent_(&parent)
+  , hnd_this_(kHID_Group, parent_->hnd_this_, name, index, kOpen)
+  , hnd_what_(kHID_Group, hnd_this_, kGrp_What, kOpen, true)
+  , hnd_where_(kHID_Group, hnd_this_, kGrp_Where, kOpen, true)
+  , hnd_how_(kHID_Group, hnd_this_, kGrp_How, kOpen, true)
 {
   // Note presence of any 'how' attributes
-  if (m_hHow)
-    DetermineAttributePresence(m_hHow, m_AttFlags);
+  if (hnd_how_)
+    check_attribs_presence(hnd_how_, att_flags_);
 }
 
 Base::~Base()

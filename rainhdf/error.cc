@@ -12,39 +12,39 @@
 
 using namespace RainHDF;
 
-Error::Error(const char *pszFormat, ...)
+Error::Error(const char *format, ...)
 {
   static const int kErrBufSize = 512;
-  char pszBuffer[kErrBufSize];
-  va_list argList;
+  char buf[kErrBufSize];
+  va_list ap;
 
-  va_start(argList, pszFormat);
-  vsnprintf(pszBuffer, kErrBufSize, pszFormat, argList);
-  va_end(argList);
+  va_start(ap, format);
+  vsnprintf(buf, kErrBufSize, format, ap);
+  va_end(ap);
 
-  pszBuffer[kErrBufSize-1] = '\0';
-  m_strDescription.assign(pszBuffer);
+  buf[kErrBufSize-1] = '\0';
+  description_.assign(buf);
 }
 
-Error::Error(hid_t hLoc, const char *pszFormat, ...)
+Error::Error(hid_t loc, const char *format, ...)
 {
   static const int kErrBufSize = 512;
-  char pszBuffer[kErrBufSize];
-  va_list argList;
+  char buf[kErrBufSize];
+  va_list ap;
 
-  va_start(argList, pszFormat);
-  vsnprintf(pszBuffer, kErrBufSize, pszFormat, argList);
-  va_end(argList);
+  va_start(ap, format);
+  vsnprintf(buf, kErrBufSize, format, ap);
+  va_end(ap);
 
-  pszBuffer[kErrBufSize-1] = '\0';
-  m_strDescription.assign(pszBuffer);
+  buf[kErrBufSize-1] = '\0';
+  description_.assign(buf);
 
   // Get the location path from the file
-  if (H5Iget_name(hLoc, pszBuffer, kErrBufSize) > 0)
+  if (H5Iget_name(loc, buf, kErrBufSize) > 0)
   {
-    pszBuffer[kErrBufSize-1] = '\0';
-    m_strDescription.append(" at ");
-    m_strDescription.append(pszBuffer);
+    buf[kErrBufSize-1] = '\0';
+    description_.append(" at ");
+    description_.append(buf);
   }
 }
 
@@ -55,6 +55,6 @@ Error::~Error() throw()
 
 const char * Error::what() const throw()
 {
-  return m_strDescription.c_str();
+  return description_.c_str();
 }
 

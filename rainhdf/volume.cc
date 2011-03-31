@@ -9,37 +9,37 @@
 using namespace RainHDF;
 
 Volume::Volume(
-      const std::string &strFilename
-    , time_t tValid
-    , double fLatitude
-    , double fLongitude
-    , double fHeight)
-  : Product(strFilename, kObj_VolumePolar, tValid)
-  , m_nScanCount(0)
+      const std::string &file
+    , time_t valid_time
+    , double latitude
+    , double longitude
+    , double height)
+  : Product(file, kObj_VolumePolar, valid_time)
+  , scan_count_(0)
 {
-  NewAtt(m_hWhere, kAtn_Latitude, fLatitude);
-  NewAtt(m_hWhere, kAtn_Longitude, fLongitude);
-  NewAtt(m_hWhere, kAtn_Height, fHeight);
+  new_att(hnd_where_, kAtn_Latitude, latitude);
+  new_att(hnd_where_, kAtn_Longitude, longitude);
+  new_att(hnd_where_, kAtn_Height, height);
 }
 
-Volume::Volume(const std::string &strFilename, bool bReadOnly)
-  : Product(strFilename, kObj_VolumePolar, bReadOnly)
+Volume::Volume(const std::string &file, bool read_only)
+  : Product(file, kObj_VolumePolar, read_only)
 {
   // Determine the number of scans
-  hsize_t nObjs;
-  if (H5Gget_num_objs(m_hThis, &nObjs) < 0)
-    throw Error(m_hThis, "Failed to determine number of objects in group");
-  for (nObjs; nObjs > 0; --nObjs)
+  hsize_t obj_count;
+  if (H5Gget_num_objs(hnd_this_, &obj_count) < 0)
+    throw Error(hnd_this_, "Failed to determine number of objects in group");
+  for (obj_count; obj_count > 0; --obj_count)
   {
-    char pszName[32];
-    sprintf(pszName, "%s%d", kGrp_Dataset, (int) nObjs);
-    htri_t ret = H5Lexists(m_hThis, pszName, H5P_DEFAULT);
+    char name[32];
+    sprintf(name, "%s%d", kGrp_Dataset, (int) obj_count);
+    htri_t ret = H5Lexists(hnd_this_, name, H5P_DEFAULT);
     if (ret < 0)
-      throw Error(m_hThis, "Failed to verify existance of group '%s'", pszName);
+      throw Error(hnd_this_, "Failed to verify existance of group '%s'", name);
     else if (ret)
       break;
   }
-  m_nScanCount = nObjs;
+  scan_count_ = obj_count;
 }
 
 

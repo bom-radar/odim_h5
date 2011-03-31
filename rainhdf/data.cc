@@ -23,121 +23,121 @@ Data::~Data()
 }
 
 Data::Data(
-      const Base &parent
-    , bool bIsQuality
-    , size_t nIndex
-    , Quantity eQuantity
-    , const hsize_t *pDims
-    , const float *pData
-    , float fNoData
-    , float fUndetect)
-  : Base(parent, bIsQuality ? kGrp_Quality : kGrp_Data, nIndex, kCreate)
-  , m_bIsQuality(bIsQuality)
-  , m_eQuantity(eQuantity)
-  , m_fGain(1.0f)
-  , m_fOffset(0.0f)
-  , m_nSize(pDims[0] * pDims[1])
+      const Base& parent
+    , bool is_quality
+    , size_t index
+    , Quantity quantity
+    , const hsize_t* dims
+    , const float* data
+    , float no_data
+    , float undetect)
+  : Base(parent, is_quality ? kGrp_Quality : kGrp_Data, index, kCreate)
+  , is_quality_(is_quality)
+  , quantity_(quantity)
+  , gain_(1.0f)
+  , offset_(0.0f)
+  , size_(dims[0] * dims[1])
 {
   // Fill in the 'what' parameters
-  NewAtt(m_hWhat, kAtn_Quantity, m_eQuantity);
-  NewAtt(m_hWhat, kAtn_Gain, m_fGain);
-  NewAtt(m_hWhat, kAtn_Offset, m_fOffset);
-  NewAtt(m_hWhat, kAtn_NoData, fNoData);
-  NewAtt(m_hWhat, kAtn_Undetect, fUndetect);
+  new_att(hnd_what_, kAtn_Quantity, quantity_);
+  new_att(hnd_what_, kAtn_Gain, gain_);
+  new_att(hnd_what_, kAtn_Offset, offset_);
+  new_att(hnd_what_, kAtn_NoData, no_data);
+  new_att(hnd_what_, kAtn_Undetect, undetect);
 
   // Create the HDF dataset
-  HID_Handle hSpace(kHID_Space, 2, pDims, kCreate);
-  HID_Handle hPList(kHID_PList, H5P_DATASET_CREATE, kCreate);
-  if (H5Pset_chunk(hPList, 2, pDims) < 0)
-    throw Error(m_hThis, "Failed to set chunk parameters for data");
-  if (H5Pset_deflate(hPList, kDefCompression) < 0)
-    throw Error(m_hThis, "Failed to set compression level for data");
-  HID_Handle hData(kHID_Data, m_hThis, kDat_Data, H5T_NATIVE_FLOAT, hSpace, hPList, kCreate);
-  NewAtt(hData, kAtn_Class, kVal_Class);
-  NewAtt(hData, kAtn_ImageVersion, kVal_ImageVersion);
+  HID_Handle space(kHID_Space, 2, dims, kCreate);
+  HID_Handle plist(kHID_PList, H5P_DATASET_CREATE, kCreate);
+  if (H5Pset_chunk(plist, 2, dims) < 0)
+    throw Error(hnd_this_, "Failed to set chunk parameters for data");
+  if (H5Pset_deflate(plist, kDefCompression) < 0)
+    throw Error(hnd_this_, "Failed to set compression level for data");
+  HID_Handle hnd_data(kHID_Data, hnd_this_, kDat_Data, H5T_NATIVE_FLOAT, space, plist, kCreate);
+  new_att(hnd_data, kAtn_Class, kVal_Class);
+  new_att(hnd_data, kAtn_ImageVersion, kVal_ImageVersion);
 
   // Write the actual image data
-  if (H5Dwrite(hData, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, pData) < 0)
+  if (H5Dwrite(hnd_data, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data) < 0)
     throw Error("Failed to write data");
 }
 
 Data::Data(
-      const Base &parent
-    , bool bIsQuality
-    , size_t nIndex
-    , Quantity eQuantity
-    , const hsize_t *pDims)
-  : Base(parent, bIsQuality ? kGrp_Quality : kGrp_Data, nIndex, kOpen)
-  , m_bIsQuality(bIsQuality)
-  , m_eQuantity(eQuantity)
-  , m_fGain(GetAtt<double>(m_hWhat, kAtn_Gain))
-  , m_fOffset(GetAtt<double>(m_hWhat, kAtn_Offset))
-  , m_nSize(pDims[0] * pDims[1])
+      const Base& parent
+    , bool is_quality
+    , size_t index
+    , Quantity quantity
+    , const hsize_t* dims)
+  : Base(parent, is_quality ? kGrp_Quality : kGrp_Data, index, kOpen)
+  , is_quality_(is_quality)
+  , quantity_(quantity)
+  , gain_(get_att<double>(hnd_what_, kAtn_Gain))
+  , offset_(get_att<double>(hnd_what_, kAtn_Offset))
+  , size_(dims[0] * dims[1])
 {
 
 }
 
-void Data::Read(float *pData, float &fNoData, float &fUndetect) const
+void Data::read(float* data, float& no_data, float& undetect) const
 {
-  HID_Handle hData(kHID_Data, m_hThis, kDat_Data, kOpen);
+  HID_Handle hnd_data(kHID_Data, hnd_this_, kDat_Data, kOpen);
 
   // Verify the correct dimension to prevent memory corruption
-  HID_Handle hSpace(kHID_Space, H5Dget_space(hData));
-  if (H5Sget_simple_extent_npoints(hSpace) != m_nSize)
-    throw Error(hData, "Dataset dimension mismatch");
+  HID_Handle space(kHID_Space, H5Dget_space(hnd_data));
+  if (H5Sget_simple_extent_npoints(space) != size_)
+    throw Error(hnd_data, "Dataset dimension mismatch");
 
   // Read the raw data
-  fNoData = GetAtt<double>(m_hWhat, kAtn_NoData);
-  fUndetect = GetAtt<double>(m_hWhat, kAtn_Undetect);
-  if (H5Dread(hData, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, pData) < 0)
-    throw Error(m_hThis, "Failed to read data");
+  no_data = get_att<double>(hnd_what_, kAtn_NoData);
+  undetect = get_att<double>(hnd_what_, kAtn_Undetect);
+  if (H5Dread(hnd_data, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data) < 0)
+    throw Error(hnd_this_, "Failed to read data");
 
   // Convert using gain and offset?
-  if (   std::fabs(m_fGain - 1.0) > 0.000001
-      || std::fabs(m_fOffset) > 0.000001)
+  if (   std::fabs(gain_ - 1.0) > 0.000001
+      || std::fabs(offset_) > 0.000001)
   {
-    fNoData = (fNoData * m_fGain) + m_fOffset;
-    fUndetect = (fUndetect * m_fGain) + m_fOffset;
-    for (size_t i = 0; i < m_nSize; ++i)
-      pData[i] = (pData[i] * m_fGain) + m_fOffset;
+    no_data = (no_data * gain_) + offset_;
+    undetect = (undetect * gain_) + offset_;
+    for (size_t i = 0; i < size_; ++i)
+      data[i] = (data[i] * gain_) + offset_;
   }
 }
 
-void Data::Write(const float *pData, float fNoData, float fUndetect)
+void Data::write(const float* data, float no_data, float undetect)
 {
-  HID_Handle hData(kHID_Data, m_hThis, kDat_Data, kOpen);
+  HID_Handle hnd_data(kHID_Data, hnd_this_, kDat_Data, kOpen);
 
   // Verify the correct dimension to prevent memory corruption
-  HID_Handle hSpace(kHID_Space, H5Dget_space(hData));
-  if (H5Sget_simple_extent_npoints(hSpace) != m_nSize)
-    throw Error(hData, "Dataset dimension mismatch");
+  HID_Handle space(kHID_Space, H5Dget_space(hnd_data));
+  if (H5Sget_simple_extent_npoints(space) != size_)
+    throw Error(hnd_data, "Dataset dimension mismatch");
 
   // Do we have to convert the data?
-  if (   std::fabs(m_fGain - 1.0f) > 0.000001
-      || std::fabs(m_fOffset) > 0.000001)
+  if (   std::fabs(gain_ - 1.0f) > 0.000001
+      || std::fabs(offset_) > 0.000001)
   {
-    float fGainMult = 1.0f / m_fGain;
-    fNoData = (fNoData - m_fOffset) * fGainMult;
-    fUndetect = (fUndetect - m_fOffset) * fGainMult;
+    float gain_mult = 1.0f / gain_;
+    no_data = (no_data - offset_) * gain_mult;
+    undetect = (undetect - offset_) * gain_mult;
 
-    std::vector<float> vecData;
-    vecData.reserve(m_nSize);
-    vecData.assign(pData, pData + m_nSize);
-    for (std::vector<float>::iterator i = vecData.begin(); i != vecData.end(); ++i)
-      *i = (*i - m_fOffset) * fGainMult;
+    std::vector<float> vec_data;
+    vec_data.reserve(size_);
+    vec_data.assign(data, data + size_);
+    for (std::vector<float>::iterator i = vec_data.begin(); i != vec_data.end(); ++i)
+      *i = (*i - offset_) * gain_mult;
 
     // Write the converted data
-    SetAtt(m_hWhat, kAtn_NoData, fNoData);
-    SetAtt(m_hWhat, kAtn_Undetect, fUndetect);
-    if (H5Dwrite(hData, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &vecData[0]) < 0)
+    set_att(hnd_what_, kAtn_NoData, no_data);
+    set_att(hnd_what_, kAtn_Undetect, undetect);
+    if (H5Dwrite(hnd_data, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &vec_data[0]) < 0)
       throw Error("Failed to write data");
   }
   else
   {
     // Write the raw data
-    SetAtt(m_hWhat, kAtn_NoData, fNoData);
-    SetAtt(m_hWhat, kAtn_Undetect, fUndetect);
-    if (H5Dwrite(hData, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, pData) < 0)
+    set_att(hnd_what_, kAtn_NoData, no_data);
+    set_att(hnd_what_, kAtn_Undetect, undetect);
+    if (H5Dwrite(hnd_data, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data) < 0)
       throw Error("Failed to write data");
   }
 }

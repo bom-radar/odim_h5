@@ -34,182 +34,182 @@ namespace RainHDF
   public:
     /// Construct a null handle
     HID_Handle() 
-      : m_hID(kInvalidHID) 
+      : hid_(kInvalidHID) 
     { 
 
     }
     /// Create a HDF5 file
-    HID_Handle(HID_File, const char *pszFile, CreateFlag)
-      : m_hID(H5Fcreate(pszFile, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT))
+    HID_Handle(HID_File, const char* file, CreateFlag)
+      : hid_(H5Fcreate(file, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT))
     {
-      if (m_hID < 0) 
-        throw Error("Failed to create HDF5 file '%s'", pszFile);
+      if (hid_ < 0) 
+        throw Error("Failed to create HDF5 file '%s'", file);
     }
     /// Open an existing HDF5 file
-    HID_Handle(HID_File, const char *pszFile, bool bReadOnly, OpenFlag) 
-      : m_hID(H5Fopen(pszFile, bReadOnly ? H5F_ACC_RDONLY : H5F_ACC_RDWR, H5P_DEFAULT))
+    HID_Handle(HID_File, const char* file, bool read_only, OpenFlag) 
+      : hid_(H5Fopen(file, read_only ? H5F_ACC_RDONLY : H5F_ACC_RDWR, H5P_DEFAULT))
     { 
-      if (m_hID < 0)
-        throw Error("Failed to open HDF5 file '%s'", pszFile);
+      if (hid_ < 0)
+        throw Error("Failed to open HDF5 file '%s'", file);
     }
     /// Create a HDF5 group
-    HID_Handle(HID_Group, hid_t hParent, const char *pszName, CreateFlag)
-      : m_hID(H5Gcreate(hParent, pszName, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT))
+    HID_Handle(HID_Group, hid_t parent, const char* name, CreateFlag)
+      : hid_(H5Gcreate(parent, name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT))
     {
-      if (m_hID < 0) 
-        throw Error(hParent, "Failed to create group '%s'", pszName);
+      if (hid_ < 0) 
+        throw Error(parent, "Failed to create group '%s'", name);
     }
     /// Create a HDF5 group (append index to name)
-    HID_Handle(HID_Group, hid_t hParent, const char *pszName, size_t nIndex, CreateFlag)
+    HID_Handle(HID_Group, hid_t parent, const char* name, size_t index, CreateFlag)
     {
-      char pszName2[32];
-      sprintf(pszName2, "%s%d", pszName, (int) nIndex);
-      m_hID = H5Gcreate(hParent, pszName2, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-      if (m_hID < 0) 
-        throw Error(hParent, "Failed to create group '%s'", pszName2);
+      char name2[32];
+      sprintf(name2, "%s%d", name, (int) index);
+      hid_ = H5Gcreate(parent, name2, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+      if (hid_ < 0) 
+        throw Error(parent, "Failed to create group '%s'", name2);
     }
     /// Open an existing HDF5 group
-    HID_Handle(HID_Group, hid_t hParent, const char *pszName, OpenFlag)
-      : m_hID(H5Gopen(hParent, pszName, H5P_DEFAULT))
+    HID_Handle(HID_Group, hid_t parent, const char* name, OpenFlag)
+      : hid_(H5Gopen(parent, name, H5P_DEFAULT))
     { 
-      if (m_hID < 0)
-        throw Error(hParent, "Failed to open group '%s'", pszName);
+      if (hid_ < 0)
+        throw Error(parent, "Failed to open group '%s'", name);
     }
     /// Open an existing HDF5 group (append index to name)
-    HID_Handle(HID_Group, hid_t hParent, const char *pszName, size_t nIndex, OpenFlag)
+    HID_Handle(HID_Group, hid_t parent, const char* name, size_t index, OpenFlag)
     {
-      char pszName2[32];
-      sprintf(pszName2, "%s%d", pszName, (int) nIndex);
-      m_hID = H5Gopen(hParent, pszName2, H5P_DEFAULT);
-      if (m_hID < 0) 
-        throw Error(hParent, "Failed to open group '%s'", pszName2);
+      char name2[32];
+      sprintf(name2, "%s%d", name, (int) index);
+      hid_ = H5Gopen(parent, name2, H5P_DEFAULT);
+      if (hid_ < 0) 
+        throw Error(parent, "Failed to open group '%s'", name2);
     }
     /// Open an existing HDF5 group if it exists
-    HID_Handle(HID_Group, hid_t hParent, const char *pszName, OpenFlag, bool bOptional)
+    HID_Handle(HID_Group, hid_t parent, const char* name, OpenFlag, bool bOptional)
     {
-      htri_t ret = H5Lexists(hParent, pszName, H5P_DEFAULT);
+      htri_t ret = H5Lexists(parent, name, H5P_DEFAULT);
       if (ret < 0)
-        throw Error(hParent, "Failed to verify existance of group '%s'", pszName);
+        throw Error(parent, "Failed to verify existance of group '%s'", name);
       else if (ret == 0 && bOptional)
-        m_hID = kInvalidHID;
+        hid_ = kInvalidHID;
       else
       {
-        m_hID = H5Gopen(hParent, pszName, H5P_DEFAULT);
-        if (m_hID < 0)
-          throw Error(hParent, "Failed to open group '%s'", pszName);
+        hid_ = H5Gopen(parent, name, H5P_DEFAULT);
+        if (hid_ < 0)
+          throw Error(parent, "Failed to open group '%s'", name);
       }
     }
     /// Create a HDF5 type
-    HID_Handle(HID_Type, hid_t hID) : m_hID(hID)
+    HID_Handle(HID_Type, hid_t hid) : hid_(hid)
     {
-      if (m_hID < 0) 
+      if (hid_ < 0) 
         throw Error("Failed to acquire type");
     }
     /// Create a scalar HDF5 dataspace
     HID_Handle(HID_Space, CreateFlag) 
-      : m_hID(H5Screate(H5S_SCALAR))
+      : hid_(H5Screate(H5S_SCALAR))
     {
-      if (m_hID < 0) 
+      if (hid_ < 0) 
         throw Error("Failed to create scalar dataspace");
     }
     /// Create a 2D HDF5 dataspace
-    HID_Handle(HID_Space, int nRank, const hsize_t *pDims, CreateFlag)
-      : m_hID(H5Screate_simple(nRank, pDims, NULL))
+    HID_Handle(HID_Space, int rank, const hsize_t* dims, CreateFlag)
+      : hid_(H5Screate_simple(rank, dims, NULL))
     {
-      if (m_hID < 0)
-        throw Error("Failed to create rank %d dataspace", nRank);
+      if (hid_ < 0)
+        throw Error("Failed to create rank %d dataspace", rank);
     }
     /// Construct from existing hid_t
-    HID_Handle(HID_Space, hid_t hID)
-      : m_hID(hID)
+    HID_Handle(HID_Space, hid_t hid)
+      : hid_(hid)
     {
-      if (m_hID < 0)
+      if (hid_ < 0)
         throw Error("Failed to acquire dataspace");
     }
     /// Create a HDF5 attribute
     HID_Handle(
           HID_Attr
-        , hid_t hParent
-        , const char *pszName
-        , hid_t hType
-        , hid_t hSpace
+        , hid_t parent
+        , const char* name
+        , hid_t type
+        , hid_t space
         , CreateFlag)
-      : m_hID(H5Acreate(hParent, pszName, hType, hSpace, H5P_DEFAULT, H5P_DEFAULT))
+      : hid_(H5Acreate(parent, name, type, space, H5P_DEFAULT, H5P_DEFAULT))
     {
-      if (m_hID < 0) 
-        throw Error(hParent, "Failed to create attribute '%s'", pszName);
+      if (hid_ < 0) 
+        throw Error(parent, "Failed to create attribute '%s'", name);
     }
     /// Open an existing HDF5 attribute
-    HID_Handle(HID_Attr, hid_t hParent, const char *pszName, OpenFlag)
-      : m_hID(H5Aopen(hParent, pszName, H5P_DEFAULT))
+    HID_Handle(HID_Attr, hid_t parent, const char* name, OpenFlag)
+      : hid_(H5Aopen(parent, name, H5P_DEFAULT))
     { 
-      if (m_hID < 0)
-        throw Error(hParent, "Failed to open HDF5 attribute '%s'", pszName);
+      if (hid_ < 0)
+        throw Error(parent, "Failed to open HDF5 attribute '%s'", name);
     }
     /// Create a HDF5 property list
     HID_Handle(HID_PList, hid_t cls_id, CreateFlag) 
-      : m_hID(H5Pcreate(cls_id))
+      : hid_(H5Pcreate(cls_id))
     {
-      if (m_hID < 0) 
+      if (hid_ < 0) 
         throw Error("Failed to create property list for class %d", cls_id);
     }
     /// Create a HDF5 dataset
     HID_Handle(
           HID_Data
-        , hid_t hParent
-        , const char *pszName
-        , hid_t hType
-        , hid_t hSpace
-        , hid_t hPList
+        , hid_t parent
+        , const char* name
+        , hid_t type
+        , hid_t space
+        , hid_t plist
         , CreateFlag)
-      : m_hID(H5Dcreate(hParent, pszName, hType, hSpace, H5P_DEFAULT, hPList, H5P_DEFAULT))
+      : hid_(H5Dcreate(parent, name, type, space, H5P_DEFAULT, plist, H5P_DEFAULT))
     {
-      if (m_hID < 0) 
-        throw Error(hParent, "Failed to create dataset '%s'", pszName);
+      if (hid_ < 0) 
+        throw Error(parent, "Failed to create dataset '%s'", name);
     }
     /// Open an existing HDF5 dataset
-    HID_Handle(HID_Data, hid_t hParent, const char *pszName, OpenFlag)
-      : m_hID(H5Dopen(hParent, pszName, H5P_DEFAULT))
+    HID_Handle(HID_Data, hid_t parent, const char* name, OpenFlag)
+      : hid_(H5Dopen(parent, name, H5P_DEFAULT))
     { 
-      if (m_hID < 0)
-        throw Error(hParent, "Failed to open HDF5 dataset '%s'", pszName);
+      if (hid_ < 0)
+        throw Error(parent, "Failed to open HDF5 dataset '%s'", name);
     }
 
     /// Copy constructor
     HID_Handle(const HID_Handle &hid)
-      : m_hID(hid.m_hID)
+      : hid_(hid.hid_)
     {
-      H5Iinc_ref(m_hID);
+      H5Iinc_ref(hid_);
     }
 
     /// Assignment operator
     HID_Handle & operator=(const HID_Handle &hid)
     {
-      m_hID = hid.m_hID;
-      H5Iinc_ref(m_hID);
+      hid_ = hid.hid_;
+      H5Iinc_ref(hid_);
     }
 
     /// Release the handle
     ~HID_Handle()
     {
-      if (m_hID >= 0)
-        H5Idec_ref(m_hID);
+      if (hid_ >= 0)
+        H5Idec_ref(hid_);
     }
 
     /// Check if a handle is valid
     operator bool () const 
     { 
-      return m_hID >= 0; 
+      return hid_ >= 0; 
     }
 
     /// Convert to underlying hid_t handle
     operator const hid_t &() const
     {
-      return m_hID;
+      return hid_;
     }
 
   private:
-    hid_t m_hID;  ///< HDF5 library object handle
+    hid_t hid_;  ///< HDF5 library object handle
   };
 }
 

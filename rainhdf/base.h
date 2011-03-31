@@ -16,55 +16,55 @@ namespace RainHDF
   {
   public:
     /// Create a new level as the root of a file
-    Base(const std::string &strFilename, CreateFlag);
+    Base(const std::string& file, CreateFlag);
 
     /// Create a new level by name
-    Base(const Base &parent, const char *pszName, CreateFlag);
+    Base(const Base& parent, const char* name, CreateFlag);
 
     /// Create a new level by appending an index to a name
-    Base(const Base &parent, const char *pszName, int nIndex, CreateFlag);
+    Base(const Base& parent, const char* name, int index, CreateFlag);
 
     /// Open the rool level from a file
-    Base(const std::string &strFilename, bool bReadOnly, OpenFlag);
+    Base(const std::string& file, bool read_only, OpenFlag);
 
     /// Open a level by name
-    Base(const Base &parent, const char *pszName, OpenFlag);
+    Base(const Base& parent, const char* name, OpenFlag);
 
     /// Open a level by appending an index to a name
-    Base(const Base &parent, const char *pszName, int nIndex, OpenFlag);
+    Base(const Base& parent, const char* name, int index, OpenFlag);
 
     /// Destroy this object
     virtual ~Base();
 
     /// Get the set of attributes that are local to this level
-    const AttFlags & GetAttributeFlags() const { return m_AttFlags; }
+    const AttFlags& attribute_flags() const { return att_flags_; }
 
     /// Read an optional attribute
     template <class T>
-    bool GetAttribute(Attribute eAtt, T &val) const;
+    bool attribute(Attribute attrib, T& val) const;
 
     /// Write an optional attribute
     template <class T>
-    void SetAttribute(Attribute eAtt, const T &val);
+    void set_attribute(Attribute attrib, const T& val);
 
   protected:
-    const Base *  m_pParent;    ///< Parent level (used to recursive search attributes)
-    HID_Handle    m_hThis;      ///< 'This' group
-    HID_Handle    m_hWhat;      ///< What group
-    HID_Handle    m_hWhere;     ///< Where group
-    HID_Handle    m_hHow;       ///< How group
-    AttFlags      m_AttFlags;   ///< Flags to indicate presence of 'how' group attributes
+    const Base*   parent_;      ///< Parent level (used to recursive search attributes)
+    HID_Handle    hnd_this_;    ///< 'This' group
+    HID_Handle    hnd_what_;    ///< What group
+    HID_Handle    hnd_where_;   ///< Where group
+    HID_Handle    hnd_how_;     ///< How group
+    AttFlags      att_flags_;   ///< Flags to indicate presence of 'how' group attributes
   };
 
   template <class T>
-  bool Base::GetAttribute(Attribute eAtt, T &val) const 
+  bool Base::attribute(Attribute attrib, T& val) const 
   { 
     // TODO - manually verify type of attribute? (will throw read error if reading wrong type)
-    for (const Base * pLevel = this; pLevel != NULL; pLevel = pLevel->m_pParent)
+    for (const Base* pLevel = this; pLevel != NULL; pLevel = pLevel->parent_)
     {
-      if (pLevel->m_AttFlags.test(eAtt))
+      if (pLevel->att_flags_.test(attrib))
       {
-        GetAtt(pLevel->m_hHow, to_string(eAtt), val);
+        get_att(pLevel->hnd_how_, to_string(attrib), val);
         return true;
       }
     }
@@ -72,13 +72,13 @@ namespace RainHDF
   }
 
   template <class T>
-  void Base::SetAttribute(Attribute eAtt, const T &val)
+  void Base::set_attribute(Attribute attrib, const T& val)
   {
     // TODO - manually verify type of attribute? (will allow writing of non-standard type)
-    if (!m_hHow)
-      m_hHow = HID_Handle(kHID_Group, m_hThis, kGrp_How, kCreate);
-    SetAtt(m_hHow, to_string(eAtt), val);
-    m_AttFlags.set(eAtt);
+    if (!hnd_how_)
+      hnd_how_ = HID_Handle(kHID_Group, hnd_this_, kGrp_How, kCreate);
+    set_att(hnd_how_, to_string(attrib), val);
+    att_flags_.set(attrib);
   }
 }
 

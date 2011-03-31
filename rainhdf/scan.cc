@@ -15,181 +15,181 @@ Scan::~Scan()
 
 Scan::Scan(
       const Base &parent
-    , size_t nIndex
-    , double fElevation
-    , size_t nAzimuths
-    , size_t nRangeBins
-    , size_t nFirstAzimuth
-    , double fRangeStart
-    , double fRangeScale
-    , time_t tStart
-    , time_t tEnd)
-  : Base(parent, kGrp_Dataset, nIndex, kCreate)
-  , m_nAzimuthCount(nAzimuths)
-  , m_nRangeCount(nRangeBins)
+    , size_t index
+    , double elevation
+    , size_t azimuth_count
+    , size_t range_bin_count
+    , size_t first_azimuth
+    , double range_start
+    , double range_scale
+    , time_t start_time
+    , time_t end_time)
+  : Base(parent, kGrp_Dataset, index, kCreate)
+  , azi_count_(azimuth_count)
+  , bin_count_(range_bin_count)
 {
-  NewAtt(m_hWhat, kAtn_Product, kProd_Scan);
-  NewAtt(m_hWhat, kAtn_StartDate, kAtn_StartTime, tStart);
-  NewAtt(m_hWhat, kAtn_EndDate, kAtn_EndTime, tEnd);
+  new_att(hnd_what_, kAtn_Product, kProd_Scan);
+  new_att(hnd_what_, kAtn_StartDate, kAtn_StartTime, start_time);
+  new_att(hnd_what_, kAtn_EndDate, kAtn_EndTime, end_time);
 
-  NewAtt(m_hWhere, kAtn_Elevation, fElevation);
-  NewAtt(m_hWhere, kAtn_RangeCount, (long) m_nRangeCount);
-  NewAtt(m_hWhere, kAtn_RangeStart, fRangeStart / 1000.0);
-  NewAtt(m_hWhere, kAtn_RangeScale, fRangeScale);
-  NewAtt(m_hWhere, kAtn_AzimuthCount, (long) m_nAzimuthCount);
-  NewAtt(m_hWhere, kAtn_FirstAzimuth, (long) nFirstAzimuth);
+  new_att(hnd_where_, kAtn_Elevation, elevation);
+  new_att(hnd_where_, kAtn_RangeCount, (long) bin_count_);
+  new_att(hnd_where_, kAtn_RangeStart, range_start / 1000.0);
+  new_att(hnd_where_, kAtn_RangeScale, range_scale);
+  new_att(hnd_where_, kAtn_AzimuthCount, (long) azi_count_);
+  new_att(hnd_where_, kAtn_FirstAzimuth, (long) first_azimuth);
 }
 
-Scan::Scan(const Base &parent, size_t nIndex)
-  : Base(parent, kGrp_Dataset, nIndex, kOpen)
-  , m_nAzimuthCount(GetAtt<long>(m_hWhere, kAtn_AzimuthCount))
-  , m_nRangeCount(GetAtt<long>(m_hWhere, kAtn_RangeCount))
+Scan::Scan(const Base &parent, size_t index)
+  : Base(parent, kGrp_Dataset, index, kOpen)
+  , azi_count_(get_att<long>(hnd_where_, kAtn_AzimuthCount))
+  , bin_count_(get_att<long>(hnd_where_, kAtn_RangeCount))
 {
-  hsize_t nObjs;
-  char pszName[32];
+  hsize_t obj_count;
+  char name[32];
 
   // Verify that this dataset is indeed a scan
-  if (GetAtt<ProductType>(m_hWhat, kAtn_Product) != kProd_Scan)
-    throw Error(m_hThis, "Scan product code mismatch");
+  if (get_att<ProductType>(hnd_what_, kAtn_Product) != kProd_Scan)
+    throw Error(hnd_this_, "Scan product code mismatch");
 
   // Reserve some space in our data info vector for efficency sake
-  if (H5Gget_num_objs(m_hThis, &nObjs) < 0)
-    throw Error(m_hThis, "Failed to determine number of objects in group");
-  m_DataInfos.reserve(nObjs);
+  if (H5Gget_num_objs(hnd_this_, &obj_count) < 0)
+    throw Error(hnd_this_, "Failed to determine number of objects in group");
+  data_info_.reserve(obj_count);
 
   // Check for any data layers
   for (size_t i = 1; true; ++i)
   {
     // Do we have this 'dataX'?
-    sprintf(pszName, "%s%d", kGrp_Data, i);
-    htri_t ret = H5Lexists(m_hThis, pszName, H5P_DEFAULT);
+    sprintf(name, "%s%d", kGrp_Data, i);
+    htri_t ret = H5Lexists(hnd_this_, name, H5P_DEFAULT);
     if (ret < 0)
-      throw Error(m_hThis, "Failed to verify existence of group '%s'", pszName);
+      throw Error(hnd_this_, "Failed to verify existence of group '%s'", name);
     if (!ret)
       break;
 
     // Yes - open it up for inspection
-    HID_Handle hData(kHID_Group, m_hThis, pszName, kOpen);
-    HID_Handle hDataWhat(kHID_Group, hData, kGrp_What, kOpen);
+    HID_Handle hnd_data(kHID_Group, hnd_this_, name, kOpen);
+    HID_Handle hnd_data_what(kHID_Group, hnd_data, kGrp_What, kOpen);
 
     // Store some vitals
     DataInfo li;
-    li.m_bIsQuality = false;
-    li.m_nIndex = i;
-    li.m_eQuantity = GetAtt<Quantity>(hDataWhat, kAtn_Quantity);
-    m_DataInfos.push_back(li);
+    li.is_quality = false;
+    li.index = i;
+    li.quantity = get_att<Quantity>(hnd_data_what, kAtn_Quantity);
+    data_info_.push_back(li);
   }
 
   // Check for any quality layers
   for (size_t i = 1; true; ++i)
   {
     // Do we have this 'dataX'?
-    sprintf(pszName, "%s%d", kGrp_Quality, i);
-    htri_t ret = H5Lexists(m_hThis, pszName, H5P_DEFAULT);
+    sprintf(name, "%s%d", kGrp_Quality, i);
+    htri_t ret = H5Lexists(hnd_this_, name, H5P_DEFAULT);
     if (ret < 0)
-      throw Error(m_hThis, "Failed to verify existence of group '%s'", pszName);
+      throw Error(hnd_this_, "Failed to verify existence of group '%s'", name);
     if (!ret)
       break;
 
     // Yes - open it up for inspection
-    HID_Handle hData(kHID_Group, m_hThis, pszName, kOpen);
-    HID_Handle hDataWhat(kHID_Group, hData, kGrp_What, kOpen);
+    HID_Handle hnd_data(kHID_Group, hnd_this_, name, kOpen);
+    HID_Handle hnd_data_what(kHID_Group, hnd_data, kGrp_What, kOpen);
 
     // Store some vitals
     DataInfo li;
-    li.m_bIsQuality = true;
-    li.m_nIndex = i;
-    li.m_eQuantity = GetAtt<Quantity>(hDataWhat, kAtn_Quantity);
-    m_DataInfos.push_back(li);
+    li.is_quality = true;
+    li.index = i;
+    li.quantity = get_att<Quantity>(hnd_data_what, kAtn_Quantity);
+    data_info_.push_back(li);
   }
 }
 
-Data::Ptr Scan::GetData(size_t nLayer)
+Data::Ptr Scan::layer(size_t i)
 {
   return Data::Ptr(
       new Data(
           *this, 
-          m_DataInfos[nLayer].m_bIsQuality,
-          m_DataInfos[nLayer].m_nIndex,
-          m_DataInfos[nLayer].m_eQuantity,
-          &m_nAzimuthCount));
+          data_info_[i].is_quality,
+          data_info_[i].index,
+          data_info_[i].quantity,
+          &azi_count_));
 }
 
-Data::ConstPtr Scan::GetData(size_t nLayer) const
+Data::ConstPtr Scan::layer(size_t i) const
 {
   return Data::ConstPtr(
       new Data(
           *this, 
-          m_DataInfos[nLayer].m_bIsQuality,
-          m_DataInfos[nLayer].m_nIndex,
-          m_DataInfos[nLayer].m_eQuantity,
-          &m_nAzimuthCount));
+          data_info_[i].is_quality,
+          data_info_[i].index,
+          data_info_[i].quantity,
+          &azi_count_));
 }
 
-Data::Ptr Scan::GetData(Quantity eQuantity)
+Data::Ptr Scan::layer(Quantity quantity)
 {
-  for (DataInfoStore_t::iterator i = m_DataInfos.begin(); i != m_DataInfos.end(); ++i)
-    if (i->m_eQuantity == eQuantity)
+  for (DataInfoStore_t::iterator i = data_info_.begin(); i != data_info_.end(); ++i)
+    if (i->quantity == quantity)
       return Data::Ptr(
           new Data(
               *this, 
-              i->m_bIsQuality, 
-              i->m_nIndex,
-              i->m_eQuantity,
-              &m_nAzimuthCount));
+              i->is_quality, 
+              i->index,
+              i->quantity,
+              &azi_count_));
   return Data::Ptr(NULL);
 }
 
-Data::ConstPtr Scan::GetData(Quantity eQuantity) const
+Data::ConstPtr Scan::layer(Quantity quantity) const
 {
-  for (DataInfoStore_t::const_iterator i = m_DataInfos.begin(); i != m_DataInfos.end(); ++i)
-    if (i->m_eQuantity == eQuantity)
+  for (DataInfoStore_t::const_iterator i = data_info_.begin(); i != data_info_.end(); ++i)
+    if (i->quantity == quantity)
       return Data::ConstPtr(
           new Data(
               *this, 
-              i->m_bIsQuality, 
-              i->m_nIndex,
-              i->m_eQuantity,
-              &m_nAzimuthCount));
+              i->is_quality, 
+              i->index,
+              i->quantity,
+              &azi_count_));
   return Data::ConstPtr(NULL);
 }
 
-Data::Ptr Scan::AddData(
-      Quantity eQuantity
-    , bool bIsQuality
-    , const float *pData
-    , float fNoData
-    , float fUndetect)
+Data::Ptr Scan::add_layer(
+      Quantity quantity
+    , bool is_quality
+    , const float *data
+    , float no_data
+    , float undetect)
 {
   DataInfo li;
-  li.m_bIsQuality = bIsQuality;
-  li.m_nIndex = 1;
-  for (DataInfoStore_t::reverse_iterator i = m_DataInfos.rbegin(); 
-       i != m_DataInfos.rend(); 
+  li.is_quality = is_quality;
+  li.index = 1;
+  for (DataInfoStore_t::reverse_iterator i = data_info_.rbegin(); 
+       i != data_info_.rend(); 
        ++i)
   {
-    if (i->m_bIsQuality == li.m_bIsQuality)
+    if (i->is_quality == li.is_quality)
     {
-      li.m_nIndex = i->m_nIndex + 1;
+      li.index = i->index + 1;
       break;
     }
   }
-  li.m_eQuantity = eQuantity;
+  li.quantity = quantity;
 
-  Data::Ptr pLayer(
+  Data::Ptr ret(
       new Data(
           *this,
-          li.m_bIsQuality,
-          li.m_nIndex,
-          li.m_eQuantity,
-          &m_nAzimuthCount,
-          pData,
-          fNoData,
-          fUndetect));
+          li.is_quality,
+          li.index,
+          li.quantity,
+          &azi_count_,
+          data,
+          no_data,
+          undetect));
 
   // Must do the push_back last so that exceptions don't screw with our 
   // layer count
-  m_DataInfos.push_back(li);
-  return pLayer;
+  data_info_.push_back(li);
+  return ret;
 }
 

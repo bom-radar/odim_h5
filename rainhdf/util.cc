@@ -12,7 +12,8 @@ using namespace RainHDF;
 
 namespace RainHDF
 {
-  static const char * kVal_ObjectType[] = 
+  const char * enum_traits<ObjectType>::kName = "ObjectType";
+  const char * enum_traits<ObjectType>::kStrings[] =
   {
       "PVOL"
     , "CVOL"
@@ -25,9 +26,9 @@ namespace RainHDF
     , "VP"
     , "PIC"
   };
-  RAINHDF_ENUM_TRAITS_IMPL(ObjectType, kVal_ObjectType);
 
-  static const char * kVal_ProductType[] = 
+  const char * enum_traits<ProductType>::kName = "ProductType";
+  const char * enum_traits<ProductType>::kStrings[] =
   {
       "SCAN"
     , "PPI"
@@ -47,9 +48,9 @@ namespace RainHDF
     , "AZIM"
     , "QUAL"
   };
-  RAINHDF_ENUM_TRAITS_IMPL(ProductType, kVal_ProductType);
 
-  static const char * kVal_Quantity[] =
+  const char * enum_traits<Quantity>::kName = "Quantity";
+  const char * enum_traits<Quantity>::kStrings[] =
   {
       "TH"
     , "TV"
@@ -84,9 +85,9 @@ namespace RainHDF
 
     , "GENERIC"
   };
-  RAINHDF_ENUM_TRAITS_IMPL(Quantity, kVal_Quantity);
 
-  static const char * kVal_Method[] =
+  const char * enum_traits<Method>::kName = "Method";
+  const char * enum_traits<Method>::kStrings[] =
   {
       "NEAREST"
     , "INTERPOL"
@@ -100,9 +101,9 @@ namespace RainHDF
     , "VVP"
     , "RGA"
   };
-  RAINHDF_ENUM_TRAITS_IMPL(Method, kVal_Method);
 
-  static const char * kAtn_Attribute[] =
+  const char * enum_traits<Attribute>::kName = "Attribute";
+  const char * enum_traits<Attribute>::kStrings[] =
   {
       "task"
     , "startepochs"
@@ -163,7 +164,6 @@ namespace RainHDF
     , "polarization"
     , "config_qc"
   };
-  RAINHDF_ENUM_TRAITS_IMPL(Attribute, kAtn_Attribute);
 
   const char * kGrp_What = "what";
   const char * kGrp_Where = "where";
@@ -218,75 +218,75 @@ namespace RainHDF
   static const char * kErr_FailAttDelete = "failed to delete attribute '%s' before write";
 }
 
-void RainHDF::GetAtt(const HID_Handle &hID, const char *pszName, bool &bVal)
+void RainHDF::get_att(const HID_Handle &hid, const char *name, bool &val)
 {
-  char pszBuf[6];
-  GetAtt(hID, pszName, pszBuf, 6);
-  if (strcmp(pszBuf, kVal_True) == 0)
-    bVal = true;
-  else if (strcmp(pszBuf, kVal_False) == 0)
-    bVal = false;
+  char buf[6];
+  get_att(hid, name, buf, 6);
+  if (strcmp(buf, kVal_True) == 0)
+    val = true;
+  else if (strcmp(buf, kVal_False) == 0)
+    val = false;
   else 
-    throw Error(hID, "Parse error reading attribute '%s'", pszName);
+    throw Error(hid, "Parse error reading attribute '%s'", name);
 }
 
-void RainHDF::GetAtt(const HID_Handle &hID, const char *pszName, long &nVal)
+void RainHDF::get_att(const HID_Handle &hid, const char *name, long &val)
 {
-  HID_Handle hAttr(kHID_Attr, hID, pszName, kOpen);
-  if (H5Aread(hAttr, H5T_NATIVE_LONG, &nVal) < 0)
-    throw Error(hID, kErr_FailAttRead, pszName);
+  HID_Handle hAttr(kHID_Attr, hid, name, kOpen);
+  if (H5Aread(hAttr, H5T_NATIVE_LONG, &val) < 0)
+    throw Error(hid, kErr_FailAttRead, name);
 }
 
-void RainHDF::GetAtt(const HID_Handle &hID, const char *pszName, double &fVal)
+void RainHDF::get_att(const HID_Handle &hid, const char *name, double &val)
 {
-  HID_Handle hAttr(kHID_Attr, hID, pszName, kOpen);
-  if (H5Aread(hAttr, H5T_NATIVE_DOUBLE, &fVal) < 0)
-    throw Error(hID, kErr_FailAttRead, pszName);
+  HID_Handle hAttr(kHID_Attr, hid, name, kOpen);
+  if (H5Aread(hAttr, H5T_NATIVE_DOUBLE, &val) < 0)
+    throw Error(hid, kErr_FailAttRead, name);
 }
 
-void RainHDF::GetAtt(const HID_Handle &hID, const char *pszName, char *pszBuf, size_t nBufSize)
+void RainHDF::get_att(const HID_Handle &hid, const char *name, char *buf, size_t buf_size)
 {
-  HID_Handle hAttr(kHID_Attr, hID, pszName, kOpen);
+  HID_Handle hAttr(kHID_Attr, hid, name, kOpen);
   HID_Handle hType(kHID_Type, H5Aget_type(hAttr));
   if (H5Tget_class(hType) != H5T_STRING)
-    throw Error(hID, kErr_FailAttType, pszName);
-  if (H5Tget_size(hType) > nBufSize)
-    throw Error(hID, kErr_FailAttSize, pszName);
-  if (H5Aread(hAttr, hType, pszBuf) < 0)
-    throw Error(hID, kErr_FailAttRead, pszName);
+    throw Error(hid, kErr_FailAttType, name);
+  if (H5Tget_size(hType) > buf_size)
+    throw Error(hid, kErr_FailAttSize, name);
+  if (H5Aread(hAttr, hType, buf) < 0)
+    throw Error(hid, kErr_FailAttRead, name);
 }
 
-void RainHDF::GetAtt(const HID_Handle &hID, const char *pszName, std::string &strVal)
+void RainHDF::get_att(const HID_Handle &hid, const char *name, std::string &val)
 {
   // Use a fixed size buffer to read our string attributes
   static const int kAttBufSize = 2048;
-  char pszBuf[kAttBufSize];
+  char buf[kAttBufSize];
 
-  HID_Handle hAttr(kHID_Attr, hID, pszName, kOpen);
+  HID_Handle hAttr(kHID_Attr, hid, name, kOpen);
   HID_Handle hType(kHID_Type, H5Aget_type(hAttr));
   if (H5Tget_class(hType) != H5T_STRING)
-    throw Error(hID, kErr_FailAttType, pszName);
+    throw Error(hid, kErr_FailAttType, name);
   if (H5Tget_size(hType) > kAttBufSize)
-    throw Error(hID, kErr_FailAttSize, pszName);
-  if (H5Aread(hAttr, hType, pszBuf) < 0)
-    throw Error(hID, kErr_FailAttRead, pszName);
+    throw Error(hid, kErr_FailAttSize, name);
+  if (H5Aread(hAttr, hType, buf) < 0)
+    throw Error(hid, kErr_FailAttRead, name);
 
-  strVal.assign(pszBuf);
+  val.assign(buf);
 }
 
-void RainHDF::GetAtt(const HID_Handle &hID, const char *pszNameDate, const char *pszNameTime, time_t &tVal)
+void RainHDF::get_att(const HID_Handle &hid, const char *name_date, const char *name_time, time_t &val)
 {
-  char pszBuf[9+7];
+  char buf[9+7];
   struct tm tms;
 
   // Read the attributes into a single string
-  GetAtt(hID, pszNameDate, pszBuf, 9);
-  GetAtt(hID, pszNameTime, &pszBuf[9], 7);
-  pszBuf[8] = ' ';
+  get_att(hid, name_date, buf, 9);
+  get_att(hid, name_time, &buf[9], 7);
+  buf[8] = ' ';
 
   // Convert back to numerical values
   if (sscanf(
-          pszBuf,
+          buf,
           "%04d%02d%02d %02d%02d%02d",
           &tms.tm_year,
           &tms.tm_mon,
@@ -295,10 +295,10 @@ void RainHDF::GetAtt(const HID_Handle &hID, const char *pszNameDate, const char 
           &tms.tm_min,
           &tms.tm_sec) != 6)
     throw Error(
-        hID,
+        hid,
         "Invalid date/time format for attributes '%s' & '%s'",
-        pszNameDate,
-        pszNameTime);
+        name_date,
+        name_time);
 
   tms.tm_year -= 1900;
   tms.tm_mon -= 1;
@@ -310,79 +310,79 @@ void RainHDF::GetAtt(const HID_Handle &hID, const char *pszNameDate, const char 
   // Note: This function is NOT portable - but there is no single portable way to
   //       perform the inverse of gmtime other than by changing TZ, calling
   //       mktime and then restoring TZ.  (see man timegm)
-  tVal = timegm(&tms);
+  val = timegm(&tms);
 }
 
-void RainHDF::NewAtt(const HID_Handle &hID, const char *pszName, bool bVal)
+void RainHDF::new_att(const HID_Handle &hid, const char *name, bool val)
 {
-  NewAtt(hID, pszName, bVal ? kVal_True : kVal_False);
+  new_att(hid, name, val ? kVal_True : kVal_False);
 }
 
-void RainHDF::NewAtt(const HID_Handle &hID, const char *pszName, long nVal)
-{
-  // Create a dataspace for the variable
-  HID_Handle hSpace(kHID_Space, kCreate);
-
-  // Create and write the attribute
-  HID_Handle hAttr(kHID_Attr, hID, pszName, H5T_STD_I64LE, hSpace, kCreate);
-  if (H5Awrite(hAttr, H5T_NATIVE_LONG, &nVal) < 0)
-    throw Error(hID, kErr_FailAttWrite, pszName);
-}
-
-void RainHDF::NewAtt(const HID_Handle &hID, const char *pszName, double fVal)
+void RainHDF::new_att(const HID_Handle &hid, const char *name, long val)
 {
   // Create a dataspace for the variable
   HID_Handle hSpace(kHID_Space, kCreate);
 
   // Create and write the attribute
-  HID_Handle hAttr(kHID_Attr, hID, pszName, H5T_IEEE_F64LE, hSpace, kCreate);
-  if (H5Awrite(hAttr, H5T_NATIVE_DOUBLE, &fVal) < 0)
-    throw Error(hID, kErr_FailAttWrite, pszName);
+  HID_Handle hAttr(kHID_Attr, hid, name, H5T_STD_I64LE, hSpace, kCreate);
+  if (H5Awrite(hAttr, H5T_NATIVE_LONG, &val) < 0)
+    throw Error(hid, kErr_FailAttWrite, name);
 }
 
-void RainHDF::NewAtt(const HID_Handle &hID, const char *pszName, const char *pszVal)
+void RainHDF::new_att(const HID_Handle &hid, const char *name, double val)
+{
+  // Create a dataspace for the variable
+  HID_Handle hSpace(kHID_Space, kCreate);
+
+  // Create and write the attribute
+  HID_Handle hAttr(kHID_Attr, hid, name, H5T_IEEE_F64LE, hSpace, kCreate);
+  if (H5Awrite(hAttr, H5T_NATIVE_DOUBLE, &val) < 0)
+    throw Error(hid, kErr_FailAttWrite, name);
+}
+
+void RainHDF::new_att(const HID_Handle &hid, const char *name, const char *val)
 {
   // Setup a new type for the string
   HID_Handle hType(kHID_Type, H5Tcopy(H5T_C_S1));
-  if (H5Tset_size(hType, strlen(pszVal) + 1) < 0)
-    throw Error(hID, "Unable to set string size for atttribute '%s'", pszName);
+  if (H5Tset_size(hType, strlen(val) + 1) < 0)
+    throw Error(hid, "Unable to set string size for atttribute '%s'", name);
   if (H5Tset_strpad(hType, H5T_STR_NULLTERM) < 0)
-    throw Error(hID, "Unable to set nullterm property of attribute '%s'", pszName);
+    throw Error(hid, "Unable to set nullterm property of attribute '%s'", name);
 
   // Setup the dataspace for the attribute
   HID_Handle hSpace(kHID_Space, kCreate);
 
   // Create and write the attribute
-  HID_Handle hAttr(kHID_Attr, hID, pszName, hType, hSpace, kCreate);
-  if (H5Awrite(hAttr, hType, pszVal) < 0)
-    throw Error(hID, kErr_FailAttWrite, pszName);
+  HID_Handle hAttr(kHID_Attr, hid, name, hType, hSpace, kCreate);
+  if (H5Awrite(hAttr, hType, val) < 0)
+    throw Error(hid, kErr_FailAttWrite, name);
 }
 
-void RainHDF::NewAtt(const HID_Handle &hID, const char *pszName, const std::string &strVal)
+void RainHDF::new_att(const HID_Handle &hid, const char *name, const std::string &val)
 {
   // Setup a new type for the string
   HID_Handle hType(kHID_Type, H5Tcopy(H5T_C_S1));
-  if (H5Tset_size(hType, strVal.size() + 1) < 0)
-    throw Error(hID, "Unable to set string size for atttribute '%s'", pszName);
+  if (H5Tset_size(hType, val.size() + 1) < 0)
+    throw Error(hid, "Unable to set string size for atttribute '%s'", name);
   if (H5Tset_strpad(hType, H5T_STR_NULLTERM) < 0)
-    throw Error(hID, "Unable to set nullterm property of attribute '%s'", pszName);
+    throw Error(hid, "Unable to set nullterm property of attribute '%s'", name);
 
   // Setup the dataspace for the attribute
   HID_Handle hSpace(kHID_Space, kCreate);
 
   // Create and write the attribute
-  HID_Handle hAttr(kHID_Attr, hID, pszName, hType, hSpace, kCreate);
-  if (H5Awrite(hAttr, hType, strVal.c_str()) < 0)
-    throw Error(hID, kErr_FailAttWrite, pszName);
+  HID_Handle hAttr(kHID_Attr, hid, name, hType, hSpace, kCreate);
+  if (H5Awrite(hAttr, hType, val.c_str()) < 0)
+    throw Error(hid, kErr_FailAttWrite, name);
 }
 
-void RainHDF::NewAtt(const HID_Handle &hID, const char *pszNameDate, const char *pszNameTime, time_t tVal)
+void RainHDF::new_att(const HID_Handle &hid, const char *name_date, const char *name_time, time_t val)
 {
   // Print the date and time in one string
-  char pszBuf[9+7];
-  struct tm *pTm = gmtime(&tVal);
+  char buf[9+7];
+  struct tm *pTm = gmtime(&val);
   snprintf(
-      pszBuf, 
+      buf, 
       9+7, 
       "%04d%02d%02d %02d%02d%02d",
       pTm->tm_year + 1900,
@@ -393,88 +393,88 @@ void RainHDF::NewAtt(const HID_Handle &hID, const char *pszNameDate, const char 
       pTm->tm_sec);
 
   // Split the string into two
-  pszBuf[8] = '\0';
+  buf[8] = '\0';
 
   // Output each as an attribute
-  NewAtt(hID, pszNameDate, pszBuf);
-  NewAtt(hID, pszNameTime, &pszBuf[9]);
+  new_att(hid, name_date, buf);
+  new_att(hid, name_time, &buf[9]);
 }
 
-void RainHDF::SetAtt(const HID_Handle &hID, const char *pszName, bool bVal)
+void RainHDF::set_att(const HID_Handle &hid, const char *name, bool val)
 {
-  SetAtt(hID, pszName, bVal ? kVal_True : kVal_False);
+  set_att(hid, name, val ? kVal_True : kVal_False);
 }
 
-void RainHDF::SetAtt(const HID_Handle &hID, const char *pszName, long nVal)
+void RainHDF::set_att(const HID_Handle &hid, const char *name, long val)
 {
   // Check if it's already been created
-  htri_t ret = H5Aexists(hID, pszName);
+  htri_t ret = H5Aexists(hid, name);
   if (ret < 0)
-    throw Error(hID, kErr_FailAttExists, pszName);
+    throw Error(hid, kErr_FailAttExists, name);
   else if (ret == 0)
-    NewAtt(hID, pszName, nVal);
+    new_att(hid, name, val);
   else
   {
     // Okay, it's existing - just open and write
-    HID_Handle hAttr(kHID_Attr, hID, pszName, kOpen);
-    if (H5Awrite(hAttr, H5T_NATIVE_LONG, &nVal) < 0)
-      throw Error(hID, kErr_FailAttWrite, pszName);
+    HID_Handle hAttr(kHID_Attr, hid, name, kOpen);
+    if (H5Awrite(hAttr, H5T_NATIVE_LONG, &val) < 0)
+      throw Error(hid, kErr_FailAttWrite, name);
   }
 }
 
-void RainHDF::SetAtt(const HID_Handle &hID, const char *pszName, double fVal)
+void RainHDF::set_att(const HID_Handle &hid, const char *name, double val)
 {
   // Check if it's already been created
-  htri_t ret = H5Aexists(hID, pszName);
+  htri_t ret = H5Aexists(hid, name);
   if (ret < 0)
-    throw Error(hID, kErr_FailAttExists, pszName);
+    throw Error(hid, kErr_FailAttExists, name);
   else if (ret == 0)
-    NewAtt(hID, pszName, fVal);
+    new_att(hid, name, val);
   else
   {
     // Okay, it's existing - just open and write
-    HID_Handle hAttr(kHID_Attr, hID, pszName, kOpen);
-    if (H5Awrite(hAttr, H5T_NATIVE_DOUBLE, &fVal) < 0)
-      throw Error(hID, kErr_FailAttWrite, pszName);
+    HID_Handle hAttr(kHID_Attr, hid, name, kOpen);
+    if (H5Awrite(hAttr, H5T_NATIVE_DOUBLE, &val) < 0)
+      throw Error(hid, kErr_FailAttWrite, name);
   }
 }
 
-void RainHDF::SetAtt(const HID_Handle &hID, const char *pszName, const std::string &strVal)
+void RainHDF::set_att(const HID_Handle &hid, const char *name, const std::string &val)
 {
   // For a string attribute, we always delete and recreate (in case size changes)
-  htri_t ret = H5Aexists(hID, pszName);
+  htri_t ret = H5Aexists(hid, name);
   if (ret < 0)
-    throw Error(hID, kErr_FailAttExists, pszName);
+    throw Error(hid, kErr_FailAttExists, name);
   else if (ret)
-    if (H5Adelete(hID, pszName) < 0)
-      throw Error(hID, kErr_FailAttDelete, pszName);
+    if (H5Adelete(hid, name) < 0)
+      throw Error(hid, kErr_FailAttDelete, name);
 
   // Okay, now re-create it
-  NewAtt(hID, pszName, strVal);
+  new_att(hid, name, val);
 }
 
-void RainHDF::SetAtt(const HID_Handle &hID, const char *pszName, const char *pszVal)
+void RainHDF::set_att(const HID_Handle &hid, const char *name, const char *val)
 {
   // For a string attribute, we always delete and recreate (in case size changes)
-  htri_t ret = H5Aexists(hID, pszName);
+  htri_t ret = H5Aexists(hid, name);
   if (ret < 0)
-    throw Error(hID, kErr_FailAttExists, pszName);
+    throw Error(hid, kErr_FailAttExists, name);
   else if (ret)
-    if (H5Adelete(hID, pszName) < 0)
-      throw Error(hID, kErr_FailAttDelete, pszName);
+    if (H5Adelete(hid, name) < 0)
+      throw Error(hid, kErr_FailAttDelete, name);
 
   // Okay, now re-create it
-  NewAtt(hID, pszName, pszVal);
+  new_att(hid, name, val);
 }
 
-void RainHDF::SetAtt(const HID_Handle &hID, const char *pszNameDate, const char *pszNameTime, time_t tVal)
+void RainHDF::set_att(const HID_Handle &hid, const char *name_date, const char *name_time, time_t val)
 {
   // Print the date and time in one string
-  char pszBuf[9+7];
+  char buf[9+7];
   struct tm tms;
-  gmtime_r(&tVal, &tms);
+  gmtime_r(&val, &tms);
   snprintf(
-      pszBuf, 
+      buf, 
       9+7, 
       "%04d%02d%02d %02d%02d%02d",
       tms.tm_year + 1900,
@@ -485,18 +485,18 @@ void RainHDF::SetAtt(const HID_Handle &hID, const char *pszNameDate, const char 
       tms.tm_sec);
 
   // Split the string into two
-  pszBuf[8] = '\0';
+  buf[8] = '\0';
 
   // Output each as an attribute
-  SetAtt(hID, pszNameDate, pszBuf);
-  SetAtt(hID, pszNameTime, &pszBuf[9]);
+  set_att(hid, name_date, buf);
+  set_att(hid, name_time, &buf[9]);
 }
 
-static herr_t DetAttCallback(hid_t hID, const char *pszName, const H5A_info_t *pInfo, void *pData)
+static herr_t check_att_callback(hid_t hid, const char *name, const H5A_info_t *pInfo, void *pData)
 {
   for (int i = 0; i < enum_traits<Attribute>::kCount; ++i)
   {
-    if (strcmp(pszName, kAtn_Attribute[i]) == 0)
+    if (strcmp(name, enum_traits<Attribute>::kStrings[i]) == 0)
     {
       static_cast<AttFlags*>(pData)->set(i);
       break;
@@ -505,9 +505,9 @@ static herr_t DetAttCallback(hid_t hID, const char *pszName, const H5A_info_t *p
   return 0;
 }
 
-void RainHDF::DetermineAttributePresence(const HID_Handle &hID, AttFlags &flags)
+void RainHDF::check_attribs_presence(const HID_Handle &hid, AttFlags &flags)
 {
   hsize_t n = 0;
-  H5Aiterate(hID, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, &n, DetAttCallback, &flags);
+  H5Aiterate(hid, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, &n, check_att_callback, &flags);
 }
 

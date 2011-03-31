@@ -32,7 +32,14 @@ namespace RainHDF
 
     , kObjectTypeCount
   };
-  RAINHDF_ENUM_TRAITS(ObjectType, kObjectTypeCount);
+  /// Traits for the object type enumerate
+  template <>
+  struct enum_traits<ObjectType>
+  {
+    enum { kCount = (int) kObjectTypeCount };
+    static const char * kName;
+    static const char * kStrings[];
+  };
 
   /// Product types supported by ODIM_H5
   enum ProductType
@@ -57,7 +64,14 @@ namespace RainHDF
     
     , kProductTypeCount
   };
-  RAINHDF_ENUM_TRAITS(ProductType, kProductTypeCount);
+  /// Traits for the product type enumerate
+  template <>
+  struct enum_traits<ProductType>
+  {
+    enum { kCount = (int) kProductTypeCount };
+    static const char * kName;
+    static const char * kStrings[];
+  };
 
   /// Variable quantities supported by ODIM_H5
   enum Quantity
@@ -99,7 +113,14 @@ namespace RainHDF
 
     , kQuantityCount
   };
-  RAINHDF_ENUM_TRAITS(Quantity, kQuantityCount);
+  /// Traits for the quantity enumerate
+  template <>
+  struct enum_traits<Quantity>
+  {
+    enum { kCount = (int) kQuantityCount };
+    static const char * kName;
+    static const char * kStrings[];
+  };
 
   /// Methods supported by ODIM_H5
   enum Method
@@ -118,7 +139,14 @@ namespace RainHDF
 
     , kMethodCount
   };
-  RAINHDF_ENUM_TRAITS(Method, kMethodCount);
+  /// Traits for the method enumerate
+  template <>
+  struct enum_traits<Method>
+  {
+    enum { kCount = (int) kMethodCount };
+    static const char * kName;
+    static const char * kStrings[];
+  };
 
   /// Optional scalar quality attributes (longs)
   enum Attribute
@@ -186,87 +214,94 @@ namespace RainHDF
 
     , kAttributeCount
   };
-  RAINHDF_ENUM_TRAITS(Attribute, kAttributeCount);
+  /// Traits for the attribute enumerate
+  template <>
+  struct enum_traits<Attribute>
+  {
+    enum { kCount = (int) kAttributeCount };
+    static const char * kName;
+    static const char * kStrings[];
+  };
 
   /// Type used to store presence flags for optional attributes
   typedef bitset<Attribute> AttFlags;
 
   // Retrieve existing attributes
-  void GetAtt(const HID_Handle &hID, const char *pszName, bool &bVal);
-  void GetAtt(const HID_Handle &hID, const char *pszName, long &nVal);
-  void GetAtt(const HID_Handle &hID, const char *pszName, double &fVal);
-  void GetAtt(const HID_Handle &hID, const char *pszName, char *pszBuf, size_t nBufSize);
-  void GetAtt(const HID_Handle &hID, const char *pszName, std::string &strVal);
-  void GetAtt(const HID_Handle &hID, const char *pszNameDate, const char *pszNameTime, time_t &tVal);
+  void get_att(const HID_Handle &hid, const char *name, bool &val);
+  void get_att(const HID_Handle &hid, const char *name, long &val);
+  void get_att(const HID_Handle &hid, const char *name, double &val);
+  void get_att(const HID_Handle &hid, const char *name, char *buf, size_t buf_size);
+  void get_att(const HID_Handle &hid, const char *name, std::string &val);
+  void get_att(const HID_Handle &hid, const char *name_date, const char *name_time, time_t &val);
 
   // Create new attributes
-  void NewAtt(const HID_Handle &hID, const char *pszName, bool bVal);
-  void NewAtt(const HID_Handle &hID, const char *pszName, long nVal);
-  void NewAtt(const HID_Handle &hID, const char *pszName, double fVal);
-  void NewAtt(const HID_Handle &hID, const char *pszName, const char *pszVal);
-  void NewAtt(const HID_Handle &hID, const char *pszName, const std::string &strVal);
-  void NewAtt(const HID_Handle &hID, const char *pszNameDate, const char *pszNameTime, time_t tVal);
-  inline void NewAtt(const HID_Handle &hID, const char *pszName, float fVal)
+  void new_att(const HID_Handle &hid, const char *name, bool val);
+  void new_att(const HID_Handle &hid, const char *name, long val);
+  void new_att(const HID_Handle &hid, const char *name, double val);
+  void new_att(const HID_Handle &hid, const char *name, const char *val);
+  void new_att(const HID_Handle &hid, const char *name, const std::string &val);
+  void new_att(const HID_Handle &hid, const char *name_date, const char *name_time, time_t val);
+  inline void new_att(const HID_Handle &hid, const char *name, float val)
   {
-    NewAtt(hID, pszName, (double) fVal);
+    new_att(hid, name, (double) val);
   }
-  inline void NewAtt(const HID_Handle &hID, const char *pszName, char *pszVal)
+  inline void new_att(const HID_Handle &hid, const char *name, char *val)
   {
-    NewAtt(hID, pszName, (const char *) pszVal);
+    new_att(hid, name, (const char *) val);
   }
 
   // Alter existing attributes (or create if not existing)
-  void SetAtt(const HID_Handle &hID, const char *pszName, bool bVal);
-  void SetAtt(const HID_Handle &hID, const char *pszName, long nVal);
-  void SetAtt(const HID_Handle &hID, const char *pszName, double fVal);
-  void SetAtt(const HID_Handle &hID, const char *pszName, const char *pszVal);
-  void SetAtt(const HID_Handle &hID, const char *pszName, const std::string &strVal);
-  void SetAtt(const HID_Handle &hID, const char *pszNameDate, const char *pszNameTime, time_t tVal);
-  inline void SetAtt(const HID_Handle &hID, const char *pszName, float fVal)
+  void set_att(const HID_Handle &hid, const char *name, bool val);
+  void set_att(const HID_Handle &hid, const char *name, long val);
+  void set_att(const HID_Handle &hid, const char *name, double val);
+  void set_att(const HID_Handle &hid, const char *name, const char *val);
+  void set_att(const HID_Handle &hid, const char *name, const std::string &val);
+  void set_att(const HID_Handle &hid, const char *name_date, const char *name_time, time_t val);
+  inline void set_att(const HID_Handle &hid, const char *name, float val)
   {
-    SetAtt(hID, pszName, (double) fVal);
+    set_att(hid, name, (double) val);
   }
-  inline void SetAtt(const HID_Handle &hID, const char *pszName, char *pszVal) 
+  inline void set_att(const HID_Handle &hid, const char *name, char *val) 
   { 
-    SetAtt(hID, pszName, (const char *) pszVal); 
+    set_att(hid, name, (const char *) val); 
   }
 
   template <typename T>
-  void GetAtt(const HID_Handle &hID, const char *pszName, T &eVal)
+  void get_att(const HID_Handle &hid, const char *name, T &val)
   {
-    char pszBuf[128];
-    GetAtt(hID, pszName, pszBuf, sizeof(pszBuf));
-    eVal = from_string<T>(pszBuf);
+    char buf[128];
+    get_att(hid, name, buf, sizeof(buf));
+    val = from_string<T>(buf);
   }
 
   template <typename T>
-  void NewAtt(const HID_Handle &hID, const char *pszName, T eVal)
+  void new_att(const HID_Handle &hid, const char *name, T val)
   {
-    NewAtt(hID, pszName, to_string(eVal));
+    new_att(hid, name, to_string(val));
   }
 
   template <typename T>
-  void SetAtt(const HID_Handle &hID, const char *pszName, T eVal)
+  void set_att(const HID_Handle &hid, const char *name, T val)
   {
-    SetAtt(hID, pszName, to_string(eVal));
+    set_att(hid, name, to_string(val));
   }
 
   // Determine which 'how' attributes are present for an object
-  void DetermineAttributePresence(const HID_Handle &hID, AttFlags &flags);
+  void check_attribs_presence(const HID_Handle &hid, AttFlags &flags);
 
   // Convenient value returning versions of above functions (for use in initializer lists)
   template <class T>
-  inline T GetAtt(const HID_Handle &hID, const char *pszName)
+  inline T get_att(const HID_Handle &hid, const char *name)
   {
     T t;
-    GetAtt(hID, pszName, t);
+    get_att(hid, name, t);
     return t;
   }
   template <class T>
-  inline T GetAtt(const HID_Handle &hID, const char *pszName1, const char *pszName2)
+  inline T get_att(const HID_Handle &hid, const char *name1, const char *name2)
   {
     T t;
-    GetAtt(hID, pszName1, pszName2, t);
+    get_att(hid, name1, name2, t);
     return t;
   }
 
