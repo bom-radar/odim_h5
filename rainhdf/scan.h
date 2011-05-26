@@ -55,6 +55,13 @@ namespace rainhdf
     data::ptr add_layer(
           quantity _quantity
         , bool is_quality
+        , const int* raw
+        , int no_data
+        , int undetect);
+
+    data::ptr add_layer(
+          quantity _quantity
+        , bool is_quality
         , const float* raw
         , float no_data
         , float undetect);

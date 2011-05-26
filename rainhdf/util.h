@@ -54,7 +54,7 @@ namespace rainhdf
     , pt_vil                    ///< Vertically integrated liquid water
     , pt_composite              ///< Composite
     , pt_vertical_profile       ///< Vertical profile
-    , pt_rangeHeight            ///< Range height indicator
+    , pt_range_height            ///< Range height indicator
     , pt_vertical_slice         ///< Arbitrary vertical slice
     , pt_vertical_side_panel    ///< Vertical side panel
     , pt_horizontal_side_panel  ///< Horizontal side panel
@@ -103,7 +103,7 @@ namespace rainhdf
     // Extended quantities unique to BOM
     , qty_occultation   ///< Proportion of bin that is occulded [0-1]
     , qty_attenuation   ///< Fraction of bin power that is attenuated (PIA) [0-1]
-    , qty_clutterprob   ///< Probability that bin is clutter [0-1]
+    , qty_clutter_prob  ///< Probability that bin is clutter [0-1]
     , qty_hail_prob     ///< Probability that bin is hail [0-1]
 
     , qty_dbzh_clean    ///< Copy of DBZH that has been cleaned

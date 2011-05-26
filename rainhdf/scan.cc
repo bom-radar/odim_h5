@@ -157,6 +157,45 @@ data::const_ptr scan::layer(quantity _quantity) const
 data::ptr scan::add_layer(
       quantity _quantity
     , bool is_quality
+    , const int* raw
+    , int no_data
+    , int undetect)
+{
+  data_info li;
+  li.is_quality_ = is_quality;
+  li.index_ = 1;
+  for (data_info_store::reverse_iterator i = data_info_.rbegin(); 
+       i != data_info_.rend(); 
+       ++i)
+  {
+    if (i->is_quality_ == li.is_quality_)
+    {
+      li.index_ = i->index_ + 1;
+      break;
+    }
+  }
+  li.quantity_ = _quantity;
+
+  data::ptr ret(
+      new data(
+          *this,
+          li.is_quality_,
+          li.index_,
+          li.quantity_,
+          &azi_count_,
+          raw,
+          no_data,
+          undetect));
+
+  // Must do the push_back last so that exceptions don't screw with our 
+  // layer count
+  data_info_.push_back(li);
+  return ret;
+}
+
+data::ptr scan::add_layer(
+      quantity _quantity
+    , bool is_quality
     , const float *raw
     , float no_data
     , float undetect)

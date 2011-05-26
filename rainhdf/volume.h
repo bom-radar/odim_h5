@@ -46,9 +46,9 @@ namespace rainhdf
     /// Get the number of scans in the volume
     size_t scan_count() const { return scan_count_; }
     /// Get the 'nth' scan
-    scan::ptr scan(size_t i) { return scan::ptr(new rainhdf::scan(*this, i + 1)); }
+    scan::ptr get_scan(size_t i) { return scan::ptr(new scan(*this, i + 1)); }
     /// Get the 'nth' scan
-    scan::const_ptr scan(size_t i) const { return scan::const_ptr(new rainhdf::scan(*this, i + 1)); }
+    scan::const_ptr get_scan(size_t i) const { return scan::const_ptr(new scan(*this, i + 1)); }
     /// Add a new scan to the file
     scan::ptr add_scan(
           double elevation        ///< Scan elevation angle (degrees above horizon)
@@ -76,7 +76,7 @@ namespace rainhdf
       , time_t end_time)
   {
     return scan::ptr(
-        new rainhdf::scan(
+        new scan(
             *this,
             ++scan_count_,
             elevation,

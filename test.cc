@@ -68,7 +68,7 @@ int main(int argc, const char *argv[])
 
     for (size_t i = 0; i < hdfr.scan_count(); ++i)
     {
-      scan::const_ptr sr = hdfr.scan(i);
+      scan::const_ptr sr = hdfr.get_scan(i);
       scan::ptr sw = 
           hdfw.add_scan(
               sr->elevation(),
@@ -92,21 +92,21 @@ int main(int argc, const char *argv[])
         // Write it out as a new layer
         data::ptr lw = 
           sw->add_layer(
-              lr->quantity(),
+              lr->get_quantity(),
               lr->is_quality(),
               &vec_data[0],
               no_data,
               undetect);
 
         // Now go through and filter our reflectivity (only)
-        if (lr->quantity() == qty_dbzh)
+        if (lr->get_quantity() == qty_dbzh)
         {
           for (vector<float>::iterator i = vec_data.begin(); i != vec_data.end(); ++i)
             if (*i < 10)
               *i = 0;
 
           sw->add_layer(
-              lr->quantity(),
+              lr->get_quantity(),
               true,
               &vec_data[0],
               no_data,
