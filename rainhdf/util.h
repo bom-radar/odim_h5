@@ -166,13 +166,29 @@ namespace rainhdf
     , att_wave_length         ///< Wavelength (cm)
     , att_rpm                 ///< Antenna revolutions per minute
     , att_pulse_width         ///< Pulse width in micro-seconds (us)
+    , att_rx_bandwidth        ///< Bandwidth (MHz) that the receiver is set to hwen operating the radar with att_pulse_width
     , att_low_prf             ///< Low pulse repetition frequency (Hz)
     , att_high_prf            ///< High pulse repitition frequency (Hz)
+    , att_tx_loss             ///< Total loss in dB in the transmission chain between the signal generator and the feed horn
+    , att_rx_loss             ///< Total loss in dB in the receiving chain between the feed and the receiver
+    , att_radome_loss         ///< One-way dry radome loss in dB
+    , att_antenna_gain        ///< Antenna gain in dB
+    , att_beam_width_h        ///< Horizontal half-power (-3dB) beamwidth in degrees
+    , att_beam_width_v        ///< Vertical half-power (-3dB) beamwidth in degrees
+    , att_gas_attn            ///< Gaseous specific attnuation in dB/km assumed by the radar processor
+    , att_rad_const_h         ///< Radar constant in dB for the horizontal channel
+    , att_rad_const_v         ///< Radar constant in dB for the vertical channel
+    , att_nom_tx_power        ///< Nominal transmitted peak power in kW
+    , att_tx_power            ///< Transmitted peak power in kW (SIMPLE ARRAY OF DOUBLES)
+    , att_nyquist_velocity    ///< Unambiguous velocity (Nyquist) interval (+-m/s)
+    , att_v_samples           ///< Number of samples used for radial velocity measurements
     , att_azimuth_method      ///< How raw data in azimuth are processed to arrive at given value
     , att_range_method        ///< How raw data in range are processed to arrive at given value
-    , att_azimuth_angles      ///< Azimuthal start and stop angles for each gate (degrees) (SEQUENCE)
-    , att_elevation_angles    ///< Elevation angles for each azimuth (degrees) (SEQUENCE)
-    , att_azimuth_times       ///< Start/stop times for each azimuth gate in scan (SEQUENCE)
+    , att_elevation_angles    ///< Elevation angles for each azimuth (degrees) (DOUBLE ARRAY)
+    , att_az_start_angles     ///< Start angles (degrees) for each azimuth gate (DOUBLE ARRAY)
+    , att_az_stop_angles      ///< End angles (degrees) for each azimuth gate (DOUBLE ARRAY)
+    , att_az_start_times      ///< Start times for each azimuth gate (DOUBLE ARRAY)
+    , att_az_stop_times       ///< End times for each azimuth gate (DOUBLE ARRAY)
     , att_angles              ///< Elevation angles used to generate the product (degrees) (SEQUENCE)
     , att_rotation_speed      ///< Antenna rotation speed (SEQUENCE)
     , att_cartesian_method    ///< How cartesian data are processed
@@ -180,14 +196,13 @@ namespace rainhdf
     , att_accum_img_count     ///< Number of images used in precipitation accumulation
     , att_min_range           ///< Minimum range of data used when generating a profile (km)
     , att_max_range           ///< Maximum range of data used when generating a profile (km)
-    , att_nyquist_velocity    ///< Unambiguous velocity (Nyquist) interval (+-m/s)
     , att_dealiased           ///< True if data has been dealiased
     , att_elevation_accuracy  ///< Antenna pointing accuracy in elevation (degrees)
     , att_azimuth_accuracy    ///< Antenna pointing accuracy in azimuth (degrees)
     , att_malfunction         ///< Radar malfunction indicator (true indicates malfunction)
     , att_malfunction_msg     ///< Radar malfunction message
     , att_radar_horizon       ///< Radar horizon - maximum range (km)
-    , att_mds                 ///< Minimum detectable signal at 10km (dBm)
+    , att_nez                 ///< Total system noise expressed as reflectivity (dBZ) at 1km
     , att_our                 ///< Overall uptime reliability (%)
     , att_doppler_filters     ///< Doppler clutter filters used when collecting data (SEQUENCE)
     , att_comment             ///< Free text description

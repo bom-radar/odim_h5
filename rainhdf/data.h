@@ -32,9 +32,9 @@ namespace rainhdf
     size_t size() const { return size_; }
 
     /// Read the data
-    void read(float* data, float& no_data, float& undetect) const;
+    void read(float* raw, float& no_data, float& undetect) const;
     /// Write the data
-    void write(const float* data, float no_data, float undetect);
+    void write(const float* raw, float no_data, float undetect);
 
   private:
     data(
@@ -43,7 +43,7 @@ namespace rainhdf
         , size_t index
         , rainhdf::quantity quantity
         , const hsize_t* dims
-        , const float* data
+        , const float* raw
         , float no_data
         , float undetect);
     data(

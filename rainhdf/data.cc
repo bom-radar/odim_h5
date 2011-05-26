@@ -28,7 +28,7 @@ data::data(
     , size_t index
     , rainhdf::quantity quantity
     , const hsize_t* dims
-    , const float* data
+    , const float* raw
     , float no_data
     , float undetect)
   : base(parent, is_quality ? grp_quality : grp_data, index, create)
@@ -57,7 +57,7 @@ data::data(
   new_att(hnd_data, atn_image_version, val_image_version);
 
   // Write the actual image data
-  if (H5Dwrite(hnd_data, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data) < 0)
+  if (H5Dwrite(hnd_data, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw) < 0)
     throw error("Failed to write data");
 }
 
@@ -77,7 +77,7 @@ data::data(
 
 }
 
-void data::read(float* data, float& no_data, float& undetect) const
+void data::read(float* raw, float& no_data, float& undetect) const
 {
   hid_handle hnd_data(hid_data, hnd_this_, dat_data, open);
 
@@ -89,7 +89,7 @@ void data::read(float* data, float& no_data, float& undetect) const
   // Read the raw data
   no_data = get_att<double>(hnd_what_, atn_no_data);
   undetect = get_att<double>(hnd_what_, atn_undetect);
-  if (H5Dread(hnd_data, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data) < 0)
+  if (H5Dread(hnd_data, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw) < 0)
     throw error(hnd_this_, "Failed to read data");
 
   // Convert using gain and offset?
@@ -99,11 +99,11 @@ void data::read(float* data, float& no_data, float& undetect) const
     no_data = (no_data * gain_) + offset_;
     undetect = (undetect * gain_) + offset_;
     for (size_t i = 0; i < size_; ++i)
-      data[i] = (data[i] * gain_) + offset_;
+      raw[i] = (raw[i] * gain_) + offset_;
   }
 }
 
-void data::write(const float* data, float no_data, float undetect)
+void data::write(const float* raw, float no_data, float undetect)
 {
   hid_handle hnd_data(hid_data, hnd_this_, dat_data, open);
 
@@ -122,7 +122,7 @@ void data::write(const float* data, float no_data, float undetect)
 
     std::vector<float> vec_data;
     vec_data.reserve(size_);
-    vec_data.assign(data, data + size_);
+    vec_data.assign(raw, raw + size_);
     for (std::vector<float>::iterator i = vec_data.begin(); i != vec_data.end(); ++i)
       *i = (*i - offset_) * gain_mult;
 
@@ -137,7 +137,7 @@ void data::write(const float* data, float no_data, float undetect)
     // Write the raw data
     set_att(hnd_what_, atn_no_data, no_data);
     set_att(hnd_what_, atn_undetect, undetect);
-    if (H5Dwrite(hnd_data, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data) < 0)
+    if (H5Dwrite(hnd_data, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw) < 0)
       throw error("Failed to write data");
   }
 }
