@@ -10,23 +10,23 @@
 #include "base.h"
 #include <memory>
 
-namespace RainHDF
+namespace rainhdf
 {
   /// Single data layer (image) of data used by a scan
-  class Data : public Base
+  class data : public base
   {
   public:
-    typedef std::auto_ptr<Data> Ptr;
-    typedef std::auto_ptr<const Data> ConstPtr;
+    typedef std::auto_ptr<data> ptr;
+    typedef std::auto_ptr<const data> const_ptr;
 
   public:
-    virtual ~Data();
+    virtual ~data();
 
     /// Is this layer quality data?
     bool is_quality() const { return is_quality_; }
 
     /// Get the quantity stored by this data
-    Quantity quantity() const { return quantity_; }
+    rainhdf::quantity quantity() const { return quantity_; }
 
     /// Get the number of elements in the data image
     size_t size() const { return size_; }
@@ -37,32 +37,32 @@ namespace RainHDF
     void write(const float* data, float no_data, float undetect);
 
   private:
-    Data(
-          const Base &parent
+    data(
+          const base& parent
         , bool is_quality
         , size_t index
-        , Quantity quantity
+        , rainhdf::quantity quantity
         , const hsize_t* dims
         , const float* data
         , float no_data
         , float undetect);
-    Data(
-          const Base &parent
+    data(
+          const base& parent
         , bool is_quality
         , size_t index
-        , Quantity quantity
+        , rainhdf::quantity quantity
         , const hsize_t* dims);
 
   private:
-    bool      is_quality_;  ///< Is this a quality layer?
-    Quantity  quantity_;    ///< Quantity stored by this data layer
-    float     gain_;        ///< Gain (a), in ax+b data unpacking function
-    float     offset_;      ///< Offset (b), in ax+b data unpacking function
+    bool              is_quality_;  ///< Is this a quality layer?
+    rainhdf::quantity quantity_;    ///< Quantity stored by this data layer
+    float             gain_;        ///< Gain (a), in ax+b data unpacking function
+    float             offset_;      ///< Offset (b), in ax+b data unpacking function
 
     // Cached values
-    size_t    size_;        ///< Number of elements in dataset
+    size_t            size_;        ///< Number of elements in dataset
 
-    friend class Scan;
+    friend class scan;
   };
 };
 

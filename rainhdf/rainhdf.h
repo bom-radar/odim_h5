@@ -13,18 +13,18 @@
 /**
  *
  */
-namespace RainHDF
+namespace rainhdf
 {
   
 }
 
 /**
- * \mainpage RainHDF
+ * \mainpage rainhdf
  *
  * \section intro Introduction
- * Welcome to the Rainfields HDF (RainHDF) library documentation.
+ * Welcome to the Rainfields HDF (rainhdf) library documentation.
  *
- * The RainHDF library provides several C++ classes that can be used to read
+ * The rainhdf library provides several C++ classes that can be used to read
  * and write files that conform to the OPERA Data Information Model for HDF5
  * (ODIM or ODIM_H5 for short).  As the standard is quite generic, allowing
  * a large range of products to be stored, only a subset has been implemented
@@ -42,7 +42,7 @@ namespace RainHDF
  * information about the product.
  *
  * \code
- * RainHDF::Volume vol("my_volume_file.h5", true);
+ * rainhdf::volume vol("my_volume_file.h5", true);
  *
  * float lat = vol.latitude();
  * float lon = vol.longitude();
@@ -59,15 +59,15 @@ namespace RainHDF
  * a polar volume file.
  *
  * \code
- * RainHDF::Volume vol("my_volume_file.h5", false);
+ * rainhdf::volume vol("my_volume_file.h5", false);
  * if (vol.scan_count() < 3)
  * {
  *   cerr << "Insufficient scans" << endl;
  *   return;
  * }
  *
- * RainHDF::Scan::Ptr scan = vol.scan(2);
- * RainHDF::Data::Ptr dbz = scan.layer(kQty_DBZH);
+ * rainhdf::scan::ptr scan = vol.scan(2);
+ * rainhdf::data::ptr dbz = scan.layer(kQty_DBZH);
  * if (dbz.get() == NULL)
  * {
  *   cerr << "No reflectivity data in file" << endl;
@@ -81,7 +81,7 @@ namespace RainHDF
  * // data, no_data and undetect now contain valid values
  * \endcode
  *
- * When a product is openened RainHDF does not read the entire product into
+ * When a product is openened rainhdf does not read the entire product into
  * memory, but rather maintains handles to parts of the file via the
  * underlying HDF5 API.  To minimize the resources that are consumed at any 
  * one time, smart pointers are used to automatically close datasets that are
@@ -115,14 +115,14 @@ namespace RainHDF
  *
  * // ... data filled with radar image ...
  *
- * RainHDF::Volume vol(
+ * rainhdf::volume vol(
  *     "my_volume_file.h5",
  *     time(NULL),          // Time data is valid
  *     123.4,               // Station latitude
  *     36.8,                // Station longitude
  *     10.0);               // Station height
  *      
- * RainHDF::Scan::Ptr scan = vol.add_scan(
+ * rainhdf::scan::ptr scan = vol.add_scan(
  *     0.2,                 // elevation angle
  *     azimuths,            // no of azimuths
  *     bins,                // no of range bins
@@ -131,7 +131,7 @@ namespace RainHDF
  *     time(NULL) - 30,     // scan start time
  *     time(NULL));         // scan end time
  *               
- * RainHDF::Data::Ptr layer = scan.add_layer(
+ * rainhdf::data::ptr layer = scan.add_layer(
  *     kQty_DBZH,           // quantity stored by this layer
  *     false,               // data or quality information (false == data)
  *     data,                // layer data to write
@@ -140,13 +140,13 @@ namespace RainHDF
  * \endcode
  *
  * \subsection errors Error Handling
- * Whenever an error occurs while reading or writing a RainHDF product, an
- * exception is thrown of the class RainHDF::Error.  This error class extends
+ * Whenever an error occurs while reading or writing a rainhdf product, an
+ * exception is thrown of the class rainhdf::Error.  This error class extends
  * the standard std::exception error and can be caught as such.
  *
  * The library is written to be fully exception safe, and will not leak any 
  * resources as a result of an exception.  That is, it is safe for the application
- * using the library to recover from a RainHDF::Error exception and continue
+ * using the library to recover from a rainhdf::Error exception and continue
  * executing.  In the case that an exception is thrown during a call which writes
  * to a HDF5 file, the state of the file is undefined.  The file will still
  * constitude valid HDF5, but may contain a partly written dataset or attribute.
@@ -157,8 +157,8 @@ namespace RainHDF
  * try
  * {
  *   // Attempt to open a non-existant scan
- *   RainHDF::Volume vol("my_volume_file.h5", true);
- *   RainHDF::Scan::ConstPtr scan = vol.scan(vol.scan_count());
+ *   rainhdf::volume vol("my_volume_file.h5", true);
+ *   rainhdf::scan::const_ptr scan = vol.scan(vol.scan_count());
  * }
  * catch (std::exception &err)
  * {

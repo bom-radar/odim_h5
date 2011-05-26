@@ -8,75 +8,75 @@
 
 #include <cstring>
 
-using namespace RainHDF;
+using namespace rainhdf;
 
-Base::Base(const std::string& file, CreateFlag)
+base::base(const std::string& file, create_flag)
   : parent_(NULL)
-  , hnd_this_(kHID_File, file.c_str(), kCreate)
-  , hnd_what_(kHID_Group, hnd_this_, kGrp_What, kCreate)
-  , hnd_where_(kHID_Group, hnd_this_, kGrp_Where, kCreate)
-  , hnd_how_(kHID_Group, hnd_this_, kGrp_How, kCreate)
+  , hnd_this_(hid_file, file.c_str(), create)
+  , hnd_what_(hid_group, hnd_this_, grp_what, create)
+  , hnd_where_(hid_group, hnd_this_, grp_where, create)
+  , hnd_how_(hid_group, hnd_this_, grp_how, create)
 {
 
 }
 
-Base::Base(const Base& parent, const char *name, CreateFlag)
+base::base(const base& parent, const char *name, create_flag)
   : parent_(&parent)
-  , hnd_this_(kHID_Group, parent_->hnd_this_, name, kCreate)
-  , hnd_what_(kHID_Group, hnd_this_, kGrp_What, kCreate)
-  , hnd_where_(kHID_Group, hnd_this_, kGrp_Where, kCreate)
-  , hnd_how_(kHID_Group, hnd_this_, kGrp_How, kCreate)
+  , hnd_this_(hid_group, parent_->hnd_this_, name, create)
+  , hnd_what_(hid_group, hnd_this_, grp_what, create)
+  , hnd_where_(hid_group, hnd_this_, grp_where, create)
+  , hnd_how_(hid_group, hnd_this_, grp_how, create)
 {
 
 }
 
-Base::Base(const Base& parent, const char *name, int index, CreateFlag)
+base::base(const base& parent, const char *name, int index, create_flag)
   : parent_(&parent)
-  , hnd_this_(kHID_Group, parent_->hnd_this_, name, index, kCreate)
-  , hnd_what_(kHID_Group, hnd_this_, kGrp_What, kCreate)
-  , hnd_where_(kHID_Group, hnd_this_, kGrp_Where, kCreate)
-  , hnd_how_(kHID_Group, hnd_this_, kGrp_How, kCreate)
+  , hnd_this_(hid_group, parent_->hnd_this_, name, index, create)
+  , hnd_what_(hid_group, hnd_this_, grp_what, create)
+  , hnd_where_(hid_group, hnd_this_, grp_where, create)
+  , hnd_how_(hid_group, hnd_this_, grp_how, create)
 {
 
 }
 
-Base::Base(const std::string& file, bool read_only, OpenFlag)
+base::base(const std::string& file, bool read_only, open_flag)
   : parent_(NULL)
-  , hnd_this_(kHID_File, file.c_str(), read_only, kOpen)
-  , hnd_what_(kHID_Group, hnd_this_, kGrp_What, kOpen, true)
-  , hnd_where_(kHID_Group, hnd_this_, kGrp_Where, kOpen, true)
-  , hnd_how_(kHID_Group, hnd_this_, kGrp_How, kOpen, true)
+  , hnd_this_(hid_file, file.c_str(), read_only, open)
+  , hnd_what_(hid_group, hnd_this_, grp_what, open, true)
+  , hnd_where_(hid_group, hnd_this_, grp_where, open, true)
+  , hnd_how_(hid_group, hnd_this_, grp_how, open, true)
 {
   // Note presence of any 'how' attributes
   if (hnd_how_)
     check_attribs_presence(hnd_how_, att_flags_);
 }
 
-Base::Base(const Base& parent, const char *name, OpenFlag)
+base::base(const base& parent, const char *name, open_flag)
   : parent_(&parent)
-  , hnd_this_(kHID_Group, parent_->hnd_this_, name, kOpen)
-  , hnd_what_(kHID_Group, hnd_this_, kGrp_What, kOpen, true)
-  , hnd_where_(kHID_Group, hnd_this_, kGrp_Where, kOpen, true)
-  , hnd_how_(kHID_Group, hnd_this_, kGrp_How, kOpen, true)
+  , hnd_this_(hid_group, parent_->hnd_this_, name, open)
+  , hnd_what_(hid_group, hnd_this_, grp_what, open, true)
+  , hnd_where_(hid_group, hnd_this_, grp_where, open, true)
+  , hnd_how_(hid_group, hnd_this_, grp_how, open, true)
 {
   // Note presence of any 'how' attributes
   if (hnd_how_)
     check_attribs_presence(hnd_how_, att_flags_);
 }
 
-Base::Base(const Base& parent, const char *name, int index, OpenFlag)
+base::base(const base& parent, const char *name, int index, open_flag)
   : parent_(&parent)
-  , hnd_this_(kHID_Group, parent_->hnd_this_, name, index, kOpen)
-  , hnd_what_(kHID_Group, hnd_this_, kGrp_What, kOpen, true)
-  , hnd_where_(kHID_Group, hnd_this_, kGrp_Where, kOpen, true)
-  , hnd_how_(kHID_Group, hnd_this_, kGrp_How, kOpen, true)
+  , hnd_this_(hid_group, parent_->hnd_this_, name, index, open)
+  , hnd_what_(hid_group, hnd_this_, grp_what, open, true)
+  , hnd_where_(hid_group, hnd_this_, grp_where, open, true)
+  , hnd_how_(hid_group, hnd_this_, grp_how, open, true)
 {
   // Note presence of any 'how' attributes
   if (hnd_how_)
     check_attribs_presence(hnd_how_, att_flags_);
 }
 
-Base::~Base()
+base::~base()
 {
 
 }

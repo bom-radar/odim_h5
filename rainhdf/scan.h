@@ -12,66 +12,66 @@
 #include <memory>
 #include <vector>
 
-namespace RainHDF
+namespace rainhdf
 {
   /// Unique handle to a scan in the HDF5 file
-  class Scan : public Base
+  class scan : public base
   {
   public:
-    typedef std::auto_ptr<Scan> Ptr;
-    typedef std::auto_ptr<const Scan> ConstPtr;
+    typedef std::auto_ptr<scan> ptr;
+    typedef std::auto_ptr<const scan> const_ptr;
 
   public:
-    virtual ~Scan();
+    virtual ~scan();
 
     /// Get the elevation of this scan
-    double elevation() const { return get_att<double>(hnd_where_, kAtn_Elevation); }
+    double elevation() const { return get_att<double>(hnd_where_, atn_elevation); }
     /// Get the number of azimuths in scan
     size_t azimuth_count() const { return azi_count_; }
     /// Get the number of range bins per azimuth
     size_t range_bin_count() const { return bin_count_; }
     /// Get the number of the first azimuth to be radiated
-    size_t first_azimuth() const { return get_att<long>(hnd_where_, kAtn_FirstAzimuth); }
+    size_t first_azimuth() const { return get_att<long>(hnd_where_, atn_first_azimuth); }
     /// Get the distance from sensor at the start of the first range bin in meters
-    double range_start() const { return get_att<double>(hnd_where_, kAtn_RangeStart) * 1000.0; }
+    double range_start() const { return get_att<double>(hnd_where_, atn_range_start) * 1000.0; }
     /// Get the distance between consecutive range bins in meters
-    double range_scale() const { return get_att<double>(hnd_where_, kAtn_RangeScale); }
+    double range_scale() const { return get_att<double>(hnd_where_, atn_range_scale); }
     /// Get the time this scan commenced
-    time_t start_time() const { return get_att<time_t>(hnd_what_, kAtn_StartDate, kAtn_StartTime); }
+    time_t start_time() const { return get_att<time_t>(hnd_what_, atn_start_date, atn_start_time); }
     /// Get the time this scan completed
-    time_t end_time() const { return get_att<time_t>(hnd_what_, kAtn_EndDate, kAtn_EndTime); }
+    time_t end_time() const { return get_att<time_t>(hnd_what_, atn_end_date, atn_end_time); }
 
     /// Get the number of data layers in the scan
     size_t layer_count() const { return data_info_.size(); }
     /// Get the 'nth' data layer
-    Data::Ptr layer(size_t i);
+    data::ptr layer(size_t i);
     /// Get the 'nth' data layer
-    Data::ConstPtr layer(size_t i) const;
+    data::const_ptr layer(size_t i) const;
     /// Get a data layer based on it's quantity (or NULL if no such data)
-    Data::Ptr layer(Quantity quantity);
-    Data::ConstPtr layer(Quantity quantity) const;
+    data::ptr layer(quantity _quantity);
+    data::const_ptr layer(quantity _quantity) const;
 
     /// Add a new data or quality layer to the scan
-    Data::Ptr add_layer(
-          Quantity quantity
+    data::ptr add_layer(
+          quantity _quantity
         , bool is_quality
-        , const float* data
+        , const float* raw
         , float no_data
         , float undetect);
 
   private:
-    struct DataInfo
+    struct data_info
     {
-      bool      is_quality; ///< True if data, false if quality
-      size_t    index;      ///< Index of dataX/qualityX in file
-      Quantity  quantity;   ///< Quantity stored by data layer
+      bool      is_quality_;  ///< True if data, false if quality
+      size_t    index_;       ///< Index of dataX/qualityX in file
+      quantity  quantity_;    ///< Quantity stored by data layer
     };
-    typedef std::vector<DataInfo> DataInfoStore_t;
+    typedef std::vector<data_info> data_info_store;
 
   private:
     /// Create new scan in file
-    Scan(
-          const Base& parent
+    scan(
+          const base& parent
         , size_t index            ///< Scan number in file (datasetX)
         , double elevation        ///< Scan elevation angle (degrees above horizon)
         , size_t azimuth_count    ///< Number of azimuths in scan
@@ -83,7 +83,7 @@ namespace RainHDF
         , time_t end_time         ///< Time scan ended
         );
     /// Create handle to a scan that is existing in the file
-    Scan(const Base& parent, size_t index);
+    scan(const base& parent, size_t index);
 
   private:
     // Size required by data layers
@@ -92,9 +92,9 @@ namespace RainHDF
             bin_count_;   ///< Number of range bins
 
     // Handles to any data layers that are present
-    DataInfoStore_t   data_info_;       ///< Information about data/quality layers
+    data_info_store   data_info_;       ///< Information about data/quality layers
 
-    friend class Volume;
+    friend class volume;
   };
 }
 

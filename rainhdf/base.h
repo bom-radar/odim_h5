@@ -9,58 +9,58 @@
 
 #include "util.h"
 
-namespace RainHDF
+namespace rainhdf
 {
   /// Base class for a single level in a ODIM_H5 product hierarchy
-  class Base
+  class base
   {
   public:
     /// Create a new level as the root of a file
-    Base(const std::string& file, CreateFlag);
+    base(const std::string& file, create_flag);
 
     /// Create a new level by name
-    Base(const Base& parent, const char* name, CreateFlag);
+    base(const base& parent, const char* name, create_flag);
 
     /// Create a new level by appending an index to a name
-    Base(const Base& parent, const char* name, int index, CreateFlag);
+    base(const base& parent, const char* name, int index, create_flag);
 
     /// Open the rool level from a file
-    Base(const std::string& file, bool read_only, OpenFlag);
+    base(const std::string& file, bool read_only, open_flag);
 
     /// Open a level by name
-    Base(const Base& parent, const char* name, OpenFlag);
+    base(const base& parent, const char* name, open_flag);
 
     /// Open a level by appending an index to a name
-    Base(const Base& parent, const char* name, int index, OpenFlag);
+    base(const base& parent, const char* name, int index, open_flag);
 
     /// Destroy this object
-    virtual ~Base();
+    virtual ~base();
 
     /// Get the set of attributes that are local to this level
-    const AttFlags& attribute_flags() const { return att_flags_; }
+    const att_flags& attribute_flags() const { return att_flags_; }
 
     /// Read an optional attribute
     template <class T>
-    bool attribute(Attribute attrib, T& val) const;
+    bool attribute(rainhdf::attribute attrib, T& val) const;
 
     /// Write an optional attribute
     template <class T>
-    void set_attribute(Attribute attrib, const T& val);
+    void set_attribute(rainhdf::attribute attrib, const T& val);
 
   protected:
-    const Base*   parent_;      ///< Parent level (used to recursive search attributes)
-    HID_Handle    hnd_this_;    ///< 'This' group
-    HID_Handle    hnd_what_;    ///< What group
-    HID_Handle    hnd_where_;   ///< Where group
-    HID_Handle    hnd_how_;     ///< How group
-    AttFlags      att_flags_;   ///< Flags to indicate presence of 'how' group attributes
+    const base*   parent_;      ///< Parent level (used to recursive search attributes)
+    hid_handle    hnd_this_;    ///< 'This' group
+    hid_handle    hnd_what_;    ///< What group
+    hid_handle    hnd_where_;   ///< Where group
+    hid_handle    hnd_how_;     ///< How group
+    att_flags     att_flags_;   ///< Flags to indicate presence of 'how' group attributes
   };
 
   template <class T>
-  bool Base::attribute(Attribute attrib, T& val) const 
+  bool base::attribute(rainhdf::attribute attrib, T& val) const 
   { 
     // TODO - manually verify type of attribute? (will throw read error if reading wrong type)
-    for (const Base* pLevel = this; pLevel != NULL; pLevel = pLevel->parent_)
+    for (const base* pLevel = this; pLevel != NULL; pLevel = pLevel->parent_)
     {
       if (pLevel->att_flags_.test(attrib))
       {
@@ -72,11 +72,11 @@ namespace RainHDF
   }
 
   template <class T>
-  void Base::set_attribute(Attribute attrib, const T& val)
+  void base::set_attribute(rainhdf::attribute attrib, const T& val)
   {
     // TODO - manually verify type of attribute? (will allow writing of non-standard type)
     if (!hnd_how_)
-      hnd_how_ = HID_Handle(kHID_Group, hnd_this_, kGrp_How, kCreate);
+      hnd_how_ = hid_handle(hid_group, hnd_this_, grp_how, create);
     set_att(hnd_how_, to_string(attrib), val);
     att_flags_.set(attrib);
   }

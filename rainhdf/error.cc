@@ -10,50 +10,50 @@
 #include <cstdarg>
 #include <cstdlib>
 
-using namespace RainHDF;
+using namespace rainhdf;
 
-Error::Error(const char *format, ...)
+error::error(const char* format, ...)
 {
-  static const int kErrBufSize = 512;
-  char buf[kErrBufSize];
+  static const int err_buf_size = 512;
+  char buf[err_buf_size];
   va_list ap;
 
   va_start(ap, format);
-  vsnprintf(buf, kErrBufSize, format, ap);
+  vsnprintf(buf, err_buf_size, format, ap);
   va_end(ap);
 
-  buf[kErrBufSize-1] = '\0';
+  buf[err_buf_size-1] = '\0';
   description_.assign(buf);
 }
 
-Error::Error(hid_t loc, const char *format, ...)
+error::error(hid_t loc, const char* format, ...)
 {
-  static const int kErrBufSize = 512;
-  char buf[kErrBufSize];
+  static const int err_buf_size = 512;
+  char buf[err_buf_size];
   va_list ap;
 
   va_start(ap, format);
-  vsnprintf(buf, kErrBufSize, format, ap);
+  vsnprintf(buf, err_buf_size, format, ap);
   va_end(ap);
 
-  buf[kErrBufSize-1] = '\0';
+  buf[err_buf_size-1] = '\0';
   description_.assign(buf);
 
   // Get the location path from the file
-  if (H5Iget_name(loc, buf, kErrBufSize) > 0)
+  if (H5Iget_name(loc, buf, err_buf_size) > 0)
   {
-    buf[kErrBufSize-1] = '\0';
+    buf[err_buf_size-1] = '\0';
     description_.append(" at ");
     description_.append(buf);
   }
 }
 
-Error::~Error() throw()
+error::~error() throw()
 {
 
 }
 
-const char * Error::what() const throw()
+const char* error::what() const throw()
 {
   return description_.c_str();
 }

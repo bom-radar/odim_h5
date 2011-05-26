@@ -10,14 +10,14 @@
 #include "product.h"
 #include "scan.h"
 
-namespace RainHDF
+namespace rainhdf
 {
   /// ODIM_H5 compliant polar volume file manipulator
-  class Volume : public Product
+  class volume : public product
   {
   public:
     /// Create a new volume product
-    Volume(
+    volume(
           const std::string& file
         , time_t valid_time
         , double latitude
@@ -26,31 +26,31 @@ namespace RainHDF
         );
 
     /// Open an existing volume product
-    Volume(const std::string& file, bool read_only);
+    volume(const std::string& file, bool read_only);
 
     /// Read the station latitude
-    double latitude() const { return get_att<double>(hnd_where_, kAtn_Latitude); }
+    double latitude() const { return get_att<double>(hnd_where_, atn_latitude); }
     /// Write the station latitude
-    void set_latitude(double latitude) { set_att(hnd_where_, kAtn_Latitude, latitude); }
+    void set_latitude(double latitude) { set_att(hnd_where_, atn_latitude, latitude); }
 
     /// Read the station longitude
-    double longitude() const { return get_att<double>(hnd_where_, kAtn_Longitude); }
+    double longitude() const { return get_att<double>(hnd_where_, atn_longitude); }
     /// Write the station longitude
-    void set_longitude(double longitude) { set_att(hnd_where_, kAtn_Longitude, longitude); }
+    void set_longitude(double longitude) { set_att(hnd_where_, atn_longitude, longitude); }
 
     /// Read the station elevation
-    double height() const { return get_att<double>(hnd_where_, kAtn_Height); }
+    double height() const { return get_att<double>(hnd_where_, atn_height); }
     /// Write the station elevation
-    void set_height(double height) { set_att(hnd_where_, kAtn_Height, height); }
+    void set_height(double height) { set_att(hnd_where_, atn_height, height); }
 
     /// Get the number of scans in the volume
     size_t scan_count() const { return scan_count_; }
     /// Get the 'nth' scan
-    Scan::Ptr scan(size_t i) { return Scan::Ptr(new Scan(*this, i + 1)); }
+    scan::ptr scan(size_t i) { return scan::ptr(new rainhdf::scan(*this, i + 1)); }
     /// Get the 'nth' scan
-    Scan::ConstPtr scan(size_t i) const { return Scan::ConstPtr(new Scan(*this, i + 1)); }
+    scan::const_ptr scan(size_t i) const { return scan::const_ptr(new rainhdf::scan(*this, i + 1)); }
     /// Add a new scan to the file
-    Scan::Ptr add_scan(
+    scan::ptr add_scan(
           double elevation        ///< Scan elevation angle (degrees above horizon)
         , size_t azimuth_count    ///< Number of azimuths scanned
         , size_t range_bin_count  ///< Number of range bins
@@ -65,7 +65,7 @@ namespace RainHDF
     size_t scan_count_; ///< Number of scans in file
   };
 
-  inline Scan::Ptr Volume::add_scan(
+  inline scan::ptr volume::add_scan(
         double elevation
       , size_t azimuth_count
       , size_t range_bin_count
@@ -75,8 +75,8 @@ namespace RainHDF
       , time_t start_time
       , time_t end_time)
   {
-    return Scan::Ptr(
-        new Scan(
+    return scan::ptr(
+        new rainhdf::scan(
             *this,
             ++scan_count_,
             elevation,

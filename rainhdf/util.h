@@ -14,260 +14,260 @@
 #include <hdf5.h>
 #include <string>
 
-namespace RainHDF
+namespace rainhdf
 {
   /// List of supported ODIM_H5 object types
-  enum ObjectType
+  enum object_type
   {
-      kObj_VolumePolar        ///< Polar volume
-    , kObj_VolumeCartesian    ///< Cartesian volume
-    , kObj_Scan               ///< Polar scan
-    , kObj_Ray                ///< Single polar ray
-    , kObj_Azimuth            ///< Azimuthal object
-    , kObj_Image              ///< 2-D cartesian image
-    , kObj_CompositeImage     ///< Cartesian composite images(s)
-    , kObj_CrossSection       ///< 2-D vertical cross sections(s)
-    , kObj_VerticalProfile    ///< 1-D vertical profile
-    , kObj_Picture            ///< Embedded graphical image
+      ot_volume_polar       ///< Polar volume
+    , ot_volume_cartesian   ///< Cartesian volume
+    , ot_scan               ///< Polar scan
+    , ot_ray                ///< Single polar ray
+    , ot_azimuth            ///< Azimuthal object
+    , ot_image              ///< 2-D cartesian image
+    , ot_composite_image    ///< Cartesian composite images(s)
+    , ot_cross_section      ///< 2-D vertical cross sections(s)
+    , ot_vertical_profile   ///< 1-D vertical profile
+    , ot_picture            ///< Embedded graphical image
 
-    , kObjectTypeCount
+    , count_ot
   };
   /// Traits for the object type enumerate
   template <>
-  struct enum_traits<ObjectType>
+  struct enum_traits<object_type>
   {
-    enum { kCount = (int) kObjectTypeCount };
-    static const char * kName;
-    static const char * kStrings[];
+    enum { count = (int) count_ot };
+    static const char* name;
+    static const char* strings[];
   };
 
   /// Product types supported by ODIM_H5
-  enum ProductType
+  enum product_type
   {
-      kProd_Scan                  ///< Scan of polar data
-    , kProd_PPI                   ///< Plan position indicator
-    , kProd_CAPPI                 ///< Constant altitude PPI
-    , kProd_PsuedoCAPPI           ///< Psuedo-CAPPI
-    , kProd_EchoTop               ///< Echo top
-    , kProd_Maximum               ///< Maximum
-    , kProd_Accumulation          ///< Accumulation
-    , kProd_VIL                   ///< Vertically integrated liquid water
-    , kProd_Composite             ///< Composite
-    , kProd_VerticalProfile       ///< Vertical profile
-    , kProd_RangeHeight           ///< Range height indicator
-    , kProd_VerticalSlice         ///< Arbitrary vertical slice
-    , kProd_VerticalSidePanel     ///< Vertical side panel
-    , kProd_HorizontalSidePanel   ///< Horizontal side panel
-    , kProd_Ray                   ///< Ray
-    , kProd_Azimuth               ///< Azimuthal type product
-    , kProd_Quality               ///< Quality metric
+      pt_scan                   ///< Scan of polar data
+    , pt_ppi                    ///< Plan position indicator
+    , pt_cappi                  ///< Constant altitude PPI
+    , pt_psuedo_cappi           ///< Psuedo-CAPPI
+    , pt_echo_top               ///< Echo top
+    , pt_maximum                ///< Maximum
+    , pt_accumulation           ///< Accumulation
+    , pt_vil                    ///< Vertically integrated liquid water
+    , pt_composite              ///< Composite
+    , pt_vertical_profile       ///< Vertical profile
+    , pt_rangeHeight            ///< Range height indicator
+    , pt_vertical_slice         ///< Arbitrary vertical slice
+    , pt_vertical_side_panel    ///< Vertical side panel
+    , pt_horizontal_side_panel  ///< Horizontal side panel
+    , pt_ray                    ///< Ray
+    , pt_azimuth                ///< Azimuthal type product
+    , pt_quality                ///< Quality metric
     
-    , kProductTypeCount
+    , count_pt
   };
   /// Traits for the product type enumerate
   template <>
-  struct enum_traits<ProductType>
+  struct enum_traits<product_type>
   {
-    enum { kCount = (int) kProductTypeCount };
-    static const char * kName;
-    static const char * kStrings[];
+    enum { count = (int) count_pt };
+    static const char* name;
+    static const char* strings[];
   };
 
   /// Variable quantities supported by ODIM_H5
-  enum Quantity
+  enum quantity
   {
     // ODIM specified quantities
-      kQty_TH             ///< Horizontally-polarized total (uncorrected) reflectivity factor (dBZ)
-    , kQty_TV             ///< Vertically-polarized total (uncorrected) reflectivity factor (dBZ)
-    , kQty_DBZH           ///< Horizontally-polarized (corrected) reflectivity factor (dBZ)
-    , kQty_DBZV           ///< Vertically-polarized (corrected) reflectivity factor (dBZ)
-    , kQty_ZDR            ///< Differential reflectivity (dBZ)
-    , kQty_RHOHV          ///< Correlation between Zh and Zv [0-1]
-    , kQty_LDR            ///< Linear depolarization info (dB)
-    , kQty_PHIDP          ///< Differential phase (degrees)
-    , kQty_KDP            ///< Specific differential phase (degrees/km)
-    , kQty_SQI            ///< Signal quality index [0-1]
-    , kQty_SNR            ///< Normalized signal-to-noise ratio [0-1]
-    , kQty_RATE           ///< Rain rate (mm/h)
-    , kQty_ACRR           ///< Accumulated precipitation (mm)
-    , kQty_HGHT           ///< Height of echotops (km)
-    , kQty_VIL            ///< Vertical Integrated Liquid water (kg/m2)
-    , kQty_VRAD           ///< Radial velocity (m/s)
-    , kQty_WRAD           ///< Spectral width of radial velocity (m/s)
-    , kQty_UWND           ///< Component of wind in x-direction (m/s)
-    , kQty_VWND           ///< Component of wind in y-direction (m/s)
-    , kQty_BRDR           ///< 1 denotes border between radars in composite, 0 otherwise
-    , kQty_QIND           ///< Spatially analyzed quality indicator, according to OPERA II [0-1]
-    , kQty_CLASS          ///< Classified according to legend
+      qty_th            ///< Horizontally-polarized total (uncorrected) reflectivity factor (dBZ)
+    , qty_tv            ///< Vertically-polarized total (uncorrected) reflectivity factor (dBZ)
+    , qty_dbzh          ///< Horizontally-polarized (corrected) reflectivity factor (dBZ)
+    , qty_dbzv          ///< Vertically-polarized (corrected) reflectivity factor (dBZ)
+    , qty_zdr           ///< Differential reflectivity (dBZ)
+    , qty_rhohv         ///< Correlation between Zh and Zv [0-1]
+    , qty_ldr           ///< Linear depolarization info (dB)
+    , qty_phidp         ///< Differential phase (degrees)
+    , qty_kdp           ///< Specific differential phase (degrees/km)
+    , qty_sqi           ///< Signal quality index [0-1]
+    , qty_snr           ///< Normalized signal-to-noise ratio [0-1]
+    , qty_rate          ///< Rain rate (mm/h)
+    , qty_acrr          ///< Accumulated precipitation (mm)
+    , qty_hght          ///< Height of echotops (km)
+    , qty_vil           ///< Vertical Integrated Liquid water (kg/m2)
+    , qty_vrad          ///< Radial velocity (m/s)
+    , qty_wrad          ///< Spectral width of radial velocity (m/s)
+    , qty_uwnd          ///< Component of wind in x-direction (m/s)
+    , qty_vwnd          ///< Component of wind in y-direction (m/s)
+    , qty_brdr          ///< 1 denotes border between radars in composite, 0 otherwise
+    , qty_qind          ///< Spatially analyzed quality indicator, according to OPERA II [0-1]
+    , qty_class         ///< Classified according to legend
 
     // Extended quantities unique to BOM
-    , kQty_Occultation    ///< Proportion of bin that is occulded [0-1]
-    , kQty_Attenuation    ///< Fraction of bin power that is attenuated (PIA) [0-1]
-    , kQty_ClutterProb    ///< Probability that bin is clutter [0-1]
-    , kQty_HailProb       ///< Probability that bin is hail [0-1]
+    , qty_occultation   ///< Proportion of bin that is occulded [0-1]
+    , qty_attenuation   ///< Fraction of bin power that is attenuated (PIA) [0-1]
+    , qty_clutterprob   ///< Probability that bin is clutter [0-1]
+    , qty_hail_prob     ///< Probability that bin is hail [0-1]
 
-    , kQty_CleanDBZH      ///< Copy of DBZH that has been cleaned
-    , kQty_CleanVRAD      ///< Copy of VRAD that has been cleaned
+    , qty_dbzh_clean    ///< Copy of DBZH that has been cleaned
+    , qty_vrad_clean    ///< Copy of VRAD that has been cleaned
 
-    , kQty_Generic        ///< Generic quantity for general purpose use
+    , qty_generic       ///< Generic quantity for general purpose use
 
-    , kQuantityCount
+    , count_qt
   };
   /// Traits for the quantity enumerate
   template <>
-  struct enum_traits<Quantity>
+  struct enum_traits<quantity>
   {
-    enum { kCount = (int) kQuantityCount };
-    static const char * kName;
-    static const char * kStrings[];
+    enum { count = (int) count_qt };
+    static const char* name;
+    static const char* strings[];
   };
 
   /// Methods supported by ODIM_H5
-  enum Method
+  enum method
   {
-      kMth_Nearest        ///< Nearest neighbour or closest radar
-    , kMth_Interpolate    ///< Interpolation
-    , kMth_Average        ///< Average of all values
-    , kMth_Random         ///< Random
-    , kMth_MinDistEarth   ///< Minimum distance to earth
-    , kMth_Latest         ///< Most recent radar
-    , kMth_Maximum        ///< Maximum value
-    , kMth_Domain         ///< User-defined compositing
-    , kMth_VAD            ///< Velocity azimuth display
-    , kMth_VVP            ///< Volume velocity procesing
-    , kMth_GaugeAdjust    ///< Gauge-adjustment
+      mth_nearest         ///< Nearest neighbour or closest radar
+    , mth_interpolate     ///< Interpolation
+    , mth_average         ///< Average of all values
+    , mth_random          ///< Random
+    , mth_min_dist_earth  ///< Minimum distance to earth
+    , mth_latest          ///< Most recent radar
+    , mth_maximum         ///< Maximum value
+    , mth_domain          ///< User-defined compositing
+    , mth_vad             ///< Velocity azimuth display
+    , mth_vvp             ///< Volume velocity procesing
+    , mth_gauge_adjust    ///< Gauge-adjustment
 
-    , kMethodCount
+    , count_mth
   };
   /// Traits for the method enumerate
   template <>
-  struct enum_traits<Method>
+  struct enum_traits<method>
   {
-    enum { kCount = (int) kMethodCount };
-    static const char * kName;
-    static const char * kStrings[];
+    enum { count = (int) count_mth };
+    static const char* name;
+    static const char* strings[];
   };
 
   /// Optional scalar quality attributes (longs)
-  enum Attribute
+  enum attribute
   {
-      kAtt_Task               ///< Name of the acquisition task or product generator
-    , kAtt_StartEpoch         ///< Product start time (UNIX epoch)
-    , kAtt_EndEpoch           ///< Product end time (UNIX epoch)
-    , kAtt_System             ///< Radar system
-    , kAtt_Software           ///< Processing software
-    , kAtt_SoftwareVersion    ///< Software version
-    , kAtt_ZR_A               ///< Z-R constant A in Z = AR^b
-    , kAtt_ZR_B               ///< Z-R exponent b in Z = AR^b
-    , kAtt_KR_A               ///< K-R constant A in R = AK^b
-    , kAtt_KR_B               ///< K-R exponent b in R = AK^b
-    , kAtt_Simulated          ///< True if data is simulated
-    , kAtt_BeamWidth          ///< Radar half power beam width (degrees)
-    , kAtt_Wavelength         ///< Wavelength (cm)
-    , kAtt_RPM                ///< Antenna revolutions per minute
-    , kAtt_PulseWidth         ///< Pulse width in micro-seconds (us)
-    , kAtt_LowPRF             ///< Low pulse repetition frequency (Hz)
-    , kAtt_HighPRF            ///< High pulse repitition frequency (Hz)
-    , kAtt_AzimuthMethod      ///< How raw data in azimuth are processed to arrive at given value
-    , kAtt_RangeMethod        ///< How raw data in range are processed to arrive at given value
-    , kAtt_AzimuthAngles      ///< Azimuthal start and stop angles for each gate (degrees) (SEQUENCE)
-    , kAtt_ElevationAngles    ///< Elevation angles for each azimuth (degrees) (SEQUENCE)
-    , kAtt_AzimuthTimes       ///< Start/stop times for each azimuth gate in scan (SEQUENCE)
-    , kAtt_Angles             ///< Elevation angles used to generate the product (degrees) (SEQUENCE)
-    , kAtt_RotationSpeed      ///< Antenna rotation speed (SEQUENCE)
-    , kAtt_CartesianMethod    ///< How cartesian data are processed
-    , kAtt_Nodes              ///< Radar nodes that contributed to the composite (SEQUENCE)
-    , kAtt_AccumImgCount      ///< Number of images used in precipitation accumulation
-    , kAtt_MinRange           ///< Minimum range of data used when generating a profile (km)
-    , kAtt_MaxRange           ///< Maximum range of data used when generating a profile (km)
-    , kAtt_NyquistVelocity    ///< Unambiguous velocity (Nyquist) interval (+-m/s)
-    , kAtt_Dealiased          ///< True if data has been dealiased
-    , kAtt_ElevationAccuracy  ///< Antenna pointing accuracy in elevation (degrees)
-    , kAtt_AzimuthAccuracy    ///< Antenna pointing accuracy in azimuth (degrees)
-    , kAtt_Malfunction        ///< Radar malfunction indicator (true indicates malfunction)
-    , kAtt_MalfunctionMsg     ///< Radar malfunction message
-    , kAtt_RadarHorizon       ///< Radar horizon - maximum range (km)
-    , kAtt_MDS                ///< Minimum detectable signal at 10km (dBm)
-    , kAtt_OUR                ///< Overall uptime reliability (%)
-    , kAtt_DopplerFilters     ///< Doppler clutter filters used when collecting data (SEQUENCE)
-    , kAtt_Comment            ///< Free text description
-    , kAtt_SQI                ///< Signal Quality Index threshold value
-    , kAtt_CSR                ///< Clutter-to-signal ratio threshold value
-    , kAtt_LOG                ///< Security distance above mean noise level threshold value (dB)
-    , kAtt_VPRCorrection      ///< True if VPR correction has been applied
-    , kAtt_FreezeLevel        ///< Freezing level above sea level (km)
-    , kAtt_Min                ///< Minimum value for continuous quality data
-    , kAtt_Max                ///< Maximum value for continuous quality data
-    , kAtt_Step               ///< Step value for continuous quality data
-    , kAtt_LevelCount         ///< Number of levels in discrete data legend
-    , kAtt_PeakPower          ///< Peak power (kW)
-    , kAtt_AveragePower       ///< Average power (W)
-    , kAtt_DynamicRange       ///< Dynamic range (dB)
-    , kAtt_RAC                ///< Range attenuation correction (dBm)
-    , kAtt_BBCorrection       ///< True if bright-band correction has been applied
-    , kAtt_PAC                ///< Precipitation attenuation correction (dBm)
-    , kAtt_SignalToNoise      ///< Signal-to-noise ratio threshold value (dB)
-    , kAtt_Polarization       ///< Type of polarization transmitted by the radar (H,V)
+      att_task                ///< Name of the acquisition task or product generator
+    , att_start_epoch         ///< Product start time (UNIX epoch)
+    , att_end_epoch           ///< Product end time (UNIX epoch)
+    , att_system              ///< Radar system
+    , att_software            ///< Processing software
+    , att_software_version    ///< Software version
+    , att_zr_a                ///< Z-R constant A in Z = AR^b
+    , att_zr_b                ///< Z-R exponent b in Z = AR^b
+    , att_kr_a                ///< K-R constant A in R = AK^b
+    , att_kr_b                ///< K-R exponent b in R = AK^b
+    , att_simulated           ///< True if data is simulated
+    , att_beam_width          ///< Radar half power beam width (degrees)
+    , att_wave_length         ///< Wavelength (cm)
+    , att_rpm                 ///< Antenna revolutions per minute
+    , att_pulse_width         ///< Pulse width in micro-seconds (us)
+    , att_low_prf             ///< Low pulse repetition frequency (Hz)
+    , att_high_prf            ///< High pulse repitition frequency (Hz)
+    , att_azimuth_method      ///< How raw data in azimuth are processed to arrive at given value
+    , att_range_method        ///< How raw data in range are processed to arrive at given value
+    , att_azimuth_angles      ///< Azimuthal start and stop angles for each gate (degrees) (SEQUENCE)
+    , att_elevation_angles    ///< Elevation angles for each azimuth (degrees) (SEQUENCE)
+    , att_azimuth_times       ///< Start/stop times for each azimuth gate in scan (SEQUENCE)
+    , att_angles              ///< Elevation angles used to generate the product (degrees) (SEQUENCE)
+    , att_rotation_speed      ///< Antenna rotation speed (SEQUENCE)
+    , att_cartesian_method    ///< How cartesian data are processed
+    , att_nodes               ///< Radar nodes that contributed to the composite (SEQUENCE)
+    , att_accum_img_count     ///< Number of images used in precipitation accumulation
+    , att_min_range           ///< Minimum range of data used when generating a profile (km)
+    , att_max_range           ///< Maximum range of data used when generating a profile (km)
+    , att_nyquist_velocity    ///< Unambiguous velocity (Nyquist) interval (+-m/s)
+    , att_dealiased           ///< True if data has been dealiased
+    , att_elevation_accuracy  ///< Antenna pointing accuracy in elevation (degrees)
+    , att_azimuth_accuracy    ///< Antenna pointing accuracy in azimuth (degrees)
+    , att_malfunction         ///< Radar malfunction indicator (true indicates malfunction)
+    , att_malfunction_msg     ///< Radar malfunction message
+    , att_radar_horizon       ///< Radar horizon - maximum range (km)
+    , att_mds                 ///< Minimum detectable signal at 10km (dBm)
+    , att_our                 ///< Overall uptime reliability (%)
+    , att_doppler_filters     ///< Doppler clutter filters used when collecting data (SEQUENCE)
+    , att_comment             ///< Free text description
+    , att_sqi                 ///< Signal Quality Index threshold value
+    , att_csr                 ///< Clutter-to-signal ratio threshold value
+    , att_log                 ///< Security distance above mean noise level threshold value (dB)
+    , att_vpr_correction      ///< True if VPR correction has been applied
+    , att_freeze_level        ///< Freezing level above sea level (km)
+    , att_min                 ///< Minimum value for continuous quality data
+    , att_max                 ///< Maximum value for continuous quality data
+    , att_step                ///< Step value for continuous quality data
+    , att_level_count         ///< Number of levels in discrete data legend
+    , att_peak_power          ///< Peak power (kW)
+    , att_average_power       ///< Average power (W)
+    , att_dynamic_range       ///< Dynamic range (dB)
+    , att_rac                 ///< Range attenuation correction (dBm)
+    , att_bb_correction       ///< True if bright-band correction has been applied
+    , att_pac                 ///< Precipitation attenuation correction (dBm)
+    , att_signal_to_noise     ///< Signal-to-noise ratio threshold value (dB)
+    , att_polarization        ///< Type of polarization transmitted by the radar (H,V)
 
     // Extended scalars unique to BOM
-    , kAtt_ConfigurationQC    ///< Configuration parameters for system used to perform QC
+    , att_configuration_qc    ///< Configuration parameters for system used to perform QC
 
-    , kAttributeCount
+    , count_att
   };
   /// Traits for the attribute enumerate
   template <>
-  struct enum_traits<Attribute>
+  struct enum_traits<attribute>
   {
-    enum { kCount = (int) kAttributeCount };
-    static const char * kName;
-    static const char * kStrings[];
+    enum { count = (int) count_att };
+    static const char* name;
+    static const char* strings[];
   };
 
   /// Type used to store presence flags for optional attributes
-  typedef bitset<Attribute> AttFlags;
+  typedef bitset<attribute> att_flags;
 
   // Retrieve existing attributes
-  void get_att(const HID_Handle &hid, const char *name, bool &val);
-  void get_att(const HID_Handle &hid, const char *name, long &val);
-  void get_att(const HID_Handle &hid, const char *name, double &val);
-  void get_att(const HID_Handle &hid, const char *name, char *buf, size_t buf_size);
-  void get_att(const HID_Handle &hid, const char *name, std::string &val);
-  void get_att(const HID_Handle &hid, const char *name_date, const char *name_time, time_t &val);
+  void get_att(const hid_handle& hid, const char* name, bool& val);
+  void get_att(const hid_handle& hid, const char* name, long& val);
+  void get_att(const hid_handle& hid, const char* name, double& val);
+  void get_att(const hid_handle& hid, const char* name, char* buf, size_t buf_size);
+  void get_att(const hid_handle& hid, const char* name, std::string& val);
+  void get_att(const hid_handle& hid, const char* name_date, const char* name_time, time_t& val);
 
   // Create new attributes
-  void new_att(const HID_Handle &hid, const char *name, bool val);
-  void new_att(const HID_Handle &hid, const char *name, long val);
-  void new_att(const HID_Handle &hid, const char *name, double val);
-  void new_att(const HID_Handle &hid, const char *name, const char *val);
-  void new_att(const HID_Handle &hid, const char *name, const std::string &val);
-  void new_att(const HID_Handle &hid, const char *name_date, const char *name_time, time_t val);
-  inline void new_att(const HID_Handle &hid, const char *name, float val)
+  void new_att(const hid_handle& hid, const char* name, bool val);
+  void new_att(const hid_handle& hid, const char* name, long val);
+  void new_att(const hid_handle& hid, const char* name, double val);
+  void new_att(const hid_handle& hid, const char* name, const char* val);
+  void new_att(const hid_handle& hid, const char* name, const std::string& val);
+  void new_att(const hid_handle& hid, const char* name_date, const char* name_time, time_t val);
+  inline void new_att(const hid_handle& hid, const char* name, float val)
   {
     new_att(hid, name, (double) val);
   }
-  inline void new_att(const HID_Handle &hid, const char *name, char *val)
+  inline void new_att(const hid_handle& hid, const char* name, char* val)
   {
-    new_att(hid, name, (const char *) val);
+    new_att(hid, name, (const char*) val);
   }
 
   // Alter existing attributes (or create if not existing)
-  void set_att(const HID_Handle &hid, const char *name, bool val);
-  void set_att(const HID_Handle &hid, const char *name, long val);
-  void set_att(const HID_Handle &hid, const char *name, double val);
-  void set_att(const HID_Handle &hid, const char *name, const char *val);
-  void set_att(const HID_Handle &hid, const char *name, const std::string &val);
-  void set_att(const HID_Handle &hid, const char *name_date, const char *name_time, time_t val);
-  inline void set_att(const HID_Handle &hid, const char *name, float val)
+  void set_att(const hid_handle& hid, const char* name, bool val);
+  void set_att(const hid_handle& hid, const char* name, long val);
+  void set_att(const hid_handle& hid, const char* name, double val);
+  void set_att(const hid_handle& hid, const char* name, const char* val);
+  void set_att(const hid_handle& hid, const char* name, const std::string& val);
+  void set_att(const hid_handle& hid, const char* name_date, const char* name_time, time_t val);
+  inline void set_att(const hid_handle& hid, const char* name, float val)
   {
     set_att(hid, name, (double) val);
   }
-  inline void set_att(const HID_Handle &hid, const char *name, char *val) 
+  inline void set_att(const hid_handle& hid, const char* name, char* val) 
   { 
-    set_att(hid, name, (const char *) val); 
+    set_att(hid, name, (const char*) val); 
   }
 
   template <typename T>
-  void get_att(const HID_Handle &hid, const char *name, T &val)
+  void get_att(const hid_handle& hid, const char* name, T& val)
   {
     char buf[128];
     get_att(hid, name, buf, sizeof(buf));
@@ -275,30 +275,30 @@ namespace RainHDF
   }
 
   template <typename T>
-  void new_att(const HID_Handle &hid, const char *name, T val)
+  void new_att(const hid_handle& hid, const char* name, T val)
   {
     new_att(hid, name, to_string(val));
   }
 
   template <typename T>
-  void set_att(const HID_Handle &hid, const char *name, T val)
+  void set_att(const hid_handle& hid, const char* name, T val)
   {
     set_att(hid, name, to_string(val));
   }
 
   // Determine which 'how' attributes are present for an object
-  void check_attribs_presence(const HID_Handle &hid, AttFlags &flags);
+  void check_attribs_presence(const hid_handle& hid, att_flags& flags);
 
   // Convenient value returning versions of above functions (for use in initializer lists)
   template <class T>
-  inline T get_att(const HID_Handle &hid, const char *name)
+  inline T get_att(const hid_handle& hid, const char* name)
   {
     T t;
     get_att(hid, name, t);
     return t;
   }
   template <class T>
-  inline T get_att(const HID_Handle &hid, const char *name1, const char *name2)
+  inline T get_att(const hid_handle& hid, const char* name1, const char* name2)
   {
     T t;
     get_att(hid, name1, name2, t);
@@ -306,52 +306,52 @@ namespace RainHDF
   }
 
   // Group name constants
-  extern const char * kGrp_What;
-  extern const char * kGrp_Where;
-  extern const char * kGrp_How;
-  extern const char * kGrp_Dataset;
-  extern const char * kGrp_Data;
-  extern const char * kGrp_Quality;
+  extern const char* grp_what;
+  extern const char* grp_where;
+  extern const char* grp_how;
+  extern const char* grp_dataset;
+  extern const char* grp_data;
+  extern const char* grp_quality;
 
   // Attribute name constants
-  extern const char * kAtn_Conventions;
-  extern const char * kAtn_Object;
-  extern const char * kAtn_Version;
-  extern const char * kAtn_Date;
-  extern const char * kAtn_Time;
-  extern const char * kAtn_Source;
-  extern const char * kAtn_Latitude;
-  extern const char * kAtn_Longitude;
-  extern const char * kAtn_Height;
-  extern const char * kAtn_Product;
-  extern const char * kAtn_StartDate;
-  extern const char * kAtn_StartTime;
-  extern const char * kAtn_EndDate;
-  extern const char * kAtn_EndTime;
-  extern const char * kAtn_Elevation;
-  extern const char * kAtn_FirstAzimuth;
-  extern const char * kAtn_RangeCount;
-  extern const char * kAtn_RangeStart;
-  extern const char * kAtn_RangeScale;
-  extern const char * kAtn_AzimuthCount;
-  extern const char * kAtn_Quantity;
-  extern const char * kAtn_Gain;
-  extern const char * kAtn_Offset;
-  extern const char * kAtn_NoData;
-  extern const char * kAtn_Undetect;
-  extern const char * kAtn_Class;
-  extern const char * kAtn_ImageVersion;
+  extern const char* atn_conventions;
+  extern const char* atn_object;
+  extern const char* atn_version;
+  extern const char* atn_date;
+  extern const char* atn_time;
+  extern const char* atn_source;
+  extern const char* atn_latitude;
+  extern const char* atn_longitude;
+  extern const char* atn_height;
+  extern const char* atn_product;
+  extern const char* atn_start_date;
+  extern const char* atn_start_time;
+  extern const char* atn_end_date;
+  extern const char* atn_end_time;
+  extern const char* atn_elevation;
+  extern const char* atn_first_azimuth;
+  extern const char* atn_range_count;
+  extern const char* atn_range_start;
+  extern const char* atn_range_scale;
+  extern const char* atn_azimuth_count;
+  extern const char* atn_quantity;
+  extern const char* atn_gain;
+  extern const char* atn_offset;
+  extern const char* atn_no_data;
+  extern const char* atn_undetect;
+  extern const char* atn_class;
+  extern const char* atn_image_version;
 
   // Dataset name constants
-  extern const char * kDat_Data;
+  extern const char* dat_data;
 
   // Attribute value constants
-  extern const char * kVal_True;
-  extern const char * kVal_False;
-  extern const char * kVal_Conventions;
-  extern const char * kVal_Version;
-  extern const char * kVal_Class;
-  extern const char * kVal_ImageVersion;
+  extern const char* val_true;
+  extern const char* val_false;
+  extern const char* val_conventions;
+  extern const char* val_version;
+  extern const char* val_class;
+  extern const char* val_image_version;
 }
 
 #endif

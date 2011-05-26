@@ -8,32 +8,32 @@
 
 #include <cstring>
 
-using namespace RainHDF;
+using namespace rainhdf;
 
-Product::Product(const std::string& file, ObjectType type, time_t valid_time)
-  : Base(file, kCreate)
+product::product(const std::string& file, object_type type, time_t valid_time)
+  : base(file, create)
 {
   // Set the conventions value
-  new_att(hnd_this_, kAtn_Conventions, kVal_Conventions);
+  new_att(hnd_this_, atn_conventions, val_conventions);
 
   // Fill in the global 'what' group constants
-  new_att(hnd_what_, kAtn_Object, type);
-  new_att(hnd_what_, kAtn_Version, kVal_Version);
-  new_att(hnd_what_, kAtn_Date, kAtn_Time, valid_time);
+  new_att(hnd_what_, atn_object, type);
+  new_att(hnd_what_, atn_version, val_version);
+  new_att(hnd_what_, atn_date, atn_time, valid_time);
 
   // Initialize source to be empty to ensure structural conformance
-  new_att(hnd_what_, kAtn_Source, "");
+  new_att(hnd_what_, atn_source, "");
 }
 
-Product::Product(const std::string& file, ObjectType type, bool read_only)
-  : Base(file, read_only, kOpen)
+product::product(const std::string& file, object_type type, bool read_only)
+  : base(file, read_only, open)
 {
   // Check the object type
-  if (get_att<ObjectType>(hnd_what_, kAtn_Object) != type)
-    throw Error("ODIM_H5 object type mismatch");
+  if (get_att<object_type>(hnd_what_, atn_object) != type)
+    throw error("ODIM_H5 object type mismatch");
 }
 
-void Product::get_source(
+void product::get_source(
       std::string& wmo
     , std::string& radar
     , std::string& orig_centre
@@ -43,7 +43,7 @@ void Product::get_source(
 {
   // Get the raw attribute
   char buf[512];
-  get_att(hnd_what_, kAtn_Source, buf, 512);
+  get_att(hnd_what_, atn_source, buf, 512);
 
   // Clear out the passed values
   wmo.clear();
@@ -63,7 +63,7 @@ void Product::get_source(
     if (buf[i] == ':')
     {
       if (val != NULL)
-        throw Error(hnd_what_, "Badly formed source attribute (pair mismatch)");
+        throw error(hnd_what_, "Badly formed source attribute (pair mismatch)");
 
       buf[i] = '\0';
       val = &buf[i+1];
@@ -80,7 +80,7 @@ void Product::get_source(
       buf[i] = '\0';
 
       if (val == NULL)
-        throw Error(hnd_what_, "Badly formed source attribute (pair mismatch)");
+        throw error(hnd_what_, "Badly formed source attribute (pair mismatch)");
       else if (strcmp(tok, "WMO") == 0)
         wmo.assign(val);
       else if (strcmp(tok, "RAD") == 0)
@@ -94,7 +94,7 @@ void Product::get_source(
       else if (strcmp(tok, "CMT") == 0)
         comment.assign(val);
       else
-        throw Error(hnd_what_, "Badly formed source attribute (unknown identifier)");
+        throw error(hnd_what_, "Badly formed source attribute (unknown identifier)");
 
       tok = &buf[i+1];
       val = NULL;
@@ -102,7 +102,7 @@ void Product::get_source(
   }
 }
 
-void Product::set_source(
+void product::set_source(
       const std::string& wmo
     , const std::string& radar
     , const std::string& orig_centre
@@ -126,7 +126,7 @@ void Product::set_source(
   if (!comment.empty())
     val.append(val.empty() ? "CMT:" : ",CMT:").append(country);
 
-  set_att(hnd_what_, kAtn_Source, val);
+  set_att(hnd_what_, atn_source, val);
 }
 
 

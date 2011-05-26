@@ -12,7 +12,7 @@
 #include <exception>
 #include <string>
 
-namespace RainHDF
+namespace rainhdf
 {
   /// Base exception class
   /**
@@ -20,17 +20,17 @@ namespace RainHDF
    * ie: throw MyException();  This ensures that the correct virtual
    * what() function will be called.
    */
-  class Error : public std::exception
+  class error : public std::exception
   {
   public:
     /// Construct an error using printf style arguments
-    Error(const char* format, ...);
+    error(const char* format, ...);
 
     /// Construct an error using printf style arguments and a file location
-    Error(hid_t loc, const char* format, ...);
+    error(hid_t loc, const char* format, ...);
 
     /// Error destructor
-    virtual ~Error() throw();
+    virtual ~error() throw();
 
     /// Get the description of the error
     virtual const char* what() const throw();

@@ -9,29 +9,29 @@
 #include <cmath>
 #include <vector>
 
-using namespace RainHDF;
+using namespace rainhdf;
 
-namespace RainHDF
+namespace rainhdf
 {
   /// Compression factor used to compress data (0 - 9, 9 = max compression)
-  static const int kDefCompression = 6;
+  static const int default_compression = 6;
 }
 
-Data::~Data()
+data::~data()
 {
 
 }
 
-Data::Data(
-      const Base& parent
+data::data(
+      const base& parent
     , bool is_quality
     , size_t index
-    , Quantity quantity
+    , rainhdf::quantity quantity
     , const hsize_t* dims
     , const float* data
     , float no_data
     , float undetect)
-  : Base(parent, is_quality ? kGrp_Quality : kGrp_Data, index, kCreate)
+  : base(parent, is_quality ? grp_quality : grp_data, index, create)
   , is_quality_(is_quality)
   , quantity_(quantity)
   , gain_(1.0f)
@@ -39,58 +39,58 @@ Data::Data(
   , size_(dims[0] * dims[1])
 {
   // Fill in the 'what' parameters
-  new_att(hnd_what_, kAtn_Quantity, quantity_);
-  new_att(hnd_what_, kAtn_Gain, gain_);
-  new_att(hnd_what_, kAtn_Offset, offset_);
-  new_att(hnd_what_, kAtn_NoData, no_data);
-  new_att(hnd_what_, kAtn_Undetect, undetect);
+  new_att(hnd_what_, atn_quantity, quantity_);
+  new_att(hnd_what_, atn_gain, gain_);
+  new_att(hnd_what_, atn_offset, offset_);
+  new_att(hnd_what_, atn_no_data, no_data);
+  new_att(hnd_what_, atn_undetect, undetect);
 
   // Create the HDF dataset
-  HID_Handle space(kHID_Space, 2, dims, kCreate);
-  HID_Handle plist(kHID_PList, H5P_DATASET_CREATE, kCreate);
+  hid_handle space(hid_space, 2, dims, create);
+  hid_handle plist(hid_plist, H5P_DATASET_CREATE, create);
   if (H5Pset_chunk(plist, 2, dims) < 0)
-    throw Error(hnd_this_, "Failed to set chunk parameters for data");
-  if (H5Pset_deflate(plist, kDefCompression) < 0)
-    throw Error(hnd_this_, "Failed to set compression level for data");
-  HID_Handle hnd_data(kHID_Data, hnd_this_, kDat_Data, H5T_NATIVE_FLOAT, space, plist, kCreate);
-  new_att(hnd_data, kAtn_Class, kVal_Class);
-  new_att(hnd_data, kAtn_ImageVersion, kVal_ImageVersion);
+    throw error(hnd_this_, "Failed to set chunk parameters for data");
+  if (H5Pset_deflate(plist, default_compression) < 0)
+    throw error(hnd_this_, "Failed to set compression level for data");
+  hid_handle hnd_data(hid_data, hnd_this_, dat_data, H5T_NATIVE_FLOAT, space, plist, create);
+  new_att(hnd_data, atn_class, val_class);
+  new_att(hnd_data, atn_image_version, val_image_version);
 
   // Write the actual image data
   if (H5Dwrite(hnd_data, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data) < 0)
-    throw Error("Failed to write data");
+    throw error("Failed to write data");
 }
 
-Data::Data(
-      const Base& parent
+data::data(
+      const base& parent
     , bool is_quality
     , size_t index
-    , Quantity quantity
+    , rainhdf::quantity quantity
     , const hsize_t* dims)
-  : Base(parent, is_quality ? kGrp_Quality : kGrp_Data, index, kOpen)
+  : base(parent, is_quality ? grp_quality : grp_data, index, open)
   , is_quality_(is_quality)
   , quantity_(quantity)
-  , gain_(get_att<double>(hnd_what_, kAtn_Gain))
-  , offset_(get_att<double>(hnd_what_, kAtn_Offset))
+  , gain_(get_att<double>(hnd_what_, atn_gain))
+  , offset_(get_att<double>(hnd_what_, atn_offset))
   , size_(dims[0] * dims[1])
 {
 
 }
 
-void Data::read(float* data, float& no_data, float& undetect) const
+void data::read(float* data, float& no_data, float& undetect) const
 {
-  HID_Handle hnd_data(kHID_Data, hnd_this_, kDat_Data, kOpen);
+  hid_handle hnd_data(hid_data, hnd_this_, dat_data, open);
 
   // Verify the correct dimension to prevent memory corruption
-  HID_Handle space(kHID_Space, H5Dget_space(hnd_data));
+  hid_handle space(hid_space, H5Dget_space(hnd_data));
   if (H5Sget_simple_extent_npoints(space) != size_)
-    throw Error(hnd_data, "Dataset dimension mismatch");
+    throw error(hnd_data, "Dataset dimension mismatch");
 
   // Read the raw data
-  no_data = get_att<double>(hnd_what_, kAtn_NoData);
-  undetect = get_att<double>(hnd_what_, kAtn_Undetect);
+  no_data = get_att<double>(hnd_what_, atn_no_data);
+  undetect = get_att<double>(hnd_what_, atn_undetect);
   if (H5Dread(hnd_data, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data) < 0)
-    throw Error(hnd_this_, "Failed to read data");
+    throw error(hnd_this_, "Failed to read data");
 
   // Convert using gain and offset?
   if (   std::fabs(gain_ - 1.0) > 0.000001
@@ -103,14 +103,14 @@ void Data::read(float* data, float& no_data, float& undetect) const
   }
 }
 
-void Data::write(const float* data, float no_data, float undetect)
+void data::write(const float* data, float no_data, float undetect)
 {
-  HID_Handle hnd_data(kHID_Data, hnd_this_, kDat_Data, kOpen);
+  hid_handle hnd_data(hid_data, hnd_this_, dat_data, open);
 
   // Verify the correct dimension to prevent memory corruption
-  HID_Handle space(kHID_Space, H5Dget_space(hnd_data));
+  hid_handle space(hid_space, H5Dget_space(hnd_data));
   if (H5Sget_simple_extent_npoints(space) != size_)
-    throw Error(hnd_data, "Dataset dimension mismatch");
+    throw error(hnd_data, "Dataset dimension mismatch");
 
   // Do we have to convert the data?
   if (   std::fabs(gain_ - 1.0f) > 0.000001
@@ -127,18 +127,18 @@ void Data::write(const float* data, float no_data, float undetect)
       *i = (*i - offset_) * gain_mult;
 
     // Write the converted data
-    set_att(hnd_what_, kAtn_NoData, no_data);
-    set_att(hnd_what_, kAtn_Undetect, undetect);
+    set_att(hnd_what_, atn_no_data, no_data);
+    set_att(hnd_what_, atn_undetect, undetect);
     if (H5Dwrite(hnd_data, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &vec_data[0]) < 0)
-      throw Error("Failed to write data");
+      throw error("Failed to write data");
   }
   else
   {
     // Write the raw data
-    set_att(hnd_what_, kAtn_NoData, no_data);
-    set_att(hnd_what_, kAtn_Undetect, undetect);
+    set_att(hnd_what_, atn_no_data, no_data);
+    set_att(hnd_what_, atn_undetect, undetect);
     if (H5Dwrite(hnd_data, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data) < 0)
-      throw Error("Failed to write data");
+      throw error("Failed to write data");
   }
 }
 

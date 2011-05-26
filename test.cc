@@ -11,18 +11,18 @@
 #include <exception>
 
 using namespace std;
-using namespace RainHDF;
+using namespace rainhdf;
 
 int main(int argc, const char *argv[])
 {
   try
   {
     // Open an existing volume for reading
-    const Volume hdfr("201001221325Kurnell.h5", false);
+    const volume hdfr("201001221325Kurnell.h5", false);
     printf("opened file\n");
 
     // Create a new volume to copy it into
-    Volume hdfw(
+    volume hdfw(
         "hello.h5", 
         hdfr.valid_time(),
         hdfr.latitude(),
@@ -42,24 +42,24 @@ int main(int argc, const char *argv[])
       << "cmt " << s6 << endl;
 
     // Set some quality attributes
-    hdfw.set_attribute(kAtt_Simulated, true);
-    hdfw.set_attribute(kAtt_Malfunction, false);
-    hdfw.set_attribute(kAtt_LevelCount, 1234L);
-    hdfw.set_attribute(kAtt_RPM, 2.5);
-    hdfw.set_attribute(kAtt_Task, "RainHDF Test Application");
-    hdfw.set_attribute(kAtt_System, std::string("Test string"));
-    hdfw.set_attribute(kAtt_CartesianMethod, kMth_GaugeAdjust);
-    hdfw.set_attribute(kAtt_NyquistVelocity, 1.0);
+    hdfw.set_attribute(att_simulated, true);
+    hdfw.set_attribute(att_malfunction, false);
+    hdfw.set_attribute(att_level_count, 1234L);
+    hdfw.set_attribute(att_rpm, 2.5);
+    hdfw.set_attribute(att_task, "RainHDF Test Application");
+    hdfw.set_attribute(att_system, std::string("Test string"));
+    hdfw.set_attribute(att_cartesian_method, mth_gauge_adjust);
+    hdfw.set_attribute(att_nyquist_velocity, 1.0);
 
     // Get some quality attributes
-    bool b1, b2; long n; double f; Method e;
-    hdfw.attribute(kAtt_Simulated, b1);
-    hdfw.attribute(kAtt_Malfunction, b2);
-    hdfw.attribute(kAtt_LevelCount, n);
-    hdfw.attribute(kAtt_RPM, f);
-    hdfw.attribute(kAtt_Task, s1);
-    hdfw.attribute(kAtt_System, s2);
-    hdfw.attribute(kAtt_CartesianMethod, e);
+    bool b1, b2; long n; double f; method e;
+    hdfw.attribute(att_simulated, b1);
+    hdfw.attribute(att_malfunction, b2);
+    hdfw.attribute(att_level_count, n);
+    hdfw.attribute(att_rpm, f);
+    hdfw.attribute(att_task, s1);
+    hdfw.attribute(att_system, s2);
+    hdfw.attribute(att_cartesian_method, e);
 
     cout << b1 << " " << b2 << " " << n 
       << " " << f << " " << s1 << " " << s2 
@@ -68,8 +68,8 @@ int main(int argc, const char *argv[])
 
     for (size_t i = 0; i < hdfr.scan_count(); ++i)
     {
-      Scan::ConstPtr sr = hdfr.scan(i);
-      Scan::Ptr sw = 
+      scan::const_ptr sr = hdfr.scan(i);
+      scan::ptr sw = 
           hdfw.add_scan(
               sr->elevation(),
               sr->azimuth_count(),
@@ -86,11 +86,11 @@ int main(int argc, const char *argv[])
       for (size_t j = 0; j < sr->layer_count(); ++j)
       {
         // Read the layer data
-        Data::ConstPtr lr = sr->layer(j);
+        data::const_ptr lr = sr->layer(j);
         lr->read(&vec_data[0], no_data, undetect);
 
         // Write it out as a new layer
-        Data::Ptr lw = 
+        data::ptr lw = 
           sw->add_layer(
               lr->quantity(),
               lr->is_quality(),
@@ -99,7 +99,7 @@ int main(int argc, const char *argv[])
               undetect);
 
         // Now go through and filter our reflectivity (only)
-        if (lr->quantity() == kQty_DBZH)
+        if (lr->quantity() == qty_dbzh)
         {
           for (vector<float>::iterator i = vec_data.begin(); i != vec_data.end(); ++i)
             if (*i < 10)

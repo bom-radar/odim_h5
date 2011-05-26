@@ -13,38 +13,38 @@
 #include <cstring>
 #include <bitset>
 
-namespace RainHDF
+namespace rainhdf
 {
   /// Empty enumerate traits template
   template <typename T>
   struct enum_traits 
   { 
-    enum { kCount = -1 };
-    // enum { kCount };                 // Number of enumerates
-    // static const char *  kName;      // Name of enumerate
-    // static const char ** kStrings;   // String representation
-    // static const char ** kLabels;    // User friendly labels (optional)
+    enum { count = -1 };
+    // enum { count };                  // Number of enumerates
+    // static const char *  name;       // Name of enumerate
+    // static const char ** strings;    // String representation
+    // static const char ** labels;     // User friendly labels (optional)
   };
 
   /// Convert an enumerate into it's serializable string name
   template <typename T>
   const char* to_string(T val)
   {
-    return enum_traits<T>::kStrings[(int) val];
+    return enum_traits<T>::strings[(int) val];
   }
 
   /// Retrieve an enumerate from it's string
   template <typename T>
   T from_string(const char* val)
   {
-    for (int i = 0; i < enum_traits<T>::kCount; ++i)
-      if (std::strcmp(val, enum_traits<T>::kStrings[i]) == 0)
+    for (int i = 0; i < enum_traits<T>::count; ++i)
+      if (std::strcmp(val, enum_traits<T>::strings[i]) == 0)
         return (T) i;
-    throw Error("Invalid %s enumerate '%s'", enum_traits<T>::kName, val);
+    throw error("Invalid %s enumerate '%s'", enum_traits<T>::name, val);
   }
 
   /// Extended bitset class that allows using the enumerate as flags
-  template <typename T, int C = enum_traits<T>::kCount >
+  template <typename T, int C = enum_traits<T>::count >
   class bitset : public std::bitset<C>
   {
   private:

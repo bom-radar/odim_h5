@@ -9,23 +9,23 @@
 
 #include "base.h"
 
-namespace RainHDF
+namespace rainhdf
 {
   /// Base class for a top level ODIM_H5 object file
-  class Product : public Base
+  class product : public base
   {
   protected:
     // TODO - source is mandatory and should be in the constructor
     /// Create a new product
-    Product(const std::string& file, ObjectType type, time_t valid_time);
+    product(const std::string& file, object_type type, time_t valid_time);
     /// Open an existing ODIM_H5 product
-    Product(const std::string& file, ObjectType type, bool read_only);
+    product(const std::string& file, object_type type, bool read_only);
 
   public:
     /// Get the nominal (valid) time of the data/product
-    time_t valid_time() const { return get_att<time_t>(hnd_what_, kAtn_Date, kAtn_Time); }
+    time_t valid_time() const { return get_att<time_t>(hnd_what_, atn_date, atn_time); }
     /// Write the nominal (valid) time of the data/product
-    void set_valid_time(time_t valid_time) { set_att(hnd_what_, kAtn_Date, kAtn_Time, valid_time); }
+    void set_valid_time(time_t valid_time) { set_att(hnd_what_, atn_date, atn_time, valid_time); }
 
     /// Read the source attribute values
     void get_source(
