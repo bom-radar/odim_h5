@@ -183,8 +183,10 @@ namespace rainhdf
     }
 
     /// Assignment operator
-    hid_handle & operator=(const hid_handle &hid)
+    hid_handle& operator=(const hid_handle &hid)
     {
+      if (hid_ >= 0)
+        H5Idec_ref(hid_);
       hid_ = hid.hid_;
       H5Iinc_ref(hid_);
     }

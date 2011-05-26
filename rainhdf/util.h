@@ -54,7 +54,7 @@ namespace rainhdf
     , pt_vil                    ///< Vertically integrated liquid water
     , pt_composite              ///< Composite
     , pt_vertical_profile       ///< Vertical profile
-    , pt_range_height            ///< Range height indicator
+    , pt_range_height           ///< Range height indicator
     , pt_vertical_slice         ///< Arbitrary vertical slice
     , pt_vertical_side_panel    ///< Vertical side panel
     , pt_horizontal_side_panel  ///< Horizontal side panel
