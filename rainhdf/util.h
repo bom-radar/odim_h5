@@ -248,6 +248,8 @@ namespace rainhdf
   void get_att(const hid_handle& hid, const char* name, char* buf, size_t buf_size);
   void get_att(const hid_handle& hid, const char* name, std::string& val);
   void get_att(const hid_handle& hid, const char* name_date, const char* name_time, time_t& val);
+  void get_att(const hid_handle& hid, const char* name, long* vals, size_t& size);
+  void get_att(const hid_handle& hid, const char* name, double* vals, size_t& size);
 
   // Create new attributes
   void new_att(const hid_handle& hid, const char* name, bool val);
@@ -256,6 +258,8 @@ namespace rainhdf
   void new_att(const hid_handle& hid, const char* name, const char* val);
   void new_att(const hid_handle& hid, const char* name, const std::string& val);
   void new_att(const hid_handle& hid, const char* name_date, const char* name_time, time_t val);
+  void new_att(const hid_handle& hid, const char* name, const long* vals, size_t size);
+  void new_att(const hid_handle& hid, const char* name, const double* vals, size_t size);
   inline void new_att(const hid_handle& hid, const char* name, float val)
   {
     new_att(hid, name, (double) val);
@@ -271,6 +275,8 @@ namespace rainhdf
   void set_att(const hid_handle& hid, const char* name, double val);
   void set_att(const hid_handle& hid, const char* name, const char* val);
   void set_att(const hid_handle& hid, const char* name, const std::string& val);
+  void set_att(const hid_handle& hid, const char* name, const long* vals, size_t size);
+  void set_att(const hid_handle& hid, const char* name, const double* vals, size_t size);
   void set_att(const hid_handle& hid, const char* name_date, const char* name_time, time_t val);
   inline void set_att(const hid_handle& hid, const char* name, float val)
   {

@@ -228,7 +228,7 @@ namespace rainhdf
   static const char* err_fail_att_exists = "Attribute existance check failed for attribute '%s'";
   static const char* err_fail_att_read = "Failed to read attribute '%s'";
   static const char* err_fail_att_type = "Type mismatch on attribute '%s'";
-  static const char* err_fail_att_size = "String overflow on attribute '%s'";
+  static const char* err_fail_att_size = "Array overflow on attribute '%s'";
   static const char* err_fail_att_write = "Failed to write attribute '%s'";
   static const char* err_fail_att_delete = "failed to delete attribute '%s' before write";
 }
@@ -287,6 +287,49 @@ void rainhdf::get_att(const hid_handle& hid, const char* name, std::string& val)
     throw error(hid, err_fail_att_read, name);
 
   val.assign(buf);
+}
+
+void rainhdf::get_att(const hid_handle& hid, const char* name, long* vals, size_t& size)
+{
+  hid_handle attr(hid_attr, hid, name, open);
+
+  // Check it's an integer based type
+  hid_handle type(hid_type, H5Aget_type(attr));
+  if (H5Tget_class(type) != H5T_INTEGER)
+    throw error(hid, err_fail_att_type, name);
+
+  // Check we've got room in our buffer
+  hid_handle space(hid_space, H5Aget_space(attr));
+  size_t real_size = H5Sget_simple_extent_npoints(space);
+  if (real_size > size)
+    throw error(hid, err_fail_att_size, name);
+
+  // Read it in
+  size = real_size;
+  if (H5Aread(attr, type, vals) < 0)
+    throw error(hid, err_fail_att_read, name);
+}
+
+void rainhdf::get_att(const hid_handle& hid, const char* name, double* vals, size_t& size)
+{
+  hid_handle attr(hid_attr, hid, name, open);
+
+  // Check it's a floating point based type
+  hid_handle type(hid_type, H5Aget_type(attr));
+  if (H5Tget_class(type) != H5T_INTEGER)
+    throw error(hid, err_fail_att_type, name);
+
+  // Check we've got room in our buffer
+  hid_handle space(hid_space, H5Aget_space(attr));
+  size_t real_size = H5Sget_simple_extent_npoints(space);
+  if (real_size > size)
+    throw error(hid, err_fail_att_size, name);
+
+  // Read it in
+  size = real_size;
+  if (H5Aread(attr, type, vals) < 0)
+    throw error(hid, err_fail_att_read, name);
+
 }
 
 void rainhdf::get_att(const hid_handle& hid, const char* name_date, const char* name_time, time_t& val)
@@ -391,6 +434,30 @@ void rainhdf::new_att(const hid_handle& hid, const char* name, const std::string
     throw error(hid, err_fail_att_write, name);
 }
 
+void rainhdf::new_att(const hid_handle& hid, const char* name, const long* vals, size_t size)
+{
+  // Create a dataspace for the variable
+  hsize_t hs = size;
+  hid_handle space(hid_space, 1, &hs, create);
+
+  // Create and write the attribute
+  hid_handle attr(hid_attr, hid, name, H5T_STD_I64LE, space, create);
+  if (H5Awrite(attr, H5T_NATIVE_LONG, vals) < 0)
+    throw error(hid, err_fail_att_write, name);
+}
+
+void rainhdf::new_att(const hid_handle& hid, const char* name, const double* vals, size_t size)
+{
+  // Create a dataspace for the variable
+  hsize_t hs = size;
+  hid_handle space(hid_space, 1, &hs, create);
+
+  // Create and write the attribute
+  hid_handle attr(hid_attr, hid, name, H5T_IEEE_F64LE, space, create);
+  if (H5Awrite(attr, H5T_NATIVE_DOUBLE, vals) < 0)
+    throw error(hid, err_fail_att_write, name);
+}
+
 void rainhdf::new_att(const hid_handle& hid, const char* name_date, const char* name_time, time_t val)
 {
   // Print the date and time in one string
@@ -480,6 +547,34 @@ void rainhdf::set_att(const hid_handle& hid, const char* name, const char* val)
 
   // Okay, now re-create it
   new_att(hid, name, val);
+}
+
+void rainhdf::set_att(const hid_handle& hid, const char* name, const long* vals, size_t size)
+{
+  // Always delete and recreate array attributes in-case the size changed
+  htri_t ret = H5Aexists(hid, name);
+  if (ret < 0)
+    throw error(hid, err_fail_att_exists, name);
+  else if (ret)
+    if (H5Adelete(hid, name) < 0)
+      throw error(hid, err_fail_att_delete, name);
+
+  // Okay, now re-create it
+  new_att(hid, name, vals, size);
+}
+
+void rainhdf::set_att(const hid_handle& hid, const char* name, const double* vals, size_t size)
+{
+  // Always delete and recreate array attributes in-case the size changed
+  htri_t ret = H5Aexists(hid, name);
+  if (ret < 0)
+    throw error(hid, err_fail_att_exists, name);
+  else if (ret)
+    if (H5Adelete(hid, name) < 0)
+      throw error(hid, err_fail_att_delete, name);
+
+  // Okay, now re-create it
+  new_att(hid, name, vals, size);
 }
 
 void rainhdf::set_att(const hid_handle& hid, const char* name_date, const char* name_time, time_t val)
