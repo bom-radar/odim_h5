@@ -13,9 +13,6 @@ using namespace rainhdf;
 base::base(const std::string& file, create_flag)
   : parent_(NULL)
   , hnd_this_(hid_file, file.c_str(), create)
-  , hnd_what_(hid_group, hnd_this_, grp_what, create)
-  , hnd_where_(hid_group, hnd_this_, grp_where, create)
-  , hnd_how_(hid_group, hnd_this_, grp_how, create)
 {
 
 }
@@ -23,9 +20,6 @@ base::base(const std::string& file, create_flag)
 base::base(const base& parent, const char *name, create_flag)
   : parent_(&parent)
   , hnd_this_(hid_group, parent_->hnd_this_, name, create)
-  , hnd_what_(hid_group, hnd_this_, grp_what, create)
-  , hnd_where_(hid_group, hnd_this_, grp_where, create)
-  , hnd_how_(hid_group, hnd_this_, grp_how, create)
 {
 
 }
@@ -33,9 +27,6 @@ base::base(const base& parent, const char *name, create_flag)
 base::base(const base& parent, const char *name, int index, create_flag)
   : parent_(&parent)
   , hnd_this_(hid_group, parent_->hnd_this_, name, index, create)
-  , hnd_what_(hid_group, hnd_this_, grp_what, create)
-  , hnd_where_(hid_group, hnd_this_, grp_where, create)
-  , hnd_how_(hid_group, hnd_this_, grp_how, create)
 {
 
 }
@@ -80,4 +71,5 @@ base::~base()
 {
 
 }
+
 

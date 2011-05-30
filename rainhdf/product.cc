@@ -17,6 +17,7 @@ product::product(const std::string& file, object_type type, time_t valid_time)
   new_att(hnd_this_, atn_conventions, val_conventions);
 
   // Fill in the global 'what' group constants
+  check_create_what();
   new_att(hnd_what_, atn_object, type);
   new_att(hnd_what_, atn_version, val_version);
   new_att(hnd_what_, atn_date, atn_time, valid_time);

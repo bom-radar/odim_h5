@@ -40,6 +40,7 @@ data::data(
   , size_(dims[0] * dims[1])
 {
   // Fill in the 'what' parameters
+  check_create_what();
   new_att(hnd_what_, atn_quantity, quantity_);
   new_att(hnd_what_, atn_gain, gain_);
   new_att(hnd_what_, atn_offset, offset_);
@@ -80,6 +81,7 @@ data::data(
   , size_(dims[0] * dims[1])
 {
   // Fill in the 'what' parameters
+  check_create_what();
   new_att(hnd_what_, atn_quantity, quantity_);
   new_att(hnd_what_, atn_gain, gain_);
   new_att(hnd_what_, atn_offset, offset_);

@@ -306,7 +306,7 @@ void rainhdf::get_att(const hid_handle& hid, const char* name, long* vals, size_
 
   // Read it in
   size = real_size;
-  if (H5Aread(attr, type, vals) < 0)
+  if (H5Aread(attr, H5T_NATIVE_LONG, vals) < 0)
     throw error(hid, err_fail_att_read, name);
 }
 
@@ -327,7 +327,7 @@ void rainhdf::get_att(const hid_handle& hid, const char* name, double* vals, siz
 
   // Read it in
   size = real_size;
-  if (H5Aread(attr, type, vals) < 0)
+  if (H5Aread(attr, H5T_NATIVE_DOUBLE, vals) < 0)
     throw error(hid, err_fail_att_read, name);
 
 }

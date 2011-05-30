@@ -48,6 +48,23 @@ namespace rainhdf
     void set_attribute(rainhdf::attribute attrib, const T& val);
 
   protected:
+    void check_create_what()
+    {
+      if (!hnd_what_)
+        hnd_what_ = hid_handle(hid_group, hnd_this_, grp_what, create);
+    }
+    void check_create_where()
+    {
+      if (!hnd_where_)
+        hnd_where_ = hid_handle(hid_group, hnd_this_, grp_where, create);
+    }
+    void check_create_how()
+    {
+      if (!hnd_how_)
+        hnd_how_ = hid_handle(hid_group, hnd_this_, grp_how, create);
+    }
+
+  protected:
     const base*   parent_;      ///< Parent level (used to recursive search attributes)
     hid_handle    hnd_this_;    ///< 'This' group
     hid_handle    hnd_what_;    ///< What group

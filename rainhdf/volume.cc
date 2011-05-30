@@ -17,6 +17,7 @@ volume::volume(
   : product(file, ot_volume_polar, valid_time)
   , scan_count_(0)
 {
+  check_create_where();
   new_att(hnd_where_, atn_latitude, latitude);
   new_att(hnd_where_, atn_longitude, longitude);
   new_att(hnd_where_, atn_height, height);

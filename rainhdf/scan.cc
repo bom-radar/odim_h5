@@ -28,10 +28,12 @@ scan::scan(
   , azi_count_(azimuth_count)
   , bin_count_(range_bin_count)
 {
+  check_create_what();
   new_att(hnd_what_, atn_product, pt_scan);
   new_att(hnd_what_, atn_start_date, atn_start_time, start_time);
   new_att(hnd_what_, atn_end_date, atn_end_time, end_time);
 
+  check_create_where();
   new_att(hnd_where_, atn_elevation, elevation);
   new_att(hnd_where_, atn_range_count, (long) bin_count_);
   new_att(hnd_where_, atn_range_start, range_start / 1000.0);
