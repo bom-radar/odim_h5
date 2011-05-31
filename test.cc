@@ -41,6 +41,13 @@ int main(int argc, const char *argv[])
       << "cty " << s5 << endl
       << "cmt " << s6 << endl;
 
+    for (int i = 0; i < hdfr.attribute_count(); ++i)
+    {
+      attribute::const_ptr attr(hdfr.attribute(i));
+      cout << "attribute '" << attr->name() << "'" << endl;
+    }
+
+#if 0
     // Set some quality attributes
     hdfw.set_attribute(att_simulated, true);
     hdfw.set_attribute(att_malfunction, false);
@@ -65,6 +72,7 @@ int main(int argc, const char *argv[])
       << " " << f << " " << s1 << " " << s2 
       << " " << e 
       << endl;
+#endif
 
     for (size_t i = 0; i < hdfr.scan_count(); ++i)
     {

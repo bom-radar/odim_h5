@@ -13,6 +13,7 @@ pkgconfig_DATA = rainhdf.pc
 lib_LTLIBRARIES = librainhdf.la
 
 nobase_include_HEADERS = \
+  rainhdf/attribute.h \
   rainhdf/base.h \
   rainhdf/data.h \
   rainhdf/enum.h \
@@ -25,6 +26,7 @@ nobase_include_HEADERS = \
   rainhdf/volume.h
 
 librainhdf_la_SOURCES = \
+  rainhdf/attribute.cc \
   rainhdf/base.cc \
   rainhdf/data.cc \
   rainhdf/error.cc \

@@ -139,12 +139,19 @@ namespace rainhdf
       if (hid_ < 0) 
         throw error(parent, "Failed to create attribute '%s'", name);
     }
-    /// Open an existing HDF5 attribute
+    /// Open an existing HDF5 attribute by name
     hid_handle(hid_attr_flag, hid_t parent, const char* name, open_flag)
       : hid_(H5Aopen(parent, name, H5P_DEFAULT))
     { 
       if (hid_ < 0)
         throw error(parent, "Failed to open HDF5 attribute '%s'", name);
+    }
+    /// Open an existing HDF5 attribute by index
+    hid_handle(hid_attr_flag, hid_t parent, int index, open_flag)
+      : hid_(H5Aopen_by_idx(parent, ".", H5_INDEX_NAME, H5_ITER_NATIVE, index, H5P_DEFAULT, H5P_DEFAULT))
+    {
+      if (hid_ < 0)
+        throw error(parent, "Failed to open HDF5 attribute %d", index);
     }
     /// Create a HDF5 property list
     hid_handle(hid_plist_flag, hid_t cls_id, create_flag) 

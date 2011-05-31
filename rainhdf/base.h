@@ -8,6 +8,7 @@
 #define RAINHDF_BASE_H
 
 #include "util.h"
+#include "attribute.h"
 
 namespace rainhdf
 {
@@ -36,16 +37,10 @@ namespace rainhdf
     /// Destroy this object
     virtual ~base();
 
-    /// Get the set of attributes that are local to this level
-    const att_flags& attribute_flags() const { return att_flags_; }
-
-    /// Read an optional attribute
-    template <class T>
-    bool attribute(rainhdf::attribute attrib, T& val) const;
-
-    /// Write an optional attribute
-    template <class T>
-    void set_attribute(rainhdf::attribute attrib, const T& val);
+    /// Get the number of 'how' attributes
+    int attribute_count() const { return num_attrs_; }
+    rainhdf::attribute::ptr       attribute(int i);
+    rainhdf::attribute::const_ptr attribute(int i) const;
 
   protected:
     void check_create_what()
@@ -65,14 +60,14 @@ namespace rainhdf
     }
 
   protected:
-    const base*   parent_;      ///< Parent level (used to recursive search attributes)
     hid_handle    hnd_this_;    ///< 'This' group
     hid_handle    hnd_what_;    ///< What group
     hid_handle    hnd_where_;   ///< Where group
     hid_handle    hnd_how_;     ///< How group
-    att_flags     att_flags_;   ///< Flags to indicate presence of 'how' group attributes
+    int           num_attrs_;   ///< Number of attributes available
   };
 
+#if 0
   template <class T>
   bool base::attribute(rainhdf::attribute attrib, T& val) const 
   { 
@@ -97,6 +92,7 @@ namespace rainhdf
     set_att(hnd_how_, to_string(attrib), val);
     att_flags_.set(attrib);
   }
+#endif
 }
 
 #endif

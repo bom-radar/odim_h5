@@ -149,7 +149,7 @@ namespace rainhdf
   };
 
   /// Optional scalar quality attributes (longs)
-  enum attribute
+  enum attrib
   {
       att_task                ///< Name of the acquisition task or product generator
     , att_start_epoch         ///< Product start time (UNIX epoch)
@@ -231,15 +231,17 @@ namespace rainhdf
   };
   /// Traits for the attribute enumerate
   template <>
-  struct enum_traits<attribute>
+  struct enum_traits<attrib>
   {
     enum { count = (int) count_att };
     static const char* name;
     static const char* strings[];
   };
 
+#if 0
   /// Type used to store presence flags for optional attributes
   typedef bitset<attribute> att_flags;
+#endif
 
   // Retrieve existing attributes
   void get_att(const hid_handle& hid, const char* name, bool& val);
@@ -307,8 +309,10 @@ namespace rainhdf
     set_att(hid, name, to_string(val));
   }
 
+#if 0
   // Determine which 'how' attributes are present for an object
   void check_attribs_presence(const hid_handle& hid, att_flags& flags);
+#endif
 
   // Convenient value returning versions of above functions (for use in initializer lists)
   template <class T>
@@ -373,6 +377,14 @@ namespace rainhdf
   extern const char* val_version;
   extern const char* val_class;
   extern const char* val_image_version;
+
+  // Error strings
+  extern const char* err_fail_att_exists;
+  extern const char* err_fail_att_read;
+  extern const char* err_fail_att_type;
+  extern const char* err_fail_att_size;
+  extern const char* err_fail_att_write;
+  extern const char* err_fail_att_delete;
 }
 
 #endif

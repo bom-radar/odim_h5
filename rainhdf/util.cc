@@ -102,8 +102,8 @@ namespace rainhdf
     , "RGA"
   };
 
-  const char* enum_traits<attribute>::name = "attribute";
-  const char* enum_traits<attribute>::strings[] =
+  const char* enum_traits<attrib>::name = "attribute";
+  const char* enum_traits<attrib>::strings[] =
   {
       "task"
     , "startepochs"
@@ -225,12 +225,12 @@ namespace rainhdf
   const char* val_image_version = "1.2";
 
   // Error strings
-  static const char* err_fail_att_exists = "Attribute existance check failed for attribute '%s'";
-  static const char* err_fail_att_read = "Failed to read attribute '%s'";
-  static const char* err_fail_att_type = "Type mismatch on attribute '%s'";
-  static const char* err_fail_att_size = "Array overflow on attribute '%s'";
-  static const char* err_fail_att_write = "Failed to write attribute '%s'";
-  static const char* err_fail_att_delete = "failed to delete attribute '%s' before write";
+  const char* err_fail_att_exists = "Attribute existance check failed for attribute '%s'";
+  const char* err_fail_att_read = "Failed to read attribute '%s'";
+  const char* err_fail_att_type = "Type mismatch on attribute '%s'";
+  const char* err_fail_att_size = "Array overflow on attribute '%s'";
+  const char* err_fail_att_write = "Failed to write attribute '%s'";
+  const char* err_fail_att_delete = "failed to delete attribute '%s' before write";
 }
 
 void rainhdf::get_att(const hid_handle& hid, const char* name, bool& val)
@@ -329,7 +329,6 @@ void rainhdf::get_att(const hid_handle& hid, const char* name, double* vals, siz
   size = real_size;
   if (H5Aread(attr, H5T_NATIVE_DOUBLE, vals) < 0)
     throw error(hid, err_fail_att_read, name);
-
 }
 
 void rainhdf::get_att(const hid_handle& hid, const char* name_date, const char* name_time, time_t& val)
@@ -602,6 +601,7 @@ void rainhdf::set_att(const hid_handle& hid, const char* name_date, const char* 
   set_att(hid, name_time, &buf[9]);
 }
 
+#if 0
 static herr_t check_att_callback(hid_t hid, const char* name, const H5A_info_t* pInfo, void* pData)
 {
   for (int i = 0; i < enum_traits<attribute>::count; ++i)
@@ -620,4 +620,4 @@ void rainhdf::check_attribs_presence(const hid_handle& hid, att_flags& flags)
   hsize_t n = 0;
   H5Aiterate(hid, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, &n, check_att_callback, &flags);
 }
-
+#endif
