@@ -601,23 +601,3 @@ void rainhdf::set_att(const hid_handle& hid, const char* name_date, const char* 
   set_att(hid, name_time, &buf[9]);
 }
 
-#if 0
-static herr_t check_att_callback(hid_t hid, const char* name, const H5A_info_t* pInfo, void* pData)
-{
-  for (int i = 0; i < enum_traits<attribute>::count; ++i)
-  {
-    if (strcmp(name, enum_traits<attribute>::strings[i]) == 0)
-    {
-      static_cast<att_flags*>(pData)->set(i);
-      break;
-    }
-  }
-  return 0;
-}
-
-void rainhdf::check_attribs_presence(const hid_handle& hid, att_flags& flags)
-{
-  hsize_t n = 0;
-  H5Aiterate(hid, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, &n, check_att_callback, &flags);
-}
-#endif

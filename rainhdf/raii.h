@@ -198,6 +198,16 @@ namespace rainhdf
       H5Iinc_ref(hid_);
     }
 
+    /// Explicitly close the handle
+    void close()
+    {
+      if (hid_ >= 0)
+      {
+        H5Idec_ref(hid_);
+        hid_ = invalid_hid;
+      }
+    }
+
     /// Release the handle
     ~hid_handle()
     {

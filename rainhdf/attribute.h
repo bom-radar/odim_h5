@@ -34,100 +34,42 @@ namespace rainhdf
     };
 
   public:
-    std::string name() const  { return name_; }
+    const std::string& name() const  { return name_; }
 
     data_type type() const;
 
-    bool as_bool() const            { if (type_ == at_unknown) load(); return data_.as_bool; }
-    long as_long() const            { if (type_ == at_unknown) load(); return data_.as_long; }
-    double as_double() const        { if (type_ == at_unknown) load(); return data_.as_double; }
-    const std::string& as_string() const 
-    { 
-      if (type_ == at_unknown) 
-        load(); 
-      return *data_.as_string; 
-    }
-    const std::vector<long>& as_long_array() const 
-    { 
-      if (type_ == at_unknown) 
-        load(); 
-      return *data_.as_long_array; 
-    }
-    const std::vector<double>& as_double_array() const 
-    { 
-      if (type_ == at_unknown) 
-        load(); 
-      return *data_.as_double_array; 
-    }
-
-  private:
-    attribute(const hid_handle& parent, int index);
-    attribute(const hid_handle& parent, const char* name);
-
-  private:
-    hid_handle  hnd_this_;    ///< Handle to our attribute!
-    std::string name_;        ///< Name of the attribute
-
-    friend class base;
-  };
-
-#if 0
-  public:
-
-    attribute(const hid_handle& hid, const char* name, data_type type = at_unknown);
-    ~attribute();
-
-    const std::string& name() const { return name_; }
-    data_type type() const          { if (type_ == at_unknown) load(); return type_; }
-
-    bool as_bool() const            { if (type_ == at_unknown) load(); return data_.as_bool; }
-    long as_long() const            { if (type_ == at_unknown) load(); return data_.as_long; }
-    double as_double() const        { if (type_ == at_unknown) load(); return data_.as_double; }
-    const std::string& as_string() const 
-    { 
-      if (type_ == at_unknown) 
-        load(); 
-      return *data_.as_string; 
-    }
-    const std::vector<long>& as_long_array() const 
-    { 
-      if (type_ == at_unknown) 
-        load(); 
-      return *data_.as_long_array; 
-    }
-    const std::vector<double>& as_double_array() const 
-    { 
-      if (type_ == at_unknown) 
-        load(); 
-      return *data_.as_double_array; 
-    }
+    void get(bool& val) const;
+    void get(long& val) const;
+    void get(double& val) const;
+    void get(std::string& val) const;
+    void get(std::vector<long>& val) const;
+    void get(std::vector<double>& val) const;
 
     void set(bool val);
     void set(long val);
     void set(double val);
     void set(const char* val);
     void set(const std::string& val);
-    void set(const long* val, int size);
-    void set(const double* val, int size);
+    void set(const std::vector<long>& val);
+    void set(const std::vector<double>& val);
 
   private:
-    void load() const;
+    attribute(const hid_handle& parent, int index);
+    attribute(const hid_handle& parent, const char* name, bool creating);
+
+    void determine_type(const hid_handle& attr) const;
 
   private:
-    const hid_handle& hid_;
-    std::string name_;
-    mutable data_type   type_;
-    mutable union
-    {
-      bool                  as_bool;
-      long                  as_long;
-      double                as_double;
-      std::string*          as_string;
-      std::vector<long>*    as_long_array;
-      std::vector<double>*  as_double_array;
-    } data_;
+    hid_handle          parent_;      ///< Handle to our attribute
+    std::string         name_;        ///< Name of the attribute
+    bool                creating_;    ///< Is attribute being created?
+
+    mutable data_type   type_;        ///< Type of attribute data (cached)
+    mutable int         size_;        ///< Size of array types (cached)
+    mutable std::string value_;       ///< Cached attribute value for string/bool types only
+
+    friend class base;
   };
-#endif
 }
 
 #endif

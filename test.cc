@@ -41,11 +41,57 @@ int main(int argc, const char *argv[])
       << "cty " << s5 << endl
       << "cmt " << s6 << endl;
 
+    bool b; long l; double d; std::string s; std::vector<long> vl; std::vector<double> vd;
+
     for (int i = 0; i < hdfr.attribute_count(); ++i)
     {
       attribute::const_ptr attr(hdfr.attribute(i));
-      cout << "attribute '" << attr->name() << "'" << endl;
+      cout << "attribute '" << attr->name() << "' ";
+      switch (attr->type())
+      {
+      case attribute::at_unknown:
+        cout << "unknown" << endl;
+        break;
+      case attribute::at_bool:
+        attr->get(b);
+        hdfw.attribute(attr->name().c_str(), true)->set(b);
+        cout << "bool " << b << endl;
+        break;
+      case attribute::at_long:
+        attr->get(l);
+        hdfw.attribute(attr->name().c_str(), true)->set(l);
+        cout << "long " << l << endl;
+        break;
+      case attribute::at_double:
+        attr->get(d);
+        hdfw.attribute(attr->name().c_str(), true)->set(d);
+        cout << "double " << d << endl;
+        break;
+      case attribute::at_string:
+        attr->get(s);
+        hdfw.attribute(attr->name().c_str(), true)->set(s);
+        cout << "string " << s << endl;
+        break;
+      case attribute::at_long_array:
+        attr->get(vl);
+        hdfw.attribute(attr->name().c_str(), true)->set(vl);
+        cout << "long_array ";
+        for (int i = 0; i < vl.size(); ++i)
+          cout << vl[i] << " ";
+        cout << endl;
+        break;
+      case attribute::at_double_array:
+        attr->get(vd);
+        hdfw.attribute(attr->name().c_str(), true)->set(vd);
+        cout << "double_array ";
+        for (int i = 0; i < vd.size(); ++i)
+          cout << vd[i] << " ";
+        cout << endl;
+        break;
+      }
     }
+
+    hdfw.attribute("hello", true)->set(std::string("blah blah"));
 
 #if 0
     // Set some quality attributes

@@ -76,4 +76,46 @@ attribute::const_ptr base::attribute(int i) const
   return rainhdf::attribute::const_ptr(new rainhdf::attribute(hnd_how_, i));
 }
 
+attribute::ptr base::attribute(const char* name, bool create_if_missing)
+{
+  if (!hnd_how_)
+  {
+    if (create_if_missing)
+    {
+      hnd_how_ = hid_handle(hid_group, hnd_this_, grp_how, create);
+      return rainhdf::attribute::ptr(new rainhdf::attribute(hnd_how_, name, true));
+    }
+    else
+    {
+      return rainhdf::attribute::ptr();
+    }
+  }
+  else
+  {
+    htri_t ret = H5Aexists(hnd_how_, name);
+    if (ret < 0)
+      throw error(hnd_how_, err_fail_att_exists, name);
+    else if (ret == 0)
+    {
+      if (create_if_missing)
+        return rainhdf::attribute::ptr(new rainhdf::attribute(hnd_how_, name, true));
+      else
+        return rainhdf::attribute::ptr();
+    }
+    else
+      return rainhdf::attribute::ptr(new rainhdf::attribute(hnd_how_, name, false));
+  }
+}
+
+attribute::const_ptr base::attribute(const char* name) const
+{
+  if (!hnd_how_)
+    return rainhdf::attribute::const_ptr();
+  htri_t ret = H5Aexists(hnd_how_, name);
+  if (ret < 0)
+    throw error(hnd_how_, err_fail_att_exists, name);
+  else if (ret == 0)
+    return rainhdf::attribute::const_ptr();
+  return rainhdf::attribute::const_ptr(new rainhdf::attribute(hnd_how_, name, false));
+}
 

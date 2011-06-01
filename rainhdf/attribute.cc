@@ -11,215 +11,456 @@
 using namespace rainhdf;
 
 attribute::attribute(const hid_handle& parent, int index)
-  : hnd_this_(hid_attr, parent, index, open)
+  : parent_(parent)
+  , creating_(false)
+  , type_(at_unknown)
 {
+  hid_handle attr(hid_attr, parent_, index, open);
+
   char buf[64];
-  H5Aget_name(hnd_this_, 64, buf);
+  H5Aget_name(attr, 64, buf);
   name_.assign(buf);
+
+  // Might as well get the type now since the attribute is already open
+  determine_type(attr);
 }
 
-attribute::attribute(const hid_handle& parent, const char* name)
-  : hnd_this_(hid_attr, parent, name, open)
+attribute::attribute(const hid_handle& parent, const char* name, bool creating)
+  : parent_(parent)
   , name_(name)
+  , creating_(creating)
+  , type_(at_unknown)
 {
 
 }
 
-#if 0
-attribute::attribute(const hid_handle& hid, const char* name, data_type type)
-  : hid_(hid)
-  , name_(name)
-  , type_(type)
+void attribute::determine_type(const hid_handle& attr) const
 {
-  switch (type_)
-  {
-  case at_unknown:
-    break;
-  case at_bool:
-    data_.as_bool = false;
-    break;
-  case at_long:
-    data_.as_long = 0L;
-    break;
-  case at_double:
-    data_.as_double = 0.0;
-    break;
-  case at_string:
-    data_.as_string = new std::string();
-    break;
-  case at_long_array:
-    data_.as_long_array = new std::vector<long>();
-    break;
-  case at_double_array:
-    data_.as_double_array = new std::vector<double>();
-    break;
-  }
-}
-
-attribute::~attribute()
-{
-  switch (type_)
-  {
-  case at_unknown:
-  case at_bool:
-  case at_long:
-  case at_double:
-    break;
-  case at_string:
-    delete data_.as_string;
-    break;
-  case at_long_array:
-    delete data_.as_long_array;
-    break;
-  case at_double_array:
-    delete data_.as_double_array;
-    break;
-  }
-}
-
-void attribute::load() const
-{
-  hid_handle attr(hid_attr, hid_, name_.c_str(), open);
-
   hid_handle space(hid_space, H5Aget_space(attr));
-  int size = H5Sget_simple_extent_npoints(space);
+  size_ = H5Sget_simple_extent_npoints(space);
 
   hid_handle type(hid_type, H5Aget_type(attr));
-  printf("TYPE of %s is %d\n", name_.c_str(), H5Tget_class(type));
   switch (H5Tget_class(type))
   {
   case H5T_INTEGER:
-    if (size > 1)
-    {
-      type_ = at_long_array;
-      data_.as_long_array = new std::vector<long>(size);
-      if (H5Aread(attr, H5T_NATIVE_LONG, &(*data_.as_long_array)[0]) < 0)
-        throw error(hid_, err_fail_att_read, name_.c_str());
-    }
-    else
-    {
-      type_ = at_long;
-      if (H5Aread(attr, H5T_NATIVE_LONG, &data_.as_long) < 0)
-        throw error(hid_, err_fail_att_read, name_.c_str());
-    }
+    type_ = size_ > 1 ? at_long_array : at_long;
     break;
-
   case H5T_FLOAT:
-    if (size > 1)
-    {
-      type_ = at_double_array;
-      data_.as_double_array = new std::vector<double>(size);
-      if (H5Aread(attr, H5T_NATIVE_DOUBLE, &(*data_.as_double_array)[0]) < 0)
-        throw error(hid_, err_fail_att_read, name_.c_str());
-    }
-    else
-    {
-      type_ = at_double;
-      if (H5Aread(attr, H5T_NATIVE_DOUBLE, &data_.as_double) < 0)
-        throw error(hid_, err_fail_att_read, name_.c_str());
-    }
+    type_ = size_ > 1 ? at_double_array : at_double;
     break;
-     
   case H5T_STRING:
     {
       char buf[BUFSIZ];
-      size = H5Tget_size(type);
-      size = std::min(BUFSIZ, size);
-
+      size_ = H5Tget_size(type);
+      if (size_ > BUFSIZ)
+        throw error(parent_, err_fail_att_size, name_.c_str());
       if (H5Aread(attr, type, buf) < 0)
-        throw error(hid_, err_fail_att_read, name_.c_str());
+        throw error(parent_, err_fail_att_read, name_.c_str());
 
-      if (strcmp(buf, val_true) == 0)
-      {
+      if (   strcmp(buf, val_true) == 0
+          || strcmp(buf, val_false) == 0)
         type_ = at_bool;
-        data_.as_bool = true;
-      }
-      else if (strcmp(buf, val_false) == 0)
-      {
-        type_ = at_bool;
-        data_.as_bool = false;
-      }
       else
-      {
         type_ = at_string;
-        data_.as_string = new std::string(buf, size);
-      }
+      value_.assign(buf, size_ - 1);
     }
     break;
-
   default:
-    throw error(hid_, err_fail_att_type, name_.c_str());
+    type_ = at_unknown;
+    break;
   }
+}
+
+
+attribute::data_type attribute::type() const
+{
+  // Have we already calculated this?
+  if (type_ != at_unknown)
+    return type_;
+
+  hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+  determine_type(attr);
+  return type_;
+}
+
+void attribute::get(bool& val) const
+{
+  hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+  if (type_ == at_unknown)
+    determine_type(attr);
+  if (type_ != at_bool)
+    throw error(parent_, err_fail_att_type, name_.c_str());
+  val = (value_ == val_true);
+}
+
+void attribute::get(long& val) const
+{
+  hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+  if (type_ == at_unknown)
+    determine_type(attr);
+  if (type_ != at_long)
+    throw error(parent_, err_fail_att_type, name_.c_str());
+  if (H5Aread(attr, H5T_NATIVE_LONG, &val) < 0)
+    throw error(parent_, err_fail_att_read, name_.c_str());
+}
+
+void attribute::get(double& val) const
+{
+  hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+  if (type_ == at_unknown)
+    determine_type(attr);
+  if (type_ != at_double)
+    throw error(parent_, err_fail_att_type, name_.c_str());
+  if (H5Aread(attr, H5T_NATIVE_DOUBLE, &val) < 0)
+    throw error(parent_, err_fail_att_read, name_.c_str());
+}
+
+void attribute::get(std::string& val) const
+{
+  hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+  if (type_ == at_unknown)
+    determine_type(attr);
+  if (type_ != at_string)
+    throw error(parent_, err_fail_att_type, name_.c_str());
+  val = value_;
+}
+
+void attribute::get(std::vector<long>& val) const
+{
+  hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+  if (type_ == at_unknown)
+    determine_type(attr);
+  if (type_ != at_long_array)
+    throw error(parent_, err_fail_att_type, name_.c_str());
+  val.resize(size_);
+  if (H5Aread(attr, H5T_NATIVE_LONG, &val[0]) < 0)
+    throw error(parent_, err_fail_att_read, name_.c_str());
+}
+
+void attribute::get(std::vector<double>& val) const
+{
+  hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+  if (type_ == at_unknown)
+    determine_type(attr);
+  if (type_ != at_double_array)
+    throw error(parent_, err_fail_att_type, name_.c_str());
+  val.resize(size_);
+  if (H5Aread(attr, H5T_NATIVE_DOUBLE, &val[0]) < 0)
+    throw error(parent_, err_fail_att_read, name_.c_str());
 }
 
 void attribute::set(bool val)
 {
-  if (type_ == at_unknown)
-    load();
-  if (type_ != at_bool)
-    throw error(hid_, err_fail_att_type, name_.c_str());
-  set_att(hid_, name_.c_str(), val);
-  data_.as_bool = val;
+  // Do we need possibly need to create it?
+  if (type_ == at_unknown && creating_)
+  {
+    // Need to create
+    value_.assign(val ? val_true : val_false);
+    hid_handle type(hid_type, H5Tcopy(H5T_C_S1));
+    if (H5Tset_size(type, value_.size() + 1) < 0)
+      throw error(parent_, "Unable to set string size for atttribute '%s'", name_.c_str());
+    if (H5Tset_strpad(type, H5T_STR_NULLTERM) < 0)
+      throw error(parent_, "Unable to set nullterm property of attribute '%s'", name_.c_str());
+    hid_handle space(hid_space, create);
+    hid_handle attr(hid_attr, parent_, name_.c_str(), type, space, create);
+    type_ = at_bool;
+    size_ = value_.size() + 1;
+    if (H5Awrite(attr, type, value_.c_str()) < 0)
+      throw error(parent_, err_fail_att_write, name_.c_str());
+  }
+  else
+  {
+    // Need to load and overwrite
+    hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+
+    if (type_ == at_unknown)
+      determine_type(attr);
+    if (type_ != at_bool)
+      throw error(parent_, err_fail_att_type, name_.c_str());
+    value_.assign(val ? val_true : val_false);
+    if (size_ != value_.size() + 1)
+    {
+      // Size is different, need to delete and recreate
+      attr.close();
+      if (H5Adelete(parent_, name_.c_str()) < 0)
+        throw error(parent_, err_fail_att_delete, name_.c_str());
+      hid_handle type(hid_type, H5Tcopy(H5T_C_S1));
+      if (H5Tset_size(type, value_.size() + 1) < 0)
+        throw error(parent_, "Unable to set string size for atttribute '%s'", name_.c_str());
+      if (H5Tset_strpad(type, H5T_STR_NULLTERM) < 0)
+        throw error(parent_, "Unable to set nullterm property of attribute '%s'", name_.c_str());
+      hid_handle space(hid_space, create);
+      hid_handle attr2(hid_attr, parent_, name_.c_str(), type, space, create);
+      type_ = at_bool;
+      size_ = value_.size() + 1;
+      if (H5Awrite(attr2, type, value_.c_str()) < 0)
+        throw error(parent_, err_fail_att_write, name_.c_str());
+    }
+    else
+    {
+      // Exists and is same size, just overwrite
+      hid_handle type(hid_type, H5Aget_type(attr));
+      if (H5Awrite(attr, type, value_.c_str()) < 0)
+        throw error(parent_, err_fail_att_write, name_.c_str());
+    }
+  }
 }
 
 void attribute::set(long val)
 {
-  if (type_ == at_unknown)
-    load();
-  if (type_ != at_long)
-    throw error(hid_, err_fail_att_type, name_.c_str());
-  set_att(hid_, name_.c_str(), val);
-  data_.as_long = val;
+  // Do we need possibly need to create it?
+  if (type_ == at_unknown && creating_)
+  {
+    // Need to create
+    hid_handle space(hid_space, create);
+    hid_handle attr(hid_attr, parent_, name_.c_str(), H5T_STD_I64LE, space, create);
+    type_ = at_long;
+    if (H5Awrite(attr, H5T_NATIVE_LONG, &val) < 0)
+      throw error(parent_, err_fail_att_write, name_.c_str());
+  }
+  else
+  {
+    // Need to load and overwrite
+    hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+
+    if (type_ == at_unknown)
+      determine_type(attr);
+    if (type_ != at_long)
+      throw error(parent_, err_fail_att_type, name_.c_str());
+    if (H5Awrite(attr, H5T_NATIVE_LONG, &val) < 0)
+      throw error(parent_, err_fail_att_write, name_.c_str());
+  }
 }
 
 void attribute::set(double val)
 {
-  if (type_ == at_unknown)
-    load();
-  if (type_ != at_double)
-    throw error(hid_, err_fail_att_type, name_.c_str());
-  set_att(hid_, name_.c_str(), val);
-  data_.as_double = val;
+  // Do we need possibly need to create it?
+  if (type_ == at_unknown && creating_)
+  {
+    // Need to create
+    hid_handle space(hid_space, create);
+    hid_handle attr(hid_attr, parent_, name_.c_str(), H5T_IEEE_F64LE, space, create);
+    type_ = at_double;
+    if (H5Awrite(attr, H5T_NATIVE_DOUBLE, &val) < 0)
+      throw error(parent_, err_fail_att_write, name_.c_str());
+  }
+  else
+  {
+    // Need to load and overwrite
+    hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+
+    if (type_ == at_unknown)
+      determine_type(attr);
+    if (type_ != at_double)
+      throw error(parent_, err_fail_att_type, name_.c_str());
+    if (H5Awrite(attr, H5T_NATIVE_DOUBLE, &val) < 0)
+      throw error(parent_, err_fail_att_write, name_.c_str());
+  }
 }
 
 void attribute::set(const char* val)
 {
-  if (type_ == at_unknown)
-    load();
-  if (type_ != at_string)
-    throw error(hid_, err_fail_att_type, name_.c_str());
-  set_att(hid_, name_.c_str(), val);
-  *data_.as_string = val;
+  // Do we need possibly need to create it?
+  if (type_ == at_unknown && creating_)
+  {
+    // Need to create
+    value_.assign(val);
+    hid_handle type(hid_type, H5Tcopy(H5T_C_S1));
+    if (H5Tset_size(type, value_.size() + 1) < 0)
+      throw error(parent_, "Unable to set string size for atttribute '%s'", name_.c_str());
+    if (H5Tset_strpad(type, H5T_STR_NULLTERM) < 0)
+      throw error(parent_, "Unable to set nullterm property of attribute '%s'", name_.c_str());
+    hid_handle space(hid_space, create);
+    hid_handle attr(hid_attr, parent_, name_.c_str(), type, space, create);
+    type_ = at_string;
+    size_ = value_.size() + 1;
+    if (H5Awrite(attr, type, value_.c_str()) < 0)
+      throw error(parent_, err_fail_att_write, name_.c_str());
+  }
+  else
+  {
+    // Need to load and overwrite
+    hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+
+    if (type_ == at_unknown)
+      determine_type(attr);
+    if (type_ != at_string)
+      throw error(parent_, err_fail_att_type, name_.c_str());
+    value_.assign(val);
+    if (size_ != value_.size() + 1)
+    {
+      // Size is different, need to delete and recreate
+      attr.close();
+      if (H5Adelete(parent_, name_.c_str()) < 0)
+        throw error(parent_, err_fail_att_delete, name_.c_str());
+      hid_handle type(hid_type, H5Tcopy(H5T_C_S1));
+      if (H5Tset_size(type, value_.size() + 1) < 0)
+        throw error(parent_, "Unable to set string size for atttribute '%s'", name_.c_str());
+      if (H5Tset_strpad(type, H5T_STR_NULLTERM) < 0)
+        throw error(parent_, "Unable to set nullterm property of attribute '%s'", name_.c_str());
+      hid_handle space(hid_space, create);
+      hid_handle attr2(hid_attr, parent_, name_.c_str(), type, space, create);
+      type_ = at_string;
+      size_ = value_.size() + 1;
+      if (H5Awrite(attr2, type, value_.c_str()) < 0)
+        throw error(parent_, err_fail_att_write, name_.c_str());
+    }
+    else
+    {
+      // Exists and is same size, just overwrite
+      hid_handle type(hid_type, H5Aget_type(attr));
+      if (H5Awrite(attr, type, value_.c_str()) < 0)
+        throw error(parent_, err_fail_att_write, name_.c_str());
+    }
+  }
 }
 
 void attribute::set(const std::string& val)
 {
-  if (type_ == at_unknown)
-    load();
-  if (type_ != at_string)
-    throw error(hid_, err_fail_att_type, name_.c_str());
-  set_att(hid_, name_.c_str(), val);
-  *data_.as_string = val;
+  // Do we need possibly need to create it?
+  if (type_ == at_unknown && creating_)
+  {
+    // Need to create
+    value_.assign(val);
+    hid_handle type(hid_type, H5Tcopy(H5T_C_S1));
+    if (H5Tset_size(type, value_.size() + 1) < 0)
+      throw error(parent_, "Unable to set string size for atttribute '%s'", name_.c_str());
+    if (H5Tset_strpad(type, H5T_STR_NULLTERM) < 0)
+      throw error(parent_, "Unable to set nullterm property of attribute '%s'", name_.c_str());
+    hid_handle space(hid_space, create);
+    hid_handle attr(hid_attr, parent_, name_.c_str(), type, space, create);
+    type_ = at_string;
+    size_ = value_.size() + 1;
+    if (H5Awrite(attr, type, value_.c_str()) < 0)
+      throw error(parent_, err_fail_att_write, name_.c_str());
+  }
+  else
+  {
+    // Need to load and overwrite
+    hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+
+    if (type_ == at_unknown)
+      determine_type(attr);
+    if (type_ != at_string)
+      throw error(parent_, err_fail_att_type, name_.c_str());
+    value_.assign(val);
+    if (size_ != value_.size() + 1)
+    {
+      // Size is different, need to delete and recreate
+      attr.close();
+      if (H5Adelete(parent_, name_.c_str()) < 0)
+        throw error(parent_, err_fail_att_delete, name_.c_str());
+      hid_handle type(hid_type, H5Tcopy(H5T_C_S1));
+      if (H5Tset_size(type, value_.size() + 1) < 0)
+        throw error(parent_, "Unable to set string size for atttribute '%s'", name_.c_str());
+      if (H5Tset_strpad(type, H5T_STR_NULLTERM) < 0)
+        throw error(parent_, "Unable to set nullterm property of attribute '%s'", name_.c_str());
+      hid_handle space(hid_space, create);
+      hid_handle attr2(hid_attr, parent_, name_.c_str(), type, space, create);
+      type_ = at_string;
+      size_ = value_.size() + 1;
+      if (H5Awrite(attr2, type, value_.c_str()) < 0)
+        throw error(parent_, err_fail_att_write, name_.c_str());
+    }
+    else
+    {
+      // Exists and is same size, just overwrite
+      hid_handle type(hid_type, H5Aget_type(attr));
+      if (H5Awrite(attr, type, value_.c_str()) < 0)
+        throw error(parent_, err_fail_att_write, name_.c_str());
+    }
+  }
 }
 
-void attribute::set(const long* val, int size)
+void attribute::set(const std::vector<long>& val)
 {
-  if (type_ == at_unknown)
-    load();
-  if (type_ != at_long_array)
-    throw error(hid_, err_fail_att_type, name_.c_str());
-  set_att(hid_, name_.c_str(), val, size);
-  data_.as_long_array->assign(val, val + size);
+  // Do we need possibly need to create it?
+  if (type_ == at_unknown && creating_)
+  {
+    // Need to create
+    hsize_t hs = val.size();
+    hid_handle space(hid_space, 1, &hs, create);
+    hid_handle attr(hid_attr, parent_, name_.c_str(), H5T_STD_I64LE, space, create);
+    type_ = at_long_array;
+    size_ = val.size();
+    if (H5Awrite(attr, H5T_NATIVE_LONG, &val[0]) < 0)
+      throw error(parent_, err_fail_att_write, name_.c_str());
+  }
+  else
+  {
+    // Need to load and overwrite
+    hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+
+    if (type_ == at_unknown)
+      determine_type(attr);
+    if (type_ != at_long_array)
+      throw error(parent_, err_fail_att_type, name_.c_str());
+    if (size_ != val.size())
+    {
+      // Size is different, need to delete and recreate
+      attr.close();
+      if (H5Adelete(parent_, name_.c_str()) < 0)
+        throw error(parent_, err_fail_att_delete, name_.c_str());
+      hsize_t hs = val.size();
+      hid_handle space(hid_space, 1, &hs, create);
+      hid_handle attr2(hid_attr, parent_, name_.c_str(), H5T_STD_I64LE, space, create);
+      type_ = at_long_array;
+      size_ = val.size();
+      if (H5Awrite(attr2, H5T_NATIVE_LONG, &val[0]) < 0)
+        throw error(parent_, err_fail_att_write, name_.c_str());
+    }
+    else
+    {
+      // Exists and is same size, just overwrite
+      if (H5Awrite(parent_, H5T_NATIVE_LONG, &val[0]) < 0)
+        throw error(parent_, err_fail_att_write, name_.c_str());
+    }
+  }
 }
 
-void attribute::set(const double* val, int size)
+void attribute::set(const std::vector<double>& val)
 {
-  if (type_ == at_unknown)
-    load();
-  if (type_ != at_double_array)
-    throw error(hid_, err_fail_att_type, name_.c_str());
-  set_att(hid_, name_.c_str(), val, size);
-  data_.as_double_array->assign(val, val + size);
+  // Do we need possibly need to create it?
+  if (type_ == at_unknown && creating_)
+  {
+    // Need to create
+    hsize_t hs = val.size();
+    hid_handle space(hid_space, 1, &hs, create);
+    hid_handle attr(hid_attr, parent_, name_.c_str(), H5T_IEEE_F64LE, space, create);
+    type_ = at_double_array;
+    size_ = val.size();
+    if (H5Awrite(attr, H5T_NATIVE_DOUBLE, &val[0]) < 0)
+      throw error(parent_, err_fail_att_write, name_.c_str());
+  }
+  else
+  {
+    // Need to load and overwrite
+    hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+
+    if (type_ == at_unknown)
+      determine_type(attr);
+    if (type_ != at_double_array)
+      throw error(parent_, err_fail_att_type, name_.c_str());
+    if (size_ != val.size())
+    {
+      // Size is different, need to delete and recreate
+      attr.close();
+      if (H5Adelete(parent_, name_.c_str()) < 0)
+        throw error(parent_, err_fail_att_delete, name_.c_str());
+      hsize_t hs = val.size();
+      hid_handle space(hid_space, 1, &hs, create);
+      hid_handle attr2(hid_attr, parent_, name_.c_str(), H5T_IEEE_F64LE, space, create);
+      type_ = at_double_array;
+      size_ = val.size();
+      if (H5Awrite(attr2, H5T_NATIVE_DOUBLE, &val[0]) < 0)
+        throw error(parent_, err_fail_att_write, name_.c_str());
+    }
+    else
+    {
+      // Exists and is same size, just overwrite
+      if (H5Awrite(parent_, H5T_NATIVE_DOUBLE, &val[0]) < 0)
+        throw error(parent_, err_fail_att_write, name_.c_str());
+    }
+  }
 }
-#endif
 

@@ -238,11 +238,6 @@ namespace rainhdf
     static const char* strings[];
   };
 
-#if 0
-  /// Type used to store presence flags for optional attributes
-  typedef bitset<attribute> att_flags;
-#endif
-
   // Retrieve existing attributes
   void get_att(const hid_handle& hid, const char* name, bool& val);
   void get_att(const hid_handle& hid, const char* name, long& val);
@@ -308,11 +303,6 @@ namespace rainhdf
   {
     set_att(hid, name, to_string(val));
   }
-
-#if 0
-  // Determine which 'how' attributes are present for an object
-  void check_attribs_presence(const hid_handle& hid, att_flags& flags);
-#endif
 
   // Convenient value returning versions of above functions (for use in initializer lists)
   template <class T>
