@@ -78,7 +78,7 @@ scan::scan(const base &parent, size_t index)
     data_info li;
     li.is_quality_ = false;
     li.index_ = i;
-    li.quantity_ = get_att<quantity>(hnd_data_what, atn_quantity);
+    get_att(hnd_data_what, atn_quantity, li.quantity_);
     data_info_.push_back(li);
   }
 
@@ -101,7 +101,7 @@ scan::scan(const base &parent, size_t index)
     data_info li;
     li.is_quality_ = true;
     li.index_ = i;
-    li.quantity_ = get_att<quantity>(hnd_data_what, atn_quantity);
+    get_att(hnd_data_what, atn_quantity, li.quantity_);
     data_info_.push_back(li);
   }
 }
@@ -113,7 +113,7 @@ data::ptr scan::layer(size_t i)
           *this, 
           data_info_[i].is_quality_,
           data_info_[i].index_,
-          data_info_[i].quantity_,
+          data_info_[i].quantity_.c_str(),
           &azi_count_));
 }
 
@@ -124,44 +124,39 @@ data::const_ptr scan::layer(size_t i) const
           *this, 
           data_info_[i].is_quality_,
           data_info_[i].index_,
-          data_info_[i].quantity_,
+          data_info_[i].quantity_.c_str(),
           &azi_count_));
 }
 
-data::ptr scan::layer(quantity _quantity)
+data::ptr scan::layer(const char* quantity)
 {
   for (data_info_store::iterator i = data_info_.begin(); i != data_info_.end(); ++i)
-    if (i->quantity_ == _quantity)
+    if (i->quantity_ == quantity)
       return data::ptr(
           new data(
               *this, 
               i->is_quality_, 
               i->index_,
-              i->quantity_,
+              i->quantity_.c_str(),
               &azi_count_));
   return data::ptr(NULL);
 }
 
-data::const_ptr scan::layer(quantity _quantity) const
+data::const_ptr scan::layer(const char* quantity) const
 {
   for (data_info_store::const_iterator i = data_info_.begin(); i != data_info_.end(); ++i)
-    if (i->quantity_ == _quantity)
+    if (i->quantity_ == quantity)
       return data::const_ptr(
           new data(
               *this, 
               i->is_quality_, 
               i->index_,
-              i->quantity_,
+              i->quantity_.c_str(),
               &azi_count_));
   return data::const_ptr(NULL);
 }
 
-data::ptr scan::add_layer(
-      quantity _quantity
-    , bool is_quality
-    , const int* raw
-    , int no_data
-    , int undetect)
+data::ptr scan::add_layer(const char* quantity, bool is_quality, bool floating_point)
 {
   data_info li;
   li.is_quality_ = is_quality;
@@ -176,57 +171,16 @@ data::ptr scan::add_layer(
       break;
     }
   }
-  li.quantity_ = _quantity;
+  li.quantity_ = quantity;
 
   data::ptr ret(
       new data(
           *this,
           li.is_quality_,
           li.index_,
-          li.quantity_,
+          li.quantity_.c_str(),
           &azi_count_,
-          raw,
-          no_data,
-          undetect));
-
-  // Must do the push_back last so that exceptions don't screw with our 
-  // layer count
-  data_info_.push_back(li);
-  return ret;
-}
-
-data::ptr scan::add_layer(
-      quantity _quantity
-    , bool is_quality
-    , const float *raw
-    , float no_data
-    , float undetect)
-{
-  data_info li;
-  li.is_quality_ = is_quality;
-  li.index_ = 1;
-  for (data_info_store::reverse_iterator i = data_info_.rbegin(); 
-       i != data_info_.rend(); 
-       ++i)
-  {
-    if (i->is_quality_ == li.is_quality_)
-    {
-      li.index_ = i->index_ + 1;
-      break;
-    }
-  }
-  li.quantity_ = _quantity;
-
-  data::ptr ret(
-      new data(
-          *this,
-          li.is_quality_,
-          li.index_,
-          li.quantity_,
-          &azi_count_,
-          raw,
-          no_data,
-          undetect));
+          floating_point));
 
   // Must do the push_back last so that exceptions don't screw with our 
   // layer count

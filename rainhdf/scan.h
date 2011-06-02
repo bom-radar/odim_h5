@@ -48,30 +48,18 @@ namespace rainhdf
     /// Get the 'nth' data layer
     data::const_ptr layer(size_t i) const;
     /// Get a data layer based on it's quantity (or NULL if no such data)
-    data::ptr layer(quantity _quantity);
-    data::const_ptr layer(quantity _quantity) const;
+    data::ptr layer(const char* quantity);
+    data::const_ptr layer(const char* quantity) const;
 
     /// Add a new data or quality layer to the scan
-    data::ptr add_layer(
-          quantity _quantity
-        , bool is_quality
-        , const int* raw
-        , int no_data
-        , int undetect);
-
-    data::ptr add_layer(
-          quantity _quantity
-        , bool is_quality
-        , const float* raw
-        , float no_data
-        , float undetect);
+    data::ptr add_layer(const char* quantity, bool is_quality, bool floating_point);
 
   private:
     struct data_info
     {
-      bool      is_quality_;  ///< True if data, false if quality
-      size_t    index_;       ///< Index of dataX/qualityX in file
-      quantity  quantity_;    ///< Quantity stored by data layer
+      bool        is_quality_;  ///< True if data, false if quality
+      size_t      index_;       ///< Index of dataX/qualityX in file
+      std::string quantity_;    ///< Quantity stored by data layer
     };
     typedef std::vector<data_info> data_info_store;
 

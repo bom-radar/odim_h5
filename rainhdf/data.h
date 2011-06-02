@@ -26,7 +26,7 @@ namespace rainhdf
     bool is_quality() const { return is_quality_; }
 
     /// Get the quantity stored by this data
-    quantity get_quantity() const { return quantity_; }
+    const std::string& quantity() const { return quantity_; }
 
     /// Get the number of elements in the data image
     size_t size() const { return size_; }
@@ -42,35 +42,25 @@ namespace rainhdf
           const base& parent
         , bool is_quality
         , size_t index
-        , quantity quantity
+        , const char* quantity
         , const hsize_t* dims
-        , const int* raw
-        , int no_data
-        , int undetect);
+        , bool floating_point);
     data(
           const base& parent
         , bool is_quality
         , size_t index
-        , quantity quantity
-        , const hsize_t* dims
-        , const float* raw
-        , float no_data
-        , float undetect);
-    data(
-          const base& parent
-        , bool is_quality
-        , size_t index
-        , quantity quantity
+        , const char* quantity
         , const hsize_t* dims);
 
   private:
-    bool      is_quality_;  ///< Is this a quality layer?
-    quantity  quantity_;    ///< Quantity stored by this data layer
-    float     gain_;        ///< Gain (a), in ax+b data unpacking function
-    float     offset_;      ///< Offset (b), in ax+b data unpacking function
+    bool        is_quality_;  ///< Is this a quality layer?
+    std::string quantity_;    ///< Quantity stored by this data layer
+    float       gain_;        ///< Gain (a), in ax+b data unpacking function
+    float       offset_;      ///< Offset (b), in ax+b data unpacking function
+    hid_handle  hnd_data_;    ///< Handle to data object
 
     // Cached values
-    size_t            size_;        ///< Number of elements in dataset
+    size_t      size_;        ///< Number of elements in dataset
 
     friend class scan;
   };

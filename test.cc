@@ -144,28 +144,8 @@ int main(int argc, const char *argv[])
         lr->read(&vec_data[0], no_data, undetect);
 
         // Write it out as a new layer
-        data::ptr lw = 
-          sw->add_layer(
-              lr->get_quantity(),
-              lr->is_quality(),
-              &vec_data[0],
-              no_data,
-              undetect);
-
-        // Now go through and filter our reflectivity (only)
-        if (lr->get_quantity() == qty_dbzh)
-        {
-          for (vector<float>::iterator i = vec_data.begin(); i != vec_data.end(); ++i)
-            if (*i < 10)
-              *i = 0;
-
-          sw->add_layer(
-              lr->get_quantity(),
-              true,
-              &vec_data[0],
-              no_data,
-              undetect);
-        }
+        data::ptr lw = sw->add_layer(lr->quantity().c_str(), lr->is_quality(), true);
+        lw->write(&vec_data[0], no_data, undetect);
       }
 
       printf("open objs: %d\n", H5Fget_obj_count(H5F_OBJ_ALL, H5F_OBJ_ALL));
