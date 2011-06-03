@@ -43,16 +43,18 @@ namespace rainhdf
 
     /// Get the number of data layers in the scan
     size_t layer_count() const { return data_info_.size(); }
+    /// Get the quantity stored by the 'nth' layer
+    const std::string layer_quantity(size_t i) const { return data_info_[i].quantity_; }
     /// Get the 'nth' data layer
     data::ptr layer(size_t i);
     /// Get the 'nth' data layer
     data::const_ptr layer(size_t i) const;
     /// Get a data layer based on it's quantity (or NULL if no such data)
-    data::ptr layer(const char* quantity);
-    data::const_ptr layer(const char* quantity) const;
+    data::ptr layer(const std::string& quantity);
+    data::const_ptr layer(const std::string& quantity) const;
 
     /// Add a new data or quality layer to the scan
-    data::ptr add_layer(const char* quantity, bool is_quality, bool floating_point);
+    data::ptr add_layer(const std::string& quantity, bool is_quality, bool floating_point);
 
   private:
     struct data_info

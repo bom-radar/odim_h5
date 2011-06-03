@@ -42,14 +42,14 @@ namespace rainhdf
           const base& parent
         , bool is_quality
         , size_t index
-        , const char* quantity
+        , const std::string& quantity
         , const hsize_t* dims
         , bool floating_point);
     data(
           const base& parent
         , bool is_quality
         , size_t index
-        , const char* quantity
+        , const std::string& quantity
         , const hsize_t* dims);
 
   private:

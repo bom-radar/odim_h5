@@ -113,7 +113,7 @@ data::ptr scan::layer(size_t i)
           *this, 
           data_info_[i].is_quality_,
           data_info_[i].index_,
-          data_info_[i].quantity_.c_str(),
+          data_info_[i].quantity_,
           &azi_count_));
 }
 
@@ -124,11 +124,11 @@ data::const_ptr scan::layer(size_t i) const
           *this, 
           data_info_[i].is_quality_,
           data_info_[i].index_,
-          data_info_[i].quantity_.c_str(),
+          data_info_[i].quantity_,
           &azi_count_));
 }
 
-data::ptr scan::layer(const char* quantity)
+data::ptr scan::layer(const std::string& quantity)
 {
   for (data_info_store::iterator i = data_info_.begin(); i != data_info_.end(); ++i)
     if (i->quantity_ == quantity)
@@ -137,12 +137,12 @@ data::ptr scan::layer(const char* quantity)
               *this, 
               i->is_quality_, 
               i->index_,
-              i->quantity_.c_str(),
+              i->quantity_,
               &azi_count_));
   return data::ptr(NULL);
 }
 
-data::const_ptr scan::layer(const char* quantity) const
+data::const_ptr scan::layer(const std::string& quantity) const
 {
   for (data_info_store::const_iterator i = data_info_.begin(); i != data_info_.end(); ++i)
     if (i->quantity_ == quantity)
@@ -151,12 +151,12 @@ data::const_ptr scan::layer(const char* quantity) const
               *this, 
               i->is_quality_, 
               i->index_,
-              i->quantity_.c_str(),
+              i->quantity_,
               &azi_count_));
   return data::const_ptr(NULL);
 }
 
-data::ptr scan::add_layer(const char* quantity, bool is_quality, bool floating_point)
+data::ptr scan::add_layer(const std::string& quantity, bool is_quality, bool floating_point)
 {
   data_info li;
   li.is_quality_ = is_quality;
@@ -178,7 +178,7 @@ data::ptr scan::add_layer(const char* quantity, bool is_quality, bool floating_p
           *this,
           li.is_quality_,
           li.index_,
-          li.quantity_.c_str(),
+          li.quantity_,
           &azi_count_,
           floating_point));
 

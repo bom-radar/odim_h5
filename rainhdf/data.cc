@@ -27,7 +27,7 @@ data::data(
       const base& parent
     , bool is_quality
     , size_t index
-    , const char* quantity
+    , const std::string& quantity
     , const hsize_t* dims
     , bool floating_point)
   : base(parent, is_quality ? grp_quality : grp_data, index, create)
@@ -67,7 +67,7 @@ data::data(
       const base& parent
     , bool is_quality
     , size_t index
-    , const char* quantity
+    , const std::string& quantity
     , const hsize_t* dims)
   : base(parent, is_quality ? grp_quality : grp_data, index, open)
   , is_quality_(is_quality)
