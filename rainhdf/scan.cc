@@ -176,11 +176,11 @@ data::ptr scan::add_layer(const std::string& quantity, bool is_quality, bool flo
   data::ptr ret(
       new data(
           *this,
+          floating_point,
           li.is_quality_,
           li.index_,
           li.quantity_,
-          &azi_count_,
-          floating_point));
+          &azi_count_));
 
   // Must do the push_back last so that exceptions don't screw with our 
   // layer count

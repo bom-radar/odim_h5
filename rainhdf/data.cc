@@ -25,12 +25,13 @@ data::~data()
 /// Construct a new data layer
 data::data(
       const base& parent
+    , bool floating_point
     , bool is_quality
     , size_t index
     , const std::string& quantity
-    , const hsize_t* dims
-    , bool floating_point)
+    , const hsize_t* dims)
   : base(parent, is_quality ? grp_quality : grp_data, index, create)
+  , floating_(floating_point)
   , is_quality_(is_quality)
   , quantity_(quantity)
   , gain_(1.0f)
@@ -55,7 +56,7 @@ data::data(
         hid_data
       , hnd_this_
       , dat_data
-      , floating_point ? H5T_NATIVE_FLOAT : H5T_NATIVE_INT
+      , floating_ ? H5T_NATIVE_FLOAT : H5T_NATIVE_INT
       , space
       , plist
       , create);
@@ -70,6 +71,7 @@ data::data(
     , const std::string& quantity
     , const hsize_t* dims)
   : base(parent, is_quality ? grp_quality : grp_data, index, open)
+  , floating_(false)
   , is_quality_(is_quality)
   , quantity_(quantity)
   , gain_(get_att<double>(hnd_what_, atn_gain))
@@ -77,7 +79,22 @@ data::data(
   , hnd_data_(hid_data, hnd_this_, dat_data, open)
   , size_(dims[0] * dims[1])
 {
-
+  // Attempt to detect whether we are floating point
+  /* This is not perfect - but the ODIM standard gives us no foolproof
+   * way of detecting it.  This also means that int layers cannot use
+   * gain/offset at all... */
+  if (   std::fabs(gain_ - 1.0) > 0.000001
+      || std::fabs(offset_) > 0.000001)
+  {
+    floating_ = true;
+  }
+  else
+  {
+    // Can't tell by the gain/offset - so rely on the type
+    hid_handle type(hid_type, H5Dget_type(hnd_data_));
+    if (H5Tget_class(type) != H5T_INTEGER)
+      floating_ = true;
+  }
 }
 
 /// Read the data layer as ints

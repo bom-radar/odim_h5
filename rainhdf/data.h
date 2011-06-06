@@ -22,6 +22,9 @@ namespace rainhdf
   public:
     virtual ~data();
 
+    /// Is this a floating-point based layer?
+    bool is_floating_point() const { return floating_; }
+
     /// Is this layer quality data?
     bool is_quality() const { return is_quality_; }
 
@@ -40,11 +43,11 @@ namespace rainhdf
   private:
     data(
           const base& parent
+        , bool floating_point
         , bool is_quality
         , size_t index
         , const std::string& quantity
-        , const hsize_t* dims
-        , bool floating_point);
+        , const hsize_t* dims);
     data(
           const base& parent
         , bool is_quality
@@ -53,6 +56,7 @@ namespace rainhdf
         , const hsize_t* dims);
 
   private:
+    bool        floating_;    ///< Is this a floating-point layer?
     bool        is_quality_;  ///< Is this a quality layer?
     std::string quantity_;    ///< Quantity stored by this data layer
     float       gain_;        ///< Gain (a), in ax+b data unpacking function

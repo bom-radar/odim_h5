@@ -24,22 +24,11 @@ int main(int argc, const char *argv[])
     // Create a new volume to copy it into
     volume hdfw(
         "hello.h5", 
+        hdfr.source(),
         hdfr.valid_time(),
         hdfr.latitude(),
         hdfr.longitude(),
         hdfr.height());
-
-    // Read the source attribute
-    string s1, s2, s3, s4, s5, s6;
-    hdfr.get_source(s1, s2, s3, s4, s5, s6);
-    hdfw.set_source(s1.c_str(), s2.c_str(), s3.c_str(), s4.c_str(), s5.c_str(), s6.c_str());
-    cout 
-      << "met " << s1 << endl
-      << "rad " << s2 << endl
-      << "org " << s3 << endl
-      << "plc " << s4 << endl
-      << "cty " << s5 << endl
-      << "cmt " << s6 << endl;
 
     bool b; long l; double d; std::string s; std::vector<long> vl; std::vector<double> vd;
 
@@ -122,7 +111,7 @@ int main(int argc, const char *argv[])
 
     for (size_t i = 0; i < hdfr.scan_count(); ++i)
     {
-      scan::const_ptr sr = hdfr.get_scan(i);
+      scan::const_ptr sr = hdfr.scan(i);
       scan::ptr sw = 
           hdfw.add_scan(
               sr->elevation(),

@@ -10,11 +10,12 @@ using namespace rainhdf;
 
 volume::volume(
       const std::string& file
+    , const std::string& source
     , time_t valid_time
     , double latitude
     , double longitude
     , double height)
-  : product(file, ot_volume_polar, valid_time)
+  : product(file, ot_volume_polar, source, valid_time)
   , scan_count_(0)
 {
   check_create_where();
