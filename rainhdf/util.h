@@ -100,6 +100,27 @@ namespace rainhdf
     , qty_qind          ///< Spatially analyzed quality indicator, according to OPERA II [0-1]
     , qty_class         ///< Classified according to legend
 
+    , qty_ff            ///< Mean horizontal wind velocity (m/s)
+    , qty_dd            ///< Mean horizontal wind direction (degrees)
+    , qty_ff_dev        ///< Velocity variability (m/s)
+    , qty_dd_dev        ///< Direction variability (m/s)
+    , qty_n             ///< Sample size
+    , qty_dbz           ///< Logged radar reflectivity factor (dBZ)
+    , qty_dbz_dev       ///< Variability of logged radar reflectivity factor (dBZ)
+    , qty_z             ///< Linear radar reflectivity factor
+    , qty_z_dev         ///< Variability of linear radar reflectivity factor
+    , qty_w             ///< Vertical velocity (m/s, positive upwards)
+    , qty_w_dev         ///< Vertical velocity variability (m/s)
+    , qty_div           ///< Divergence (s^-1)
+    , qty_div_dev       ///< Divergence variation (s^-1)
+    , qty_def           ///< Deformation (s^-1)
+    , qty_def_dev       ///< Deformation variation (s^-1)
+    , qty_ad            ///< Axis of dilation (degrees)
+    , qty_ad_dev        ///< Variability of axis of dilation (degrees)
+    , qty_chi2          ///< Chi-square value of wind profile fit
+    , qty_v_rhohv       ///< Correlation between Zh and Zv (Phv[0-1]) for vertical profile
+    , qty_rhohv_dev     ///< Phv variation
+
     // Extended quantities unique to BOM
     , qty_occultation   ///< Proportion of bin that is occulded [0-1]
     , qty_attenuation   ///< Fraction of bin power that is attenuated (PIA) [0-1]
@@ -356,6 +377,10 @@ namespace rainhdf
   extern const char* atn_undetect;
   extern const char* atn_class;
   extern const char* atn_image_version;
+  extern const char* atn_levels;
+  extern const char* atn_interval;
+  extern const char* atn_min_height;
+  extern const char* atn_max_height;
 
   // Dataset name constants
   extern const char* dat_data;

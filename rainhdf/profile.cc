@@ -4,55 +4,40 @@
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
-#include "scan.h"
+#include "profile.h"
 
 using namespace rainhdf;
 
-scan::~scan()
+profile::~profile()
 {
 
 }
 
-scan::scan(
-      const base &parent
+profile::profile(
+      const base& parent
     , size_t index
-    , double elevation
-    , size_t azimuth_count
-    , size_t range_bin_count
-    , size_t first_azimuth
-    , double range_start
-    , double range_scale
+    , size_t levels
     , time_t start_time
     , time_t end_time)
   : base(parent, grp_dataset, index, create)
-  , azi_count_(azimuth_count)
-  , bin_count_(range_bin_count)
+  , levels_(levels)
 {
   check_create_what();
-  new_att(hnd_what_, atn_product, pt_scan);
+  new_att(hnd_what_, atn_product, pt_vertical_profile);
   new_att(hnd_what_, atn_start_date, atn_start_time, start_time);
   new_att(hnd_what_, atn_end_date, atn_end_time, end_time);
-
-  check_create_where();
-  new_att(hnd_where_, atn_elevation, elevation);
-  new_att(hnd_where_, atn_range_count, (long) bin_count_);
-  new_att(hnd_where_, atn_range_start, range_start / 1000.0);
-  new_att(hnd_where_, atn_range_scale, range_scale);
-  new_att(hnd_where_, atn_azimuth_count, (long) azi_count_);
-  new_att(hnd_where_, atn_first_azimuth, (long) first_azimuth);
 }
 
-scan::scan(const base &parent, size_t index)
+profile::profile(const base& parent, size_t index, size_t levels)
   : base(parent, grp_dataset, index, open)
-  , azi_count_(get_att<long>(hnd_where_, atn_azimuth_count))
-  , bin_count_(get_att<long>(hnd_where_, atn_range_count))
+  , levels_(levels)
 {
   hsize_t obj_count;
   char name[32];
 
-  // Verify that this dataset is indeed a scan
-  if (get_att<product_type>(hnd_what_, atn_product) != pt_scan)
-    throw error(hnd_this_, "Scan product code mismatch");
+  // Verify that this dataset is indeed a profile
+  if (get_att<product_type>(hnd_what_, atn_product) != pt_vertical_profile)
+    throw error(hnd_this_, "Profile product code mismatch");
 
   // Reserve some space in our data info vector for efficency sake
   if (H5Gget_num_objs(hnd_this_, &obj_count) < 0)
@@ -106,7 +91,7 @@ scan::scan(const base &parent, size_t index)
   }
 }
 
-data::ptr scan::layer(size_t i)
+data::ptr profile::layer(size_t i)
 {
   return data::ptr(
       new data(
@@ -114,11 +99,11 @@ data::ptr scan::layer(size_t i)
           data_info_[i].is_quality_,
           data_info_[i].index_,
           data_info_[i].quantity_,
-          2,
-          &azi_count_));
+          1,
+          &levels_));
 }
 
-data::const_ptr scan::layer(size_t i) const
+data::const_ptr profile::layer(size_t i) const
 {
   return data::const_ptr(
       new data(
@@ -126,11 +111,11 @@ data::const_ptr scan::layer(size_t i) const
           data_info_[i].is_quality_,
           data_info_[i].index_,
           data_info_[i].quantity_,
-          2,
-          &azi_count_));
+          1,
+          &levels_));
 }
 
-data::ptr scan::layer(const std::string& quantity)
+data::ptr profile::layer(const std::string& quantity)
 {
   for (data_info_store::iterator i = data_info_.begin(); i != data_info_.end(); ++i)
     if (i->quantity_ == quantity)
@@ -140,12 +125,12 @@ data::ptr scan::layer(const std::string& quantity)
               i->is_quality_, 
               i->index_,
               i->quantity_,
-              2,
-              &azi_count_));
+              1,
+              &levels_));
   return data::ptr(NULL);
 }
 
-data::const_ptr scan::layer(const std::string& quantity) const
+data::const_ptr profile::layer(const std::string& quantity) const
 {
   for (data_info_store::const_iterator i = data_info_.begin(); i != data_info_.end(); ++i)
     if (i->quantity_ == quantity)
@@ -155,12 +140,12 @@ data::const_ptr scan::layer(const std::string& quantity) const
               i->is_quality_, 
               i->index_,
               i->quantity_,
-              2,
-              &azi_count_));
+              1,
+              &levels_));
   return data::const_ptr(NULL);
 }
 
-data::ptr scan::add_layer(const std::string& quantity, bool is_quality, bool floating_point)
+data::ptr profile::add_layer(const std::string& quantity, bool is_quality, bool floating_point)
 {
   data_info li;
   li.is_quality_ = is_quality;
@@ -184,12 +169,13 @@ data::ptr scan::add_layer(const std::string& quantity, bool is_quality, bool flo
           li.is_quality_,
           li.index_,
           li.quantity_,
-          2,
-          &azi_count_));
+          1,
+          &levels_));
 
   // Must do the push_back last so that exceptions don't screw with our 
   // layer count
   data_info_.push_back(li);
   return ret;
 }
+
 

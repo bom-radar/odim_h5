@@ -15,7 +15,6 @@ namespace rainhdf
   class product : public base
   {
   protected:
-    // TODO - source is mandatory and should be in the constructor
     /// Create a new product
     product(
           const std::string& file

@@ -29,6 +29,7 @@ data::data(
     , bool is_quality
     , size_t index
     , const std::string& quantity
+    , int rank
     , const hsize_t* dims)
   : base(parent, is_quality ? grp_quality : grp_data, index, create)
   , floating_(floating_point)
@@ -36,8 +37,12 @@ data::data(
   , quantity_(quantity)
   , gain_(1.0f)
   , offset_(0.0f)
-  , size_(dims[0] * dims[1])
+  , size_(1)
 {
+  // Determine size
+  for (int i = 0; i < rank; ++i)
+    size_ *= dims[i];
+
   // Fill in the 'what' parameters
   check_create_what();
   new_att(hnd_what_, atn_quantity, quantity_);
@@ -45,9 +50,9 @@ data::data(
   new_att(hnd_what_, atn_offset, offset_);
 
   // Create the HDF dataset
-  hid_handle space(hid_space, 2, dims, create);
+  hid_handle space(hid_space, rank, dims, create);
   hid_handle plist(hid_plist, H5P_DATASET_CREATE, create);
-  if (H5Pset_chunk(plist, 2, dims) < 0)
+  if (H5Pset_chunk(plist, rank, dims) < 0)
     throw error(hnd_this_, "Failed to set chunk parameters for data");
   if (H5Pset_deflate(plist, default_compression) < 0)
     throw error(hnd_this_, "Failed to set compression level for data");
@@ -60,8 +65,13 @@ data::data(
       , space
       , plist
       , create);
-  new_att(hnd_data_, atn_class, val_class);
-  new_att(hnd_data_, atn_image_version, val_image_version);
+
+  // Only add the image attributes if we are a 2D dataset
+  if (rank == 2)
+  {
+    new_att(hnd_data_, atn_class, val_class);
+    new_att(hnd_data_, atn_image_version, val_image_version);
+  }
 }
 
 data::data(
@@ -69,6 +79,7 @@ data::data(
     , bool is_quality
     , size_t index
     , const std::string& quantity
+    , int rank
     , const hsize_t* dims)
   : base(parent, is_quality ? grp_quality : grp_data, index, open)
   , floating_(false)
@@ -77,8 +88,12 @@ data::data(
   , gain_(get_att<double>(hnd_what_, atn_gain))
   , offset_(get_att<double>(hnd_what_, atn_offset))
   , hnd_data_(hid_data, hnd_this_, dat_data, open)
-  , size_(dims[0] * dims[1])
+  , size_(1)
 {
+  // Determine size
+  for (int i = 0; i < rank; ++i)
+    size_ *= dims[i];
+
   // Attempt to detect whether we are floating point
   /* This is not perfect - but the ODIM standard gives us no foolproof
    * way of detecting it.  This also means that int layers cannot use

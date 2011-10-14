@@ -52,14 +52,13 @@ namespace rainhdf
     /// Get a data layer based on it's quantity (or NULL if no such data)
     data::ptr layer(const std::string& quantity);
     data::const_ptr layer(const std::string& quantity) const;
-
     /// Add a new data or quality layer to the scan
     data::ptr add_layer(const std::string& quantity, bool is_quality, bool floating_point);
 
   private:
     struct data_info
     {
-      bool        is_quality_;  ///< True if data, false if quality
+      bool        is_quality_;  ///< True if quality, false if data
       size_t      index_;       ///< Index of dataX/qualityX in file
       std::string quantity_;    ///< Quantity stored by data layer
     };

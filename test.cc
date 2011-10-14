@@ -17,6 +17,29 @@ int main(int argc, const char *argv[])
 {
   try
   {
+    // Create a vertical profile
+    vertical_profile vprof("myprof.h5", "SOMEWHERE", time(NULL), 
+                           123.4, 567.8, 90.0, 
+                           10, 100.0, 0.0, 1000.0);
+    profile::ptr prof(vprof.add_profile(time(NULL) - 10, time(NULL) - 1));
+    int blah[10];
+    float blah2[10];
+    float blah3[10];
+    for (int i = 0; i < 10; ++i)
+    {
+      blah[i] = i * 2;
+      blah2[i] = i * 10.0 / 3;
+      blah3[i] = i * 11.5f;
+    }
+
+    data::ptr ff(prof->add_layer(to_string(qty_ff), false, true));
+    ff->write(blah2, -1.0, -1.0);
+    data::ptr n(prof->add_layer(to_string(qty_n), false, false));
+    n->write(blah, 0, 0);
+    data::ptr dd(prof->add_layer(to_string(qty_dd), false, true));
+    dd->write(blah3, -1.0, -1.0);
+
+#if 0
     // Open an existing volume for reading
     const volume hdfr("201001221325Kurnell.h5", false);
     printf("opened file\n");
@@ -139,6 +162,7 @@ int main(int argc, const char *argv[])
 
       printf("open objs: %d\n", H5Fget_obj_count(H5F_OBJ_ALL, H5F_OBJ_ALL));
     }
+#endif
 
     printf("open objs: %d (should be 8?)\n", H5Fget_obj_count(H5F_OBJ_ALL, H5F_OBJ_ALL));
   }

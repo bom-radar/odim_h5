@@ -8,6 +8,7 @@
 #define RAINHDF_RAINHDF_H
 
 #include "volume.h"
+#include "vertical_profile.h"
 
 /// Classes for reading and writing Rainfields products in ODIM_H5 compliant HDF5 format
 /**
@@ -32,6 +33,7 @@ namespace rainhdf
  *
  * The currently supported ODIM objects (file types) are:
  * - Polar Volume
+ * - Vertical Profile
  *
  * \section usage Usage
  * \subsection read Reading products

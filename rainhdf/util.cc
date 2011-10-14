@@ -75,6 +75,27 @@ namespace rainhdf
     , "QIND"
     , "CLASS"
 
+    , "ff"
+    , "dd"
+    , "ff_dev"
+    , "dd_dev"
+    , "n"
+    , "dbz"
+    , "dbz_dev"
+    , "z"
+    , "z_dev"
+    , "w"
+    , "w_dev"
+    , "div"
+    , "div_dev"
+    , "def"
+    , "def_dev"
+    , "ad"
+    , "ad_dev"
+    , "chi2"
+    , "rhohv"
+    , "rhohv_dev"
+
     , "OCCUL"
     , "ATTEN"
     , "CPROB"
@@ -214,6 +235,10 @@ namespace rainhdf
   const char* atn_undetect = "undetect";
   const char* atn_class = "CLASS";
   const char* atn_image_version = "IMAGE_VERSION";
+  const char* atn_levels = "levels";
+  const char* atn_interval = "interval";
+  const char* atn_min_height = "minheight";
+  const char* atn_max_height = "maxheight";
 
   const char* dat_data = "data";
 

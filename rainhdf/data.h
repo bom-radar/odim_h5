@@ -47,12 +47,14 @@ namespace rainhdf
         , bool is_quality
         , size_t index
         , const std::string& quantity
+        , int rank
         , const hsize_t* dims);
     data(
           const base& parent
         , bool is_quality
         , size_t index
         , const std::string& quantity
+        , int rank
         , const hsize_t* dims);
 
   private:
@@ -67,6 +69,7 @@ namespace rainhdf
     size_t      size_;        ///< Number of elements in dataset
 
     friend class scan;
+    friend class profile;
   };
 };
 
