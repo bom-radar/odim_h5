@@ -36,9 +36,11 @@ namespace rainhdf
 
     void read(int* raw, int& no_data, int& undetect) const;
     void read(float* raw, float& no_data, float& undetect) const;
+    void read(double* raw, double& no_data, double& undetect) const;
 
     void write(const int* raw, int no_data, int undetect);
     void write(const float* raw, float no_data, float undetect);
+    void write(const double* raw, double no_data, double undetect);
 
   private:
     data(
@@ -61,8 +63,8 @@ namespace rainhdf
     bool        floating_;    ///< Is this a floating-point layer?
     bool        is_quality_;  ///< Is this a quality layer?
     std::string quantity_;    ///< Quantity stored by this data layer
-    float       gain_;        ///< Gain (a), in ax+b data unpacking function
-    float       offset_;      ///< Offset (b), in ax+b data unpacking function
+    double      gain_;        ///< Gain (a), in ax+b data unpacking function
+    double      offset_;      ///< Offset (b), in ax+b data unpacking function
     hid_handle  hnd_data_;    ///< Handle to data object
 
     // Cached values
