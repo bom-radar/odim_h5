@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainHDF)
+ * Rainfields ODIM HDF5 Library (rainhdf)
  *
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
@@ -7,15 +7,14 @@
 #ifndef RAINHDF_UTIL_H
 #define RAINHDF_UTIL_H
 
-#include "enum.h"
 #include "error.h"
 #include "raii.h"
 
-#include <hdf5.h>
+#include <rainutil/rainutil.h>
 #include <string>
 
-namespace rainhdf
-{
+namespace rainfields {
+namespace hdf {
   /// List of supported ODIM_H5 object types
   enum object_type
   {
@@ -32,15 +31,6 @@ namespace rainhdf
 
     , count_ot
   };
-  /// Traits for the object type enumerate
-  template <>
-  struct enum_traits<object_type>
-  {
-    enum { count = (int) count_ot };
-    static const char* name;
-    static const char* strings[];
-  };
-
   /// Product types supported by ODIM_H5
   enum product_type
   {
@@ -63,14 +53,6 @@ namespace rainhdf
     , pt_quality                ///< Quality metric
     
     , count_pt
-  };
-  /// Traits for the product type enumerate
-  template <>
-  struct enum_traits<product_type>
-  {
-    enum { count = (int) count_pt };
-    static const char* name;
-    static const char* strings[];
   };
 
   /// Variable quantities supported by ODIM_H5
@@ -134,14 +116,6 @@ namespace rainhdf
 
     , count_qt
   };
-  /// Traits for the quantity enumerate
-  template <>
-  struct enum_traits<quantity>
-  {
-    enum { count = (int) count_qt };
-    static const char* name;
-    static const char* strings[];
-  };
 
   /// Methods supported by ODIM_H5
   enum method
@@ -159,14 +133,6 @@ namespace rainhdf
     , mth_gauge_adjust    ///< Gauge-adjustment
 
     , count_mth
-  };
-  /// Traits for the method enumerate
-  template <>
-  struct enum_traits<method>
-  {
-    enum { count = (int) count_mth };
-    static const char* name;
-    static const char* strings[];
   };
 
   /// Optional scalar quality attributes (longs)
@@ -249,14 +215,6 @@ namespace rainhdf
     , att_configuration_qc    ///< Configuration parameters for system used to perform QC
 
     , count_att
-  };
-  /// Traits for the attribute enumerate
-  template <>
-  struct enum_traits<attrib>
-  {
-    enum { count = (int) count_att };
-    static const char* name;
-    static const char* strings[];
   };
 
   // Retrieve existing attributes
@@ -400,6 +358,54 @@ namespace rainhdf
   extern const char* err_fail_att_size;
   extern const char* err_fail_att_write;
   extern const char* err_fail_att_delete;
+}}
+
+namespace rainfields
+{
+  /// Traits for the object type enumerate
+  template <>
+  struct enum_traits<hdf::object_type>
+  {
+    enum { count = (int) hdf::count_ot };
+    static const char* name;
+    static const char* strings[];
+  };
+
+  /// Traits for the product type enumerate
+  template <>
+  struct enum_traits<hdf::product_type>
+  {
+    enum { count = (int) hdf::count_pt };
+    static const char* name;
+    static const char* strings[];
+  };
+
+  /// Traits for the quantity enumerate
+  template <>
+  struct enum_traits<hdf::quantity>
+  {
+    enum { count = (int) hdf::count_qt };
+    static const char* name;
+    static const char* strings[];
+  };
+
+  /// Traits for the method enumerate
+  template <>
+  struct enum_traits<hdf::method>
+  {
+    enum { count = (int) hdf::count_mth };
+    static const char* name;
+    static const char* strings[];
+  };
+
+  /// Traits for the attribute enumerate
+  template <>
+  struct enum_traits<hdf::attrib>
+  {
+    enum { count = (int) hdf::count_att };
+    static const char* name;
+    static const char* strings[];
+  };
 }
 
 #endif

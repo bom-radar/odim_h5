@@ -1,16 +1,17 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainHDF)
+ * Rainfields ODIM HDF5 Library (rainhdf)
  *
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
 #include "util.h"
+#include "config.h"
 
 #include <cstring>
 
-using namespace rainhdf;
+using namespace rainfields::hdf;
 
-namespace rainhdf
+namespace rainfields
 {
   const char* enum_traits<object_type>::name = "object_type";
   const char* enum_traits<object_type>::strings[] =
@@ -201,64 +202,67 @@ namespace rainhdf
     , "config_qc"
   };
 
-  const char* grp_what = "what";
-  const char* grp_where = "where";
-  const char* grp_how = "how";
-  const char* grp_dataset = "dataset";
-  const char* grp_data = "data";
-  const char* grp_quality = "quality";
+  namespace hdf
+  {
+    const char* grp_what = "what";
+    const char* grp_where = "where";
+    const char* grp_how = "how";
+    const char* grp_dataset = "dataset";
+    const char* grp_data = "data";
+    const char* grp_quality = "quality";
 
-  const char* atn_conventions = "Conventions";
-  const char* atn_object = "object";
-  const char* atn_version = "version";
-  const char* atn_date = "date";
-  const char* atn_time = "time";
-  const char* atn_source = "source";
-  const char* atn_latitude = "lat";
-  const char* atn_longitude = "lon";
-  const char* atn_height = "height";
-  const char* atn_product = "product";
-  const char* atn_start_date = "startdate";
-  const char* atn_start_time = "starttime";
-  const char* atn_end_date = "enddate";
-  const char* atn_end_time = "endtime";
-  const char* atn_elevation = "elangle";
-  const char* atn_first_azimuth = "a1gate";
-  const char* atn_range_count = "nbins";
-  const char* atn_range_start = "rstart";
-  const char* atn_range_scale = "rscale";
-  const char* atn_azimuth_count = "nrays";
-  const char* atn_quantity = "quantity";
-  const char* atn_gain = "gain";
-  const char* atn_offset = "offset";
-  const char* atn_no_data = "nodata";
-  const char* atn_undetect = "undetect";
-  const char* atn_class = "CLASS";
-  const char* atn_image_version = "IMAGE_VERSION";
-  const char* atn_levels = "levels";
-  const char* atn_interval = "interval";
-  const char* atn_min_height = "minheight";
-  const char* atn_max_height = "maxheight";
+    const char* atn_conventions = "Conventions";
+    const char* atn_object = "object";
+    const char* atn_version = "version";
+    const char* atn_date = "date";
+    const char* atn_time = "time";
+    const char* atn_source = "source";
+    const char* atn_latitude = "lat";
+    const char* atn_longitude = "lon";
+    const char* atn_height = "height";
+    const char* atn_product = "product";
+    const char* atn_start_date = "startdate";
+    const char* atn_start_time = "starttime";
+    const char* atn_end_date = "enddate";
+    const char* atn_end_time = "endtime";
+    const char* atn_elevation = "elangle";
+    const char* atn_first_azimuth = "a1gate";
+    const char* atn_range_count = "nbins";
+    const char* atn_range_start = "rstart";
+    const char* atn_range_scale = "rscale";
+    const char* atn_azimuth_count = "nrays";
+    const char* atn_quantity = "quantity";
+    const char* atn_gain = "gain";
+    const char* atn_offset = "offset";
+    const char* atn_no_data = "nodata";
+    const char* atn_undetect = "undetect";
+    const char* atn_class = "CLASS";
+    const char* atn_image_version = "IMAGE_VERSION";
+    const char* atn_levels = "levels";
+    const char* atn_interval = "interval";
+    const char* atn_min_height = "minheight";
+    const char* atn_max_height = "maxheight";
 
-  const char* dat_data = "data";
+    const char* dat_data = "data";
 
-  const char* val_true = "True";
-  const char* val_false = "False";
-  const char* val_conventions = "ODIM_H5/V2_0";
-  const char* val_version = "H5rad 2.0";
-  const char* val_class = "IMAGE";
-  const char* val_image_version = "1.2";
+    const char* val_true = "True";
+    const char* val_false = "False";
+    const char* val_conventions = "ODIM_H5/V2_0";
+    const char* val_version = "H5rad 2.0";
+    const char* val_class = "IMAGE";
+    const char* val_image_version = "1.2";
 
-  // Error strings
-  const char* err_fail_att_exists = "Attribute existance check failed for attribute '%s'";
-  const char* err_fail_att_read = "Failed to read attribute '%s'";
-  const char* err_fail_att_type = "Type mismatch on attribute '%s'";
-  const char* err_fail_att_size = "Array overflow on attribute '%s'";
-  const char* err_fail_att_write = "Failed to write attribute '%s'";
-  const char* err_fail_att_delete = "failed to delete attribute '%s' before write";
+    // Error strings
+    const char* err_fail_att_exists = "Attribute existance check failed for attribute '%s'";
+    const char* err_fail_att_read = "Failed to read attribute '%s'";
+    const char* err_fail_att_type = "Type mismatch on attribute '%s'";
+    const char* err_fail_att_size = "Array overflow on attribute '%s'";
+    const char* err_fail_att_write = "Failed to write attribute '%s'";
+    const char* err_fail_att_delete = "failed to delete attribute '%s' before write";
+  }
 }
 
-void rainhdf::get_att(const hid_handle& hid, const char* name, bool& val)
+void rainfields::hdf::get_att(const hid_handle& hid, const char* name, bool& val)
 {
   char buf[6];
   get_att(hid, name, buf, 6);
@@ -270,21 +274,21 @@ void rainhdf::get_att(const hid_handle& hid, const char* name, bool& val)
     throw error(hid, "Parse error reading attribute '%s'", name);
 }
 
-void rainhdf::get_att(const hid_handle& hid, const char* name, long& val)
+void rainfields::hdf::get_att(const hid_handle& hid, const char* name, long& val)
 {
   hid_handle attr(hid_attr, hid, name, open);
   if (H5Aread(attr, H5T_NATIVE_LONG, &val) < 0)
     throw error(hid, err_fail_att_read, name);
 }
 
-void rainhdf::get_att(const hid_handle& hid, const char* name, double& val)
+void rainfields::hdf::get_att(const hid_handle& hid, const char* name, double& val)
 {
   hid_handle attr(hid_attr, hid, name, open);
   if (H5Aread(attr, H5T_NATIVE_DOUBLE, &val) < 0)
     throw error(hid, err_fail_att_read, name);
 }
 
-void rainhdf::get_att(const hid_handle& hid, const char* name, char* buf, size_t buf_size)
+void rainfields::hdf::get_att(const hid_handle& hid, const char* name, char* buf, size_t buf_size)
 {
   hid_handle attr(hid_attr, hid, name, open);
   hid_handle type(hid_type, H5Aget_type(attr));
@@ -296,10 +300,10 @@ void rainhdf::get_att(const hid_handle& hid, const char* name, char* buf, size_t
     throw error(hid, err_fail_att_read, name);
 }
 
-void rainhdf::get_att(const hid_handle& hid, const char* name, std::string& val)
+void rainfields::hdf::get_att(const hid_handle& hid, const char* name, std::string& val)
 {
   // Use a fixed size buffer to read our string attributes
-  static const int kAttBufSize = 2048;
+  static const size_t kAttBufSize = 2048;
   char buf[kAttBufSize];
 
   hid_handle attr(hid_attr, hid, name, open);
@@ -314,7 +318,7 @@ void rainhdf::get_att(const hid_handle& hid, const char* name, std::string& val)
   val.assign(buf);
 }
 
-void rainhdf::get_att(const hid_handle& hid, const char* name, long* vals, size_t& size)
+void rainfields::hdf::get_att(const hid_handle& hid, const char* name, long* vals, size_t& size)
 {
   hid_handle attr(hid_attr, hid, name, open);
 
@@ -335,7 +339,7 @@ void rainhdf::get_att(const hid_handle& hid, const char* name, long* vals, size_
     throw error(hid, err_fail_att_read, name);
 }
 
-void rainhdf::get_att(const hid_handle& hid, const char* name, double* vals, size_t& size)
+void rainfields::hdf::get_att(const hid_handle& hid, const char* name, double* vals, size_t& size)
 {
   hid_handle attr(hid_attr, hid, name, open);
 
@@ -356,7 +360,7 @@ void rainhdf::get_att(const hid_handle& hid, const char* name, double* vals, siz
     throw error(hid, err_fail_att_read, name);
 }
 
-void rainhdf::get_att(const hid_handle& hid, const char* name_date, const char* name_time, time_t& val)
+void rainfields::hdf::get_att(const hid_handle& hid, const char* name_date, const char* name_time, time_t& val)
 {
   char buf[9+7];
   struct tm tms;
@@ -395,12 +399,12 @@ void rainhdf::get_att(const hid_handle& hid, const char* name_date, const char* 
   val = timegm(&tms);
 }
 
-void rainhdf::new_att(const hid_handle& hid, const char* name, bool val)
+void rainfields::hdf::new_att(const hid_handle& hid, const char* name, bool val)
 {
   new_att(hid, name, val ? val_true : val_false);
 }
 
-void rainhdf::new_att(const hid_handle& hid, const char* name, long val)
+void rainfields::hdf::new_att(const hid_handle& hid, const char* name, long val)
 {
   // Create a dataspace for the variable
   hid_handle space(hid_space, create);
@@ -411,7 +415,7 @@ void rainhdf::new_att(const hid_handle& hid, const char* name, long val)
     throw error(hid, err_fail_att_write, name);
 }
 
-void rainhdf::new_att(const hid_handle& hid, const char* name, double val)
+void rainfields::hdf::new_att(const hid_handle& hid, const char* name, double val)
 {
   // Create a dataspace for the variable
   hid_handle space(hid_space, create);
@@ -422,7 +426,7 @@ void rainhdf::new_att(const hid_handle& hid, const char* name, double val)
     throw error(hid, err_fail_att_write, name);
 }
 
-void rainhdf::new_att(const hid_handle& hid, const char* name, const char* val)
+void rainfields::hdf::new_att(const hid_handle& hid, const char* name, const char* val)
 {
   // Setup a new type for the string
   hid_handle type(hid_type, H5Tcopy(H5T_C_S1));
@@ -440,7 +444,7 @@ void rainhdf::new_att(const hid_handle& hid, const char* name, const char* val)
     throw error(hid, err_fail_att_write, name);
 }
 
-void rainhdf::new_att(const hid_handle& hid, const char* name, const std::string& val)
+void rainfields::hdf::new_att(const hid_handle& hid, const char* name, const std::string& val)
 {
   // Setup a new type for the string
   hid_handle type(hid_type, H5Tcopy(H5T_C_S1));
@@ -458,7 +462,7 @@ void rainhdf::new_att(const hid_handle& hid, const char* name, const std::string
     throw error(hid, err_fail_att_write, name);
 }
 
-void rainhdf::new_att(const hid_handle& hid, const char* name, const long* vals, size_t size)
+void rainfields::hdf::new_att(const hid_handle& hid, const char* name, const long* vals, size_t size)
 {
   // Create a dataspace for the variable
   hsize_t hs = size;
@@ -470,7 +474,7 @@ void rainhdf::new_att(const hid_handle& hid, const char* name, const long* vals,
     throw error(hid, err_fail_att_write, name);
 }
 
-void rainhdf::new_att(const hid_handle& hid, const char* name, const double* vals, size_t size)
+void rainfields::hdf::new_att(const hid_handle& hid, const char* name, const double* vals, size_t size)
 {
   // Create a dataspace for the variable
   hsize_t hs = size;
@@ -482,7 +486,7 @@ void rainhdf::new_att(const hid_handle& hid, const char* name, const double* val
     throw error(hid, err_fail_att_write, name);
 }
 
-void rainhdf::new_att(const hid_handle& hid, const char* name_date, const char* name_time, time_t val)
+void rainfields::hdf::new_att(const hid_handle& hid, const char* name_date, const char* name_time, time_t val)
 {
   // Print the date and time in one string
   char buf[9+7];
@@ -506,12 +510,12 @@ void rainhdf::new_att(const hid_handle& hid, const char* name_date, const char* 
   new_att(hid, name_time, &buf[9]);
 }
 
-void rainhdf::set_att(const hid_handle& hid, const char* name, bool val)
+void rainfields::hdf::set_att(const hid_handle& hid, const char* name, bool val)
 {
   set_att(hid, name, val ? val_true : val_false);
 }
 
-void rainhdf::set_att(const hid_handle& hid, const char* name, long val)
+void rainfields::hdf::set_att(const hid_handle& hid, const char* name, long val)
 {
   // Check if it's already been created
   htri_t ret = H5Aexists(hid, name);
@@ -528,7 +532,7 @@ void rainhdf::set_att(const hid_handle& hid, const char* name, long val)
   }
 }
 
-void rainhdf::set_att(const hid_handle& hid, const char* name, double val)
+void rainfields::hdf::set_att(const hid_handle& hid, const char* name, double val)
 {
   // Check if it's already been created
   htri_t ret = H5Aexists(hid, name);
@@ -545,7 +549,7 @@ void rainhdf::set_att(const hid_handle& hid, const char* name, double val)
   }
 }
 
-void rainhdf::set_att(const hid_handle& hid, const char* name, const std::string& val)
+void rainfields::hdf::set_att(const hid_handle& hid, const char* name, const std::string& val)
 {
   // For a string attribute, we always delete and recreate (in case size changes)
   htri_t ret = H5Aexists(hid, name);
@@ -559,7 +563,7 @@ void rainhdf::set_att(const hid_handle& hid, const char* name, const std::string
   new_att(hid, name, val);
 }
 
-void rainhdf::set_att(const hid_handle& hid, const char* name, const char* val)
+void rainfields::hdf::set_att(const hid_handle& hid, const char* name, const char* val)
 {
   // For a string attribute, we always delete and recreate (in case size changes)
   htri_t ret = H5Aexists(hid, name);
@@ -573,7 +577,7 @@ void rainhdf::set_att(const hid_handle& hid, const char* name, const char* val)
   new_att(hid, name, val);
 }
 
-void rainhdf::set_att(const hid_handle& hid, const char* name, const long* vals, size_t size)
+void rainfields::hdf::set_att(const hid_handle& hid, const char* name, const long* vals, size_t size)
 {
   // Always delete and recreate array attributes in-case the size changed
   htri_t ret = H5Aexists(hid, name);
@@ -587,7 +591,7 @@ void rainhdf::set_att(const hid_handle& hid, const char* name, const long* vals,
   new_att(hid, name, vals, size);
 }
 
-void rainhdf::set_att(const hid_handle& hid, const char* name, const double* vals, size_t size)
+void rainfields::hdf::set_att(const hid_handle& hid, const char* name, const double* vals, size_t size)
 {
   // Always delete and recreate array attributes in-case the size changed
   htri_t ret = H5Aexists(hid, name);
@@ -601,7 +605,7 @@ void rainhdf::set_att(const hid_handle& hid, const char* name, const double* val
   new_att(hid, name, vals, size);
 }
 
-void rainhdf::set_att(const hid_handle& hid, const char* name_date, const char* name_time, time_t val)
+void rainfields::hdf::set_att(const hid_handle& hid, const char* name_date, const char* name_time, time_t val)
 {
   // Print the date and time in one string
   char buf[9+7];

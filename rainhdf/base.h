@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainHDF)
+ * Rainfields ODIM HDF5 Library (rainhdf)
  *
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
@@ -10,8 +10,8 @@
 #include "util.h"
 #include "attribute.h"
 
-namespace rainhdf
-{
+namespace rainfields {
+namespace hdf {
   /// Base class for a single level in a ODIM_H5 product hierarchy
   class base
   {
@@ -39,10 +39,10 @@ namespace rainhdf
 
     /// Get the number of 'how' attributes
     int attribute_count() const { return num_attrs_; }
-    rainhdf::attribute::ptr       attribute(int i);
-    rainhdf::attribute::const_ptr attribute(int i) const;
-    rainhdf::attribute::ptr       attribute(const char* name, bool create_if_missing = false);
-    rainhdf::attribute::const_ptr attribute(const char* name) const;
+    rainfields::hdf::attribute::ptr       attribute(int i);
+    rainfields::hdf::attribute::const_ptr attribute(int i) const;
+    rainfields::hdf::attribute::ptr       attribute(const char* name, bool create_if_missing = false);
+    rainfields::hdf::attribute::const_ptr attribute(const char* name) const;
 
   protected:
     void check_create_what()
@@ -68,8 +68,7 @@ namespace rainhdf
     hid_handle    hnd_how_;     ///< How group
     int           num_attrs_;   ///< Number of attributes available
   };
-
-}
+}}
 
 #endif
 

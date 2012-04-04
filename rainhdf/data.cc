@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainHDF)
+ * Rainfields ODIM HDF5 Library (rainhdf)
  *
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
@@ -8,14 +8,12 @@
 
 #include <cmath>
 #include <vector>
+#include "config.h"
 
-using namespace rainhdf;
+using namespace rainfields::hdf;
 
-namespace rainhdf
-{
-  /// Compression factor used to compress data (0 - 9, 9 = max compression)
-  static const int default_compression = 6;
-}
+/// Compression factor used to compress data (0 - 9, 9 = max compression)
+static const int default_compression = 6;
 
 data::~data()
 {
@@ -117,7 +115,7 @@ void data::read(int* raw, int& no_data, int& undetect) const
 {
   // Verify the correct dimension to prevent memory corruption
   hid_handle space(hid_space, H5Dget_space(hnd_data_));
-  if (H5Sget_simple_extent_npoints(space) != size_)
+  if ((size_t) H5Sget_simple_extent_npoints(space) != size_)
     throw error(hnd_data_, "Dataset dimension mismatch");
 
   // Read the raw data
@@ -142,7 +140,7 @@ void data::read(float* raw, float& no_data, float& undetect) const
 {
   // Verify the correct dimension to prevent memory corruption
   hid_handle space(hid_space, H5Dget_space(hnd_data_));
-  if (H5Sget_simple_extent_npoints(space) != size_)
+  if ((size_t) H5Sget_simple_extent_npoints(space) != size_)
     throw error(hnd_data_, "Dataset dimension mismatch");
 
   // Read the raw data
@@ -167,7 +165,7 @@ void data::read(double* raw, double& no_data, double& undetect) const
 {
   // Verify the correct dimension to prevent memory corruption
   hid_handle space(hid_space, H5Dget_space(hnd_data_));
-  if (H5Sget_simple_extent_npoints(space) != size_)
+  if ((size_t) H5Sget_simple_extent_npoints(space) != size_)
     throw error(hnd_data_, "Dataset dimension mismatch");
 
   // Read the raw data
@@ -191,7 +189,7 @@ void data::write(const int* raw, int no_data, int undetect)
 {
   // Verify the correct dimension to prevent memory corruption
   hid_handle space(hid_space, H5Dget_space(hnd_data_));
-  if (H5Sget_simple_extent_npoints(space) != size_)
+  if ((size_t) H5Sget_simple_extent_npoints(space) != size_)
     throw error(hnd_data_, "Dataset dimension mismatch");
 
   // Do we have to convert the data?
@@ -228,7 +226,7 @@ void data::write(const float* raw, float no_data, float undetect)
 {
   // Verify the correct dimension to prevent memory corruption
   hid_handle space(hid_space, H5Dget_space(hnd_data_));
-  if (H5Sget_simple_extent_npoints(space) != size_)
+  if ((size_t) H5Sget_simple_extent_npoints(space) != size_)
     throw error(hnd_data_, "Dataset dimension mismatch");
 
   // Do we have to convert the data?
@@ -265,7 +263,7 @@ void data::write(const double* raw, double no_data, double undetect)
 {
   // Verify the correct dimension to prevent memory corruption
   hid_handle space(hid_space, H5Dget_space(hnd_data_));
-  if (H5Sget_simple_extent_npoints(space) != size_)
+  if ((size_t) H5Sget_simple_extent_npoints(space) != size_)
     throw error(hnd_data_, "Dataset dimension mismatch");
 
   // Do we have to convert the data?

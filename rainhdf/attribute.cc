@@ -7,8 +7,11 @@
 #include "attribute.h"
 
 #include "util.h"
+#include <cstring>
 
-using namespace rainhdf;
+#include "config.h"
+
+using namespace rainfields::hdf;
 
 attribute::attribute(const hid_handle& parent, int index)
   : parent_(parent)

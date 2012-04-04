@@ -1,12 +1,13 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainHDF)
+ * Rainfields ODIM HDF5 Library (rainhdf)
  *
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
 #include "vertical_profile.h"
+#include "config.h"
 
-using namespace rainhdf;
+using namespace rainfields::hdf;
 
 vertical_profile::vertical_profile(
       const std::string& file
@@ -41,7 +42,7 @@ vertical_profile::vertical_profile(const std::string& file, bool read_only)
   hsize_t obj_count;
   if (H5Gget_num_objs(hnd_this_, &obj_count) < 0)
     throw error(hnd_this_, "Failed to determine number of objects in group");
-  for (obj_count; obj_count > 0; --obj_count)
+  for (/*empty*/; obj_count > 0; --obj_count)
   {
     char name[32];
     sprintf(name, "%s%d", grp_dataset, (int) obj_count);

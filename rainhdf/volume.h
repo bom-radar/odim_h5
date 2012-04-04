@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainHDF)
+ * Rainfields ODIM HDF5 Library (rainhdf)
  *
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
@@ -10,8 +10,8 @@
 #include "product.h"
 #include "scan.h"
 
-namespace rainhdf
-{
+namespace rainfields {
+namespace hdf {
   /// ODIM_H5 compliant polar volume file manipulator
   class volume : public product
   {
@@ -47,11 +47,11 @@ namespace rainhdf
     /// Get the number of scans in the volume
     size_t scan_count() const { return scan_count_; }
     /// Get the 'nth' scan
-    rainhdf::scan::ptr scan(size_t i) { return rainhdf::scan::ptr(new rainhdf::scan(*this, i + 1)); }
+    rainfields::hdf::scan::ptr scan(size_t i) { return rainfields::hdf::scan::ptr(new rainfields::hdf::scan(*this, i + 1)); }
     /// Get the 'nth' scan
-    rainhdf::scan::const_ptr scan(size_t i) const { return rainhdf::scan::const_ptr(new rainhdf::scan(*this, i + 1)); }
+    rainfields::hdf::scan::const_ptr scan(size_t i) const { return rainfields::hdf::scan::const_ptr(new rainfields::hdf::scan(*this, i + 1)); }
     /// Add a new scan to the file
-    rainhdf::scan::ptr add_scan(
+    rainfields::hdf::scan::ptr add_scan(
           double elevation        ///< Scan elevation angle (degrees above horizon)
         , size_t azimuth_count    ///< Number of azimuths scanned
         , size_t range_bin_count  ///< Number of range bins
@@ -66,7 +66,7 @@ namespace rainhdf
     size_t scan_count_; ///< Number of scans in file
   };
 
-  inline rainhdf::scan::ptr volume::add_scan(
+  inline rainfields::hdf::scan::ptr volume::add_scan(
         double elevation
       , size_t azimuth_count
       , size_t range_bin_count
@@ -76,8 +76,8 @@ namespace rainhdf
       , time_t start_time
       , time_t end_time)
   {
-    return rainhdf::scan::ptr(
-        new rainhdf::scan(
+    return rainfields::hdf::scan::ptr(
+        new rainfields::hdf::scan(
             *this,
             ++scan_count_,
             elevation,
@@ -89,7 +89,7 @@ namespace rainhdf
             start_time,
             end_time));
   }
-};
+}}
 
 #endif
 

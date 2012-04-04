@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainHDF)
+ * Rainfields ODIM HDF5 Library (rainhdf)
  *
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
@@ -7,8 +7,9 @@
 #include "product.h"
 
 #include <cstring>
+#include "config.h"
 
-using namespace rainhdf;
+using namespace rainfields::hdf;
 
 product::product(
       const std::string& file

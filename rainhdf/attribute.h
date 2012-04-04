@@ -13,8 +13,8 @@
 #include <string>
 #include <vector>
 
-namespace rainhdf
-{
+namespace rainfields {
+namespace hdf {
   /// An optional (ie: 'how' group) attribute
   class attribute
   {
@@ -65,12 +65,12 @@ namespace rainhdf
     bool                creating_;    ///< Is attribute being created?
 
     mutable data_type   type_;        ///< Type of attribute data (cached)
-    mutable int         size_;        ///< Size of array types (cached)
+    mutable size_t      size_;        ///< Size of array types (cached)
     mutable std::string value_;       ///< Cached attribute value for string/bool types only
 
     friend class base;
   };
-}
+}}
 
 #endif
 

@@ -11,7 +11,8 @@
 #include <exception>
 
 using namespace std;
-using namespace rainhdf;
+using namespace rainfields;
+using namespace rainfields::hdf;
 
 int main(int argc, const char *argv[])
 {

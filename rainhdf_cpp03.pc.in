@@ -4,8 +4,8 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: rainhdf
-Description: Rainfields ODIM HDF5 Library
+Description: Rainfields ODIM HDF5 Library (C++03 support)
 Version: @PACKAGE_VERSION@
-Requires: @API11_DEPS@
-Libs: -L${libdir} -lrainhdf -lhdf5
+Requires: @API03_DEPS@
+Libs: -L${libdir} -lrainhdf_cpp03 -lhdf5
 Cflags: -I${includedir}

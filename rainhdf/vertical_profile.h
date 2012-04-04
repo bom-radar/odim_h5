@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainHDF)
+ * Rainfields ODIM HDF5 Library (rainhdf)
  *
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
@@ -10,8 +10,8 @@
 #include "product.h"
 #include "profile.h"
 
-namespace rainhdf
-{
+namespace rainfields {
+namespace hdf {
   /// ODIM_H5 compliant vertical profile file manipulator
   class vertical_profile : public product
   {
@@ -70,28 +70,28 @@ namespace rainhdf
     /// Get the number of profiles in the file
     size_t profile_count() const { return profile_count_; }
     /// Get the 'nth' profile
-    rainhdf::profile::ptr profile(size_t i) { return rainhdf::profile::ptr(new rainhdf::profile(*this, i + 1, levels_)); }
+    rainfields::hdf::profile::ptr profile(size_t i) { return rainfields::hdf::profile::ptr(new rainfields::hdf::profile(*this, i + 1, levels_)); }
     /// Get the 'nth' profile
-    rainhdf::profile::const_ptr profile(size_t i) const { return rainhdf::profile::const_ptr(new rainhdf::profile(*this, i + 1, levels_)); }
+    rainfields::hdf::profile::const_ptr profile(size_t i) const { return rainfields::hdf::profile::const_ptr(new rainfields::hdf::profile(*this, i + 1, levels_)); }
     /// Add a new profile to the file
-    rainhdf::profile::ptr add_profile(time_t start_time, time_t end_time);
+    rainfields::hdf::profile::ptr add_profile(time_t start_time, time_t end_time);
 
   private:
     size_t        profile_count_; ///< Number of profiles in file
     size_t        levels_;        ///< Number of height levels
   };
 
-  inline rainhdf::profile::ptr vertical_profile::add_profile(time_t start_time, time_t end_time)
+  inline rainfields::hdf::profile::ptr vertical_profile::add_profile(time_t start_time, time_t end_time)
   {
-    return rainhdf::profile::ptr(
-        new rainhdf::profile(
+    return rainfields::hdf::profile::ptr(
+        new rainfields::hdf::profile(
               *this
             , ++profile_count_
             , levels_
             , start_time
             , end_time));
   }
-}
+}}
 
 #endif
 

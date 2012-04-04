@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainHDF)
+ * Rainfields ODIM HDF5 Library (rainhdf)
  *
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
@@ -9,8 +9,9 @@
 #include <cstdio>
 #include <cstdarg>
 #include <cstdlib>
+#include "config.h"
 
-using namespace rainhdf;
+using namespace rainfields::hdf;
 
 error::error(const char* format, ...)
 {
@@ -46,15 +47,5 @@ error::error(hid_t loc, const char* format, ...)
     description_.append(" at ");
     description_.append(buf);
   }
-}
-
-error::~error() throw()
-{
-
-}
-
-const char* error::what() const throw()
-{
-  return description_.c_str();
 }
 

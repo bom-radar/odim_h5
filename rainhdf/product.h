@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainHDF)
+ * Rainfields ODIM HDF5 Library (rainhdf)
  *
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
@@ -9,8 +9,8 @@
 
 #include "base.h"
 
-namespace rainhdf
-{
+namespace rainfields {
+namespace hdf {
   /// Base class for a top level ODIM_H5 object file
   class product : public base
   {
@@ -35,7 +35,7 @@ namespace rainhdf
     /// Write the nominal (valid) time of the data/product
     void set_valid_time(time_t valid_time) { set_att(hnd_what_, atn_date, atn_time, valid_time); }
   };
-}
+}}
 
 #endif
 

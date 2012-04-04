@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainHDF)
+ * Rainfields ODIM HDF5 Library (rainhdf)
  *
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
@@ -7,8 +7,9 @@
 #include "base.h"
 
 #include <cstring>
+#include "config.h"
 
-using namespace rainhdf;
+using namespace rainfields::hdf;
 
 base::base(const std::string& file, create_flag)
   : hnd_this_(hid_file, file.c_str(), create)
@@ -68,12 +69,12 @@ base::~base()
 
 attribute::ptr base::attribute(int i)
 {
-  return rainhdf::attribute::ptr(new rainhdf::attribute(hnd_how_, i));
+  return rainfields::hdf::attribute::ptr(new rainfields::hdf::attribute(hnd_how_, i));
 }
 
 attribute::const_ptr base::attribute(int i) const
 {
-  return rainhdf::attribute::const_ptr(new rainhdf::attribute(hnd_how_, i));
+  return rainfields::hdf::attribute::const_ptr(new rainfields::hdf::attribute(hnd_how_, i));
 }
 
 attribute::ptr base::attribute(const char* name, bool create_if_missing)
@@ -83,11 +84,11 @@ attribute::ptr base::attribute(const char* name, bool create_if_missing)
     if (create_if_missing)
     {
       hnd_how_ = hid_handle(hid_group, hnd_this_, grp_how, create);
-      return rainhdf::attribute::ptr(new rainhdf::attribute(hnd_how_, name, true));
+      return rainfields::hdf::attribute::ptr(new rainfields::hdf::attribute(hnd_how_, name, true));
     }
     else
     {
-      return rainhdf::attribute::ptr();
+      return rainfields::hdf::attribute::ptr();
     }
   }
   else
@@ -98,24 +99,24 @@ attribute::ptr base::attribute(const char* name, bool create_if_missing)
     else if (ret == 0)
     {
       if (create_if_missing)
-        return rainhdf::attribute::ptr(new rainhdf::attribute(hnd_how_, name, true));
+        return rainfields::hdf::attribute::ptr(new rainfields::hdf::attribute(hnd_how_, name, true));
       else
-        return rainhdf::attribute::ptr();
+        return rainfields::hdf::attribute::ptr();
     }
     else
-      return rainhdf::attribute::ptr(new rainhdf::attribute(hnd_how_, name, false));
+      return rainfields::hdf::attribute::ptr(new rainfields::hdf::attribute(hnd_how_, name, false));
   }
 }
 
 attribute::const_ptr base::attribute(const char* name) const
 {
   if (!hnd_how_)
-    return rainhdf::attribute::const_ptr();
+    return rainfields::hdf::attribute::const_ptr();
   htri_t ret = H5Aexists(hnd_how_, name);
   if (ret < 0)
     throw error(hnd_how_, err_fail_att_exists, name);
   else if (ret == 0)
-    return rainhdf::attribute::const_ptr();
-  return rainhdf::attribute::const_ptr(new rainhdf::attribute(hnd_how_, name, false));
+    return rainfields::hdf::attribute::const_ptr();
+  return rainfields::hdf::attribute::const_ptr(new rainfields::hdf::attribute(hnd_how_, name, false));
 }
 

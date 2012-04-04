@@ -1,12 +1,13 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainHDF)
+ * Rainfields ODIM HDF5 Library (rainhdf)
  *
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
 #include "scan.h"
+#include "config.h"
 
-using namespace rainhdf;
+using namespace rainfields::hdf;
 
 scan::~scan()
 {
@@ -63,7 +64,7 @@ scan::scan(const base &parent, size_t index)
   for (size_t i = 1; true; ++i)
   {
     // Do we have this 'dataX'?
-    sprintf(name, "%s%d", grp_data, i);
+    sprintf(name, "%s%zu", grp_data, i);
     htri_t ret = H5Lexists(hnd_this_, name, H5P_DEFAULT);
     if (ret < 0)
       throw error(hnd_this_, "Failed to verify existence of group '%s'", name);
@@ -86,7 +87,7 @@ scan::scan(const base &parent, size_t index)
   for (size_t i = 1; true; ++i)
   {
     // Do we have this 'dataX'?
-    sprintf(name, "%s%d", grp_quality, i);
+    sprintf(name, "%s%zu", grp_quality, i);
     htri_t ret = H5Lexists(hnd_this_, name, H5P_DEFAULT);
     if (ret < 0)
       throw error(hnd_this_, "Failed to verify existence of group '%s'", name);

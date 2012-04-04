@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainHDF)
+ * Rainfields ODIM HDF5 Library (rainhdf)
  *
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
@@ -8,11 +8,10 @@
 #define RAINHDF_RAII_H
 
 #include "error.h"
-
 #include <hdf5.h>
 
-namespace rainhdf
-{
+namespace rainfields {
+namespace hdf {
   // Flags used to distinguish between open and create constructors
   enum create_flag { create };
   enum open_flag { open };
@@ -196,6 +195,7 @@ namespace rainhdf
         H5Idec_ref(hid_);
       hid_ = hid.hid_;
       H5Iinc_ref(hid_);
+      return *this;
     }
 
     /// Explicitly close the handle
@@ -230,7 +230,7 @@ namespace rainhdf
   private:
     hid_t hid_;  ///< HDF5 library object handle
   };
-}
+}}
 
 #endif
 

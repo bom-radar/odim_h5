@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainHDF)
+ * Rainfields ODIM HDF5 Library (rainhdf)
  *
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
@@ -10,13 +10,15 @@
 #include "volume.h"
 #include "vertical_profile.h"
 
-/// Classes for reading and writing Rainfields products in ODIM_H5 compliant HDF5 format
-/**
- *
- */
-namespace rainhdf
+namespace rainfields
 {
-  
+  /// Classes for reading and writing Rainfields products in ODIM_H5 compliant HDF5 format
+  namespace hdf
+  {
+    const char* package_name();
+    const char* package_version();
+    const char* package_support();
+  }
 }
 
 /**
@@ -44,7 +46,7 @@ namespace rainhdf
  * information about the product.
  *
  * \code
- * rainhdf::volume vol("my_volume_file.h5", true);
+ * rainfields::hdf::volume vol("my_volume_file.h5", true);
  *
  * float lat = vol.latitude();
  * float lon = vol.longitude();
@@ -61,15 +63,15 @@ namespace rainhdf
  * a polar volume file.
  *
  * \code
- * rainhdf::volume vol("my_volume_file.h5", false);
+ * rainfields::hdf::volume vol("my_volume_file.h5", false);
  * if (vol.scan_count() < 3)
  * {
  *   cerr << "Insufficient scans" << endl;
  *   return;
  * }
  *
- * rainhdf::scan::ptr scan = vol.scan(2);
- * rainhdf::data::ptr dbz = scan.layer(kQty_DBZH);
+ * rainfields::hdf::scan::ptr scan = vol.scan(2);
+ * rainfields::hdf::data::ptr dbz = scan.layer(kQty_DBZH);
  * if (dbz.get() == NULL)
  * {
  *   cerr << "No reflectivity data in file" << endl;
@@ -117,14 +119,14 @@ namespace rainhdf
  *
  * // ... data filled with radar image ...
  *
- * rainhdf::volume vol(
+ * rainfields::hdf::volume vol(
  *     "my_volume_file.h5",
  *     time(NULL),          // Time data is valid
  *     123.4,               // Station latitude
  *     36.8,                // Station longitude
  *     10.0);               // Station height
  *      
- * rainhdf::scan::ptr scan = vol.add_scan(
+ * rainfields::hdf::scan::ptr scan = vol.add_scan(
  *     0.2,                 // elevation angle
  *     azimuths,            // no of azimuths
  *     bins,                // no of range bins
@@ -133,7 +135,7 @@ namespace rainhdf
  *     time(NULL) - 30,     // scan start time
  *     time(NULL));         // scan end time
  *               
- * rainhdf::data::ptr layer = scan.add_layer(
+ * rainfields::hdf::data::ptr layer = scan.add_layer(
  *     kQty_DBZH,           // quantity stored by this layer
  *     false,               // data or quality information (false == data)
  *     data,                // layer data to write
@@ -143,12 +145,12 @@ namespace rainhdf
  *
  * \subsection errors Error Handling
  * Whenever an error occurs while reading or writing a rainhdf product, an
- * exception is thrown of the class rainhdf::Error.  This error class extends
+ * exception is thrown of the class rainfields::error.  This error class extends
  * the standard std::exception error and can be caught as such.
  *
  * The library is written to be fully exception safe, and will not leak any 
  * resources as a result of an exception.  That is, it is safe for the application
- * using the library to recover from a rainhdf::Error exception and continue
+ * using the library to recover from a rainfields::error exception and continue
  * executing.  In the case that an exception is thrown during a call which writes
  * to a HDF5 file, the state of the file is undefined.  The file will still
  * constitude valid HDF5, but may contain a partly written dataset or attribute.
@@ -159,8 +161,8 @@ namespace rainhdf
  * try
  * {
  *   // Attempt to open a non-existant scan
- *   rainhdf::volume vol("my_volume_file.h5", true);
- *   rainhdf::scan::const_ptr scan = vol.scan(vol.scan_count());
+ *   rainfields::hdf::volume vol("my_volume_file.h5", true);
+ *   rainfields::hdf::scan::const_ptr scan = vol.scan(vol.scan_count());
  * }
  * catch (std::exception &err)
  * {

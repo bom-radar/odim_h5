@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainHDF)
+ * Rainfields ODIM HDF5 Library (rainhdf)
  *
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
@@ -12,8 +12,8 @@
 #include <memory>
 #include <vector>
 
-namespace rainhdf
-{
+namespace rainfields {
+namespace hdf {
   /// Unique handle to a scan in the HDF5 file
   class scan : public base
   {
@@ -92,7 +92,7 @@ namespace rainhdf
 
     friend class volume;
   };
-}
+}}
 
 #endif
 
