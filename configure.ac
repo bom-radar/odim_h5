@@ -30,8 +30,8 @@ AC_HEADER_TIME
 AC_CHECK_HEADER([hdf5.h],,AC_MSG_ERROR(Cannot locate HDF5 headers))
 
 # external library versions
-pkg_rainutil_cpp03="rainutil_cpp03 >= 0.0.1"
 pkg_rainutil="rainutil >= 0.0.1"
+pkg_rainutil_cpp03="rainutil_cpp03 >= 0.0.1"
 
 AC_SUBST(SHARED_LIB_VERSION)
 

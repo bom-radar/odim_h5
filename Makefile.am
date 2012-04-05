@@ -67,9 +67,9 @@ pkgconfig_DATA = $(MAYBE_PC03) $(MAYBE_PC11)
 dist_noinst_DATA = Doxyfile
 
 # Test application (TEMP)
-bin_PROGRAMS = test
-test_SOURCES = test.cc
-test_CPPFLAGS = -g $(DEPS_CFLAGS)
-test_LDADD = librainhdf.la -lhdf5
+check_PROGRAMS = unittest
+unittest_SOURCES = test.cc
+unittest_CPPFLAGS = -g $(DEPS_CFLAGS)
+unittest_LDADD = librainhdf.la -lhdf5
 
 
