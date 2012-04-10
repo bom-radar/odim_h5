@@ -38,11 +38,11 @@ profile::profile(const base& parent, size_t index, size_t levels)
 
   // Verify that this dataset is indeed a profile
   if (get_att<product_type>(hnd_what_, atn_product) != pt_vertical_profile)
-    throw error(hnd_this_, "Profile product code mismatch");
+    throw error(hnd_this_, ft_bad_value, ht_attribute, atn_product);
 
   // Reserve some space in our data info vector for efficency sake
   if (H5Gget_num_objs(hnd_this_, &obj_count) < 0)
-    throw error(hnd_this_, "Failed to determine number of objects in group");
+    throw error(hnd_this_, ft_read, ht_group);
   data_info_.reserve(obj_count);
 
   // Check for any data layers
@@ -52,7 +52,7 @@ profile::profile(const base& parent, size_t index, size_t levels)
     sprintf(name, "%s%zu", grp_data, i);
     htri_t ret = H5Lexists(hnd_this_, name, H5P_DEFAULT);
     if (ret < 0)
-      throw error(hnd_this_, "Failed to verify existence of group '%s'", name);
+      throw error(hnd_this_, ft_open, ht_group, name);
     if (!ret)
       break;
 
@@ -75,7 +75,7 @@ profile::profile(const base& parent, size_t index, size_t levels)
     sprintf(name, "%s%zu", grp_quality, i);
     htri_t ret = H5Lexists(hnd_this_, name, H5P_DEFAULT);
     if (ret < 0)
-      throw error(hnd_this_, "Failed to verify existence of group '%s'", name);
+      throw error(hnd_this_, ft_open, ht_group, name);
     if (!ret)
       break;
 

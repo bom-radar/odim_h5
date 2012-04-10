@@ -350,14 +350,6 @@ namespace hdf {
   extern const char* val_version;
   extern const char* val_class;
   extern const char* val_image_version;
-
-  // Error strings
-  extern const char* err_fail_att_exists;
-  extern const char* err_fail_att_read;
-  extern const char* err_fail_att_type;
-  extern const char* err_fail_att_size;
-  extern const char* err_fail_att_write;
-  extern const char* err_fail_att_delete;
 }}
 
 namespace rainfields

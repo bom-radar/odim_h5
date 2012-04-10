@@ -51,9 +51,9 @@ data::data(
   hid_handle space(hid_space, rank, dims, create);
   hid_handle plist(hid_plist, H5P_DATASET_CREATE, create);
   if (H5Pset_chunk(plist, rank, dims) < 0)
-    throw error(hnd_this_, "Failed to set chunk parameters for data");
+    throw error(hnd_this_, ft_write, ht_property_list, "chunk");
   if (H5Pset_deflate(plist, default_compression) < 0)
-    throw error(hnd_this_, "Failed to set compression level for data");
+    throw error(hnd_this_, ft_write, ht_property_list, "deflate");
 
   hnd_data_ = hid_handle(
         hid_data
@@ -104,7 +104,7 @@ data::data(
   else
   {
     // Can't tell by the gain/offset - so rely on the type
-    hid_handle type(hid_type, H5Dget_type(hnd_data_));
+    hid_handle type(hid_type, hnd_data_, false, open);
     if (H5Tget_class(type) != H5T_INTEGER)
       floating_ = true;
   }
@@ -114,15 +114,15 @@ data::data(
 void data::read(int* raw, int& no_data, int& undetect) const
 {
   // Verify the correct dimension to prevent memory corruption
-  hid_handle space(hid_space, H5Dget_space(hnd_data_));
+  hid_handle space(hid_space, hnd_data_, false, open);
   if ((size_t) H5Sget_simple_extent_npoints(space) != size_)
-    throw error(hnd_data_, "Dataset dimension mismatch");
+    throw error(hnd_data_, ft_size_mismatch, ht_dataset);
 
   // Read the raw data
   no_data = lround(get_att<double>(hnd_what_, atn_no_data));
   undetect = lround(get_att<double>(hnd_what_, atn_undetect));
   if (H5Dread(hnd_data_, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw) < 0)
-    throw error(hnd_this_, "Failed to read data");
+    throw error(hnd_data_, ft_read, ht_dataset);
 
   // Convert using gain and offset?
   if (   std::fabs(gain_ - 1.0) > 0.000001
@@ -139,15 +139,15 @@ void data::read(int* raw, int& no_data, int& undetect) const
 void data::read(float* raw, float& no_data, float& undetect) const
 {
   // Verify the correct dimension to prevent memory corruption
-  hid_handle space(hid_space, H5Dget_space(hnd_data_));
+  hid_handle space(hid_space, hnd_data_, false, open);
   if ((size_t) H5Sget_simple_extent_npoints(space) != size_)
-    throw error(hnd_data_, "Dataset dimension mismatch");
+    throw error(hnd_data_, ft_size_mismatch, ht_dataset);
 
   // Read the raw data
   no_data = get_att<double>(hnd_what_, atn_no_data);
   undetect = get_att<double>(hnd_what_, atn_undetect);
   if (H5Dread(hnd_data_, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw) < 0)
-    throw error(hnd_this_, "Failed to read data");
+    throw error(hnd_data_, ft_read, ht_dataset);
 
   // Convert using gain and offset?
   if (   std::fabs(gain_ - 1.0) > 0.000001
@@ -164,15 +164,15 @@ void data::read(float* raw, float& no_data, float& undetect) const
 void data::read(double* raw, double& no_data, double& undetect) const
 {
   // Verify the correct dimension to prevent memory corruption
-  hid_handle space(hid_space, H5Dget_space(hnd_data_));
+  hid_handle space(hid_space, hnd_data_, false, open);
   if ((size_t) H5Sget_simple_extent_npoints(space) != size_)
-    throw error(hnd_data_, "Dataset dimension mismatch");
+    throw error(hnd_data_, ft_size_mismatch, ht_dataset);
 
   // Read the raw data
   no_data = get_att<double>(hnd_what_, atn_no_data);
   undetect = get_att<double>(hnd_what_, atn_undetect);
   if (H5Dread(hnd_data_, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw) < 0)
-    throw error(hnd_this_, "Failed to read data");
+    throw error(hnd_data_, ft_read, ht_dataset);
 
   // Convert using gain and offset?
   if (   std::fabs(gain_ - 1.0) > 0.000001
@@ -188,9 +188,9 @@ void data::read(double* raw, double& no_data, double& undetect) const
 void data::write(const int* raw, int no_data, int undetect)
 {
   // Verify the correct dimension to prevent memory corruption
-  hid_handle space(hid_space, H5Dget_space(hnd_data_));
+  hid_handle space(hid_space, hnd_data_, false, open);
   if ((size_t) H5Sget_simple_extent_npoints(space) != size_)
-    throw error(hnd_data_, "Dataset dimension mismatch");
+    throw error(hnd_data_, ft_size_mismatch, ht_dataset);
 
   // Do we have to convert the data?
   if (   std::fabs(gain_ - 1.0f) > 0.000001
@@ -210,7 +210,7 @@ void data::write(const int* raw, int no_data, int undetect)
     set_att(hnd_what_, atn_no_data, (double) no_data);
     set_att(hnd_what_, atn_undetect, (double) undetect);
     if (H5Dwrite(hnd_data_, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &vec_data[0]) < 0)
-      throw error("Failed to write data");
+      throw error(hnd_data_, ft_write, ht_dataset);
   }
   else
   {
@@ -218,16 +218,16 @@ void data::write(const int* raw, int no_data, int undetect)
     set_att(hnd_what_, atn_no_data, (double) no_data);
     set_att(hnd_what_, atn_undetect, (double) undetect);
     if (H5Dwrite(hnd_data_, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw) < 0)
-      throw error("Failed to write data");
+      throw error(hnd_data_, ft_write, ht_dataset);
   }
 }
 
 void data::write(const float* raw, float no_data, float undetect)
 {
   // Verify the correct dimension to prevent memory corruption
-  hid_handle space(hid_space, H5Dget_space(hnd_data_));
+  hid_handle space(hid_space, hnd_data_, false, open);
   if ((size_t) H5Sget_simple_extent_npoints(space) != size_)
-    throw error(hnd_data_, "Dataset dimension mismatch");
+    throw error(hnd_data_, ft_size_mismatch, ht_dataset);
 
   // Do we have to convert the data?
   if (   std::fabs(gain_ - 1.0) > 0.000001
@@ -247,7 +247,7 @@ void data::write(const float* raw, float no_data, float undetect)
     set_att(hnd_what_, atn_no_data, no_data);
     set_att(hnd_what_, atn_undetect, undetect);
     if (H5Dwrite(hnd_data_, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &vec_data[0]) < 0)
-      throw error("Failed to write data");
+      throw error(hnd_data_, ft_write, ht_dataset);
   }
   else
   {
@@ -255,16 +255,16 @@ void data::write(const float* raw, float no_data, float undetect)
     set_att(hnd_what_, atn_no_data, no_data);
     set_att(hnd_what_, atn_undetect, undetect);
     if (H5Dwrite(hnd_data_, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw) < 0)
-      throw error("Failed to write data");
+      throw error(hnd_data_, ft_write, ht_dataset);
   }
 }
 
 void data::write(const double* raw, double no_data, double undetect)
 {
   // Verify the correct dimension to prevent memory corruption
-  hid_handle space(hid_space, H5Dget_space(hnd_data_));
+  hid_handle space(hid_space, hnd_data_, false, open);
   if ((size_t) H5Sget_simple_extent_npoints(space) != size_)
-    throw error(hnd_data_, "Dataset dimension mismatch");
+    throw error(hnd_data_, ft_size_mismatch, ht_dataset);
 
   // Do we have to convert the data?
   if (   std::fabs(gain_ - 1.0) > 0.000001
@@ -284,7 +284,7 @@ void data::write(const double* raw, double no_data, double undetect)
     set_att(hnd_what_, atn_no_data, no_data);
     set_att(hnd_what_, atn_undetect, undetect);
     if (H5Dwrite(hnd_data_, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &vec_data[0]) < 0)
-      throw error("Failed to write data");
+      throw error(hnd_data_, ft_write, ht_dataset);
   }
   else
   {
@@ -292,7 +292,7 @@ void data::write(const double* raw, double no_data, double undetect)
     set_att(hnd_what_, atn_no_data, no_data);
     set_att(hnd_what_, atn_undetect, undetect);
     if (H5Dwrite(hnd_data_, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw) < 0)
-      throw error("Failed to write data");
+      throw error(hnd_data_, ft_write, ht_dataset);
   }
 }
 

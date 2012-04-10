@@ -13,20 +13,46 @@
 
 namespace rainfields {
 namespace hdf {
-  /// Base exception class
-  /**
-   * Exceptions derived from this class should be thrown by reference.
-   * ie: throw MyException();  This ensures that the correct virtual
-   * what() function will be called.
-   */
+  /// possible causes of failure
+  enum failure_type
+  {
+      ft_create
+    , ft_open
+    , ft_read
+    , ft_write
+    , ft_remove
+    , ft_type_mismatch
+    , ft_size_mismatch
+    , ft_overflow
+    , ft_bad_value
+  };
+
+  /// object class on which operation failed
+  enum hdf_object_type
+  {
+      ht_file
+    , ht_group
+    , ht_type
+    , ht_dataspace
+    , ht_attribute
+    , ht_property_list
+    , ht_dataset
+  };
+
+  /// rainhdf exception class
   class error : public rainfields::error
   {
   public:
-    /// Construct an error using printf style arguments
-    error(const char* format, ...);
+    error(hid_t loc, failure_type ft, hdf_object_type ht, const char* name = "");
+    error(hid_t loc, failure_type ft, hdf_object_type ht, const std::string& name);
+    virtual ~error() RAINFIELDS_NOTHROW;
+    virtual const char* what() const RAINFIELDS_NOTHROW;
 
-    /// Construct an error using printf style arguments and a file location
-    error(hid_t loc, const char* format, ...);
+  private:
+    std::string     location_;      ///< string version of location
+    failure_type    type_;          ///< type of failure
+    hdf_object_type target_;        ///< type of target
+    std::string     target_name_;   ///< name of target
   };
 }}
 

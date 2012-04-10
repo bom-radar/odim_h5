@@ -34,7 +34,7 @@ product::product(const std::string& file, object_type type, bool read_only)
 {
   // Check the object type
   if (get_att<object_type>(hnd_what_, atn_object) != type)
-    throw error("ODIM_H5 object type mismatch");
+    throw error(hnd_what_, ft_bad_value, ht_attribute, atn_object);
 }
 
 

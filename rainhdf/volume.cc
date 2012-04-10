@@ -31,14 +31,14 @@ volume::volume(const std::string& file, bool read_only)
   // Determine the number of scans
   hsize_t obj_count;
   if (H5Gget_num_objs(hnd_this_, &obj_count) < 0)
-    throw error(hnd_this_, "Failed to determine number of objects in group");
+    throw error(hnd_this_, ft_read, ht_group);
   for (/*empty*/; obj_count > 0; --obj_count)
   {
     char name[32];
     sprintf(name, "%s%d", grp_dataset, (int) obj_count);
     htri_t ret = H5Lexists(hnd_this_, name, H5P_DEFAULT);
     if (ret < 0)
-      throw error(hnd_this_, "Failed to verify existance of group '%s'", name);
+      throw error(hnd_this_, ft_open, ht_group, name);
     else if (ret)
       break;
   }

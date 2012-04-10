@@ -95,7 +95,7 @@ attribute::ptr base::attribute(const char* name, bool create_if_missing)
   {
     htri_t ret = H5Aexists(hnd_how_, name);
     if (ret < 0)
-      throw error(hnd_how_, err_fail_att_exists, name);
+      throw error(hnd_how_, ft_open, ht_attribute, name);
     else if (ret == 0)
     {
       if (create_if_missing)
@@ -114,7 +114,7 @@ attribute::const_ptr base::attribute(const char* name) const
     return rainfields::hdf::attribute::const_ptr();
   htri_t ret = H5Aexists(hnd_how_, name);
   if (ret < 0)
-    throw error(hnd_how_, err_fail_att_exists, name);
+    throw error(hnd_how_, ft_open, ht_attribute, name);
   else if (ret == 0)
     return rainfields::hdf::attribute::const_ptr();
   return rainfields::hdf::attribute::const_ptr(new rainfields::hdf::attribute(hnd_how_, name, false));
