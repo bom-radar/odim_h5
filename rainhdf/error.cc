@@ -41,6 +41,11 @@ error::error(hid_t loc, failure_type ft, hdf_object_type ht, const std::string& 
   }
 }
 
+error::~error() RAINFIELDS_NOTHROW
+{
+
+}
+
 const char* error::what() const RAINFIELDS_NOTHROW
 {
   static const char* errs[] = 
