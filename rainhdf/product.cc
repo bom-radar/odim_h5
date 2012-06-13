@@ -37,4 +37,9 @@ product::product(const std::string& file, object_type type, bool read_only)
     throw error(hnd_what_, ft_bad_value, ht_attribute, atn_object);
 }
 
+void product::flush() const
+{
+  if (H5Fflush(hnd_this_, H5F_SCOPE_LOCAL) < 0)
+    throw error(hnd_this_, ft_write, ht_file, "H5Fflush failed");
+}
 

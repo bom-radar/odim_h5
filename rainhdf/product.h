@@ -25,6 +25,9 @@ namespace hdf {
     product(const std::string& file, object_type type, bool read_only);
 
   public:
+    /// Ensure all previous writes are flushed to disk
+    void flush() const;
+
     /// Get the source string
     std::string source() const { return get_att<std::string>(hnd_what_, atn_source); }
     /// Wrtie the product source string
