@@ -4,10 +4,9 @@
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
-#include "base.h"
-
-#include <cstring>
 #include "config.h"
+#include "base.h"
+#include <cstring>
 
 using namespace rainfields::hdf;
 

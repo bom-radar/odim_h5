@@ -5,15 +5,5 @@
 # See COPYING for licensing and warranty details
 #-------------------------------------------------------------------------------
 
-# keep autoreconf happy
-ACLOCAL_AMFLAGS = -I m4
-
-SUBDIRS=src
-
-# package config
-pkgconfigdir=$(libdir)/pkgconfig
-pkgconfig_DATA=rainhdf.pc
-
-# make sure Doxyfile gets distributed
-dist_noinst_DATA = Doxyfile
+SUBDIRS=rainhdf test
 

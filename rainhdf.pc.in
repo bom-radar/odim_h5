@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: rainhdf
 Description: Rainfields ODIM HDF5 Library
 Version: @PACKAGE_VERSION@
-Requires: @API11_DEPS@
+Requires: @API_DEPS@
 Libs: -L${libdir} -lrainhdf -lhdf5
 Cflags: -I${includedir}

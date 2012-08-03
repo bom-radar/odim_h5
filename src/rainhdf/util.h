@@ -9,7 +9,6 @@
 
 #include "error.h"
 #include "raii.h"
-
 #include <rainutil/rainutil.h>
 #include <string>
 
@@ -31,6 +30,7 @@ namespace hdf {
 
     , count_ot
   };
+
   /// Product types supported by ODIM_H5
   enum product_type
   {

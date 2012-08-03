@@ -4,8 +4,8 @@
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
-#include "rainhdf.h"
 #include "config.h"
+#include "rainhdf.h"
 
 const char* rainfields::hdf::package_name()
 {

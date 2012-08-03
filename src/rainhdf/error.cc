@@ -4,12 +4,11 @@
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
+#include "config.h"
 #include "error.h"
-
 #include <cstdio>
 #include <cstdarg>
 #include <cstdlib>
-#include "config.h"
 
 using namespace rainfields::hdf;
 

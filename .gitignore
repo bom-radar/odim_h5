@@ -19,3 +19,8 @@ ltmain.sh
 depcomp
 test
 rainhdf-*.tar.gz
+unittest
+stamp-h1
+*.m4
+!m4_ax*.m4
+!ax*.m4
