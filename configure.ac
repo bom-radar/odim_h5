@@ -13,6 +13,7 @@ AC_CONFIG_SRCDIR([src/rainhdf/rainhdf.h])
 AC_CONFIG_HEADERS([config.h])
 AC_REVISION([Revision: 1.0.0])
 AM_INIT_AUTOMAKE([foreign -Wall])
+AM_SILENT_RULES([yes])
 
 # setup the shared library version
 AC_SUBST([SHARED_LIB_VERSION], ["1:0:0"]) # current:revision:age
