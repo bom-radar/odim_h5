@@ -7,7 +7,7 @@
 
 # initialization and sanity checks
 AC_PREREQ(2.59)
-AC_INIT(rainhdf, 1.0.0, [m.curtis@bom.gov.au])
+AC_INIT(rainhdf, 1.1.0, [m.curtis@bom.gov.au])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([src/rainhdf/rainhdf.h])
 AC_CONFIG_HEADERS([config.h])
@@ -16,7 +16,7 @@ AM_INIT_AUTOMAKE([foreign -Wall])
 AM_SILENT_RULES([yes])
 
 # setup the shared library version
-AC_SUBST([SHARED_LIB_VERSION], ["1:0:0"]) # current:revision:age
+AC_SUBST([SHARED_LIB_VERSION], ["1:1:0"]) # current:revision:age
 
 # external library versions
 pkg_rainutil="rainutil >= 1.0.0"
