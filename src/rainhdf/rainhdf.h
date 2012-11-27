@@ -7,6 +7,7 @@
 #ifndef RAINHDF_RAINHDF_H
 #define RAINHDF_RAINHDF_H
 
+#include "gauge_calibration.h"
 #include "volume.h"
 #include "vertical_profile.h"
 

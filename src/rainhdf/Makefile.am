@@ -10,6 +10,7 @@ HDR=\
   base.h\
   data.h\
   error.h\
+  gauge_calibration.h\
   product.h\
   profile.h\
   raii.h\
@@ -24,6 +25,7 @@ SRC=\
   base.cc\
   data.cc\
   error.cc\
+  gauge_calibration.cc\
   product.cc\
   profile.cc\
   rainhdf.cc\

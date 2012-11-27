@@ -28,6 +28,14 @@ namespace hdf {
   /// Invalid value indicator for hid_t type
   const int invalid_hid = -1;
 
+  /// Struct used to specify layout of custom types
+  struct compound_spec
+  {
+    const char* name;
+    size_t      offset;
+    hid_t       type;
+  };
+
   /// RAII wrapper for HDF hid_t handles
   class hid_handle
   {
@@ -97,6 +105,19 @@ namespace hdf {
         hid_ = H5Gopen(parent, name, H5P_DEFAULT);
         if (hid_ < 0)
           throw error(parent, ft_open, ht_group, name);
+      }
+    }
+    // create a compound HDF5 type
+    hid_handle(hid_type_flag, size_t size, const compound_spec* members)
+      : hid_(H5Tcreate(H5T_COMPOUND, size))
+    {
+      if (hid_ < 0)
+        throw error(invalid_hid, ft_create, ht_type);
+
+      for (size_t i = 0; members[i].name != NULL; ++i)
+      {
+        if (H5Tinsert(hid_, members[i].name, members[i].offset, members[i].type) < 0)
+          throw error(invalid_hid, ft_create, ht_type);
       }
     }
     /// copy a HDF5 type
