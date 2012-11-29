@@ -15,16 +15,24 @@ static compound_spec mspec[] =
     { "id", HOFFSET(gauge_calibration::gauge, id), H5T_NATIVE_INT }
   , { "latitude", HOFFSET(gauge_calibration::gauge, latitude), H5T_NATIVE_FLOAT }
   , { "longitude", HOFFSET(gauge_calibration::gauge, longitude), H5T_NATIVE_FLOAT }
-  , { "time", HOFFSET(gauge_calibration::gauge, time), H5T_NATIVE_LONG }
   , { "rainfall_gauge", HOFFSET(gauge_calibration::gauge, rainfall_gauge), H5T_NATIVE_FLOAT }
   , { "rainfall_radar", HOFFSET(gauge_calibration::gauge, rainfall_radar), H5T_NATIVE_FLOAT }
   , { "bias", HOFFSET(gauge_calibration::gauge, bias), H5T_NATIVE_FLOAT }
+  , { "kalman_time", HOFFSET(gauge_calibration::gauge, kalman_time), H5T_NATIVE_LONG }
   , { "kalman_beta", HOFFSET(gauge_calibration::gauge, kalman_beta), H5T_NATIVE_DOUBLE }
   , { "kalman_variance", HOFFSET(gauge_calibration::gauge, kalman_variance), H5T_NATIVE_DOUBLE }
+  , { "err_samples_0", HOFFSET(gauge_calibration::gauge, err_samples[0]), H5T_NATIVE_INT }
+  , { "err_samples_1", HOFFSET(gauge_calibration::gauge, err_samples[1]), H5T_NATIVE_INT }
+  , { "err_samples_2", HOFFSET(gauge_calibration::gauge, err_samples[2]), H5T_NATIVE_INT }
+  , { "err_samples_3", HOFFSET(gauge_calibration::gauge, err_samples[3]), H5T_NATIVE_INT }
   , { "err_mean_0", HOFFSET(gauge_calibration::gauge, err_mean[0]), H5T_NATIVE_DOUBLE }
   , { "err_mean_1", HOFFSET(gauge_calibration::gauge, err_mean[1]), H5T_NATIVE_DOUBLE }
   , { "err_mean_2", HOFFSET(gauge_calibration::gauge, err_mean[2]), H5T_NATIVE_DOUBLE }
   , { "err_mean_3", HOFFSET(gauge_calibration::gauge, err_mean[3]), H5T_NATIVE_DOUBLE }
+  , { "err_m2_0", HOFFSET(gauge_calibration::gauge, err_m2[0]), H5T_NATIVE_DOUBLE }
+  , { "err_m2_1", HOFFSET(gauge_calibration::gauge, err_m2[1]), H5T_NATIVE_DOUBLE }
+  , { "err_m2_2", HOFFSET(gauge_calibration::gauge, err_m2[2]), H5T_NATIVE_DOUBLE }
+  , { "err_m2_3", HOFFSET(gauge_calibration::gauge, err_m2[3]), H5T_NATIVE_DOUBLE }
   , { "err_var_0", HOFFSET(gauge_calibration::gauge, err_variance[0]), H5T_NATIVE_DOUBLE }
   , { "err_var_1", HOFFSET(gauge_calibration::gauge, err_variance[1]), H5T_NATIVE_DOUBLE }
   , { "err_var_2", HOFFSET(gauge_calibration::gauge, err_variance[2]), H5T_NATIVE_DOUBLE }
@@ -37,23 +45,31 @@ static compound_spec fspec[] =
     { "id", 0, H5T_STD_I32LE }
   , { "latitude", 4, H5T_IEEE_F32LE }
   , { "longitude", 8, H5T_IEEE_F32LE }
-  , { "time", 12, H5T_STD_I64LE }
-  , { "rainfall_gauge", 20, H5T_IEEE_F32LE }
-  , { "rainfall_radar", 24, H5T_IEEE_F32LE }
-  , { "bias", 28, H5T_IEEE_F32LE }
+  , { "rainfall_gauge", 12, H5T_IEEE_F32LE }
+  , { "rainfall_radar", 16, H5T_IEEE_F32LE }
+  , { "bias", 20, H5T_IEEE_F32LE }
+  , { "kalman_time", 24, H5T_STD_I64LE }
   , { "kalman_beta", 32, H5T_IEEE_F64LE }
   , { "kalman_variance", 40, H5T_IEEE_F64LE }
-  , { "err_mean_0", 48, H5T_IEEE_F64LE }
-  , { "err_mean_1", 56, H5T_IEEE_F64LE }
-  , { "err_mean_2", 64, H5T_IEEE_F64LE }
-  , { "err_mean_3", 72, H5T_IEEE_F64LE }
-  , { "err_var_0", 80, H5T_IEEE_F64LE }
-  , { "err_var_1", 88, H5T_IEEE_F64LE }
-  , { "err_var_2", 96, H5T_IEEE_F64LE }
-  , { "err_var_3", 104, H5T_IEEE_F64LE }
+  , { "err_samples_0", 48, H5T_IEEE_F64LE }
+  , { "err_samples_1", 56, H5T_IEEE_F64LE }
+  , { "err_samples_2", 64, H5T_IEEE_F64LE }
+  , { "err_samples_3", 72, H5T_IEEE_F64LE }
+  , { "err_mean_0", 80, H5T_IEEE_F64LE }
+  , { "err_mean_1", 88, H5T_IEEE_F64LE }
+  , { "err_mean_2", 96, H5T_IEEE_F64LE }
+  , { "err_mean_3", 104, H5T_IEEE_F64LE }
+  , { "err_m2_0", 112, H5T_IEEE_F64LE }
+  , { "err_m2_1", 120, H5T_IEEE_F64LE }
+  , { "err_m2_2", 128, H5T_IEEE_F64LE }
+  , { "err_m2_3", 136, H5T_IEEE_F64LE }
+  , { "err_var_0", 144, H5T_IEEE_F64LE }
+  , { "err_var_1", 152, H5T_IEEE_F64LE }
+  , { "err_var_2", 160, H5T_IEEE_F64LE }
+  , { "err_var_3", 168, H5T_IEEE_F64LE }
   , { NULL, 0, invalid_hid }
 };
-const size_t file_type_size = 112;
+const size_t file_type_size = 176;
 
 gauge_calibration::gauge_calibration(
       const std::string& file

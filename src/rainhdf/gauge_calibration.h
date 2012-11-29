@@ -24,19 +24,21 @@ namespace hdf {
       float   longitude;
 
       // measurement information
-      time_t  time;
       float   rainfall_gauge;
       float   rainfall_radar;
 
       // bias information
       float   bias;
+      time_t  kalman_time;
       double  kalman_beta;
       double  kalman_variance;
 
       // measurement error rolling stats
       // 0 = since start of this calendar month
       // 1 = since start of prev calendar month, etc
+      int     err_samples[4];
       double  err_mean[4];
+      double  err_m2[4];      // sum of squares of difference from current mean
       double  err_variance[4];
     };
 
