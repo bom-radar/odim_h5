@@ -15,28 +15,28 @@ static compound_spec mspec[] =
     { "id", HOFFSET(gauge_calibration::gauge, id), H5T_NATIVE_INT }
   , { "latitude", HOFFSET(gauge_calibration::gauge, latitude), H5T_NATIVE_FLOAT }
   , { "longitude", HOFFSET(gauge_calibration::gauge, longitude), H5T_NATIVE_FLOAT }
-  , { "rainfall_gauge", HOFFSET(gauge_calibration::gauge, rainfall_gauge), H5T_NATIVE_FLOAT }
-  , { "rainfall_radar", HOFFSET(gauge_calibration::gauge, rainfall_radar), H5T_NATIVE_FLOAT }
+  , { "precip_gauge", HOFFSET(gauge_calibration::gauge, precip_gauge), H5T_NATIVE_FLOAT }
+  , { "precip_radar", HOFFSET(gauge_calibration::gauge, precip_radar), H5T_NATIVE_FLOAT }
   , { "bias", HOFFSET(gauge_calibration::gauge, bias), H5T_NATIVE_FLOAT }
-  , { "kalman_time", HOFFSET(gauge_calibration::gauge, kalman_time), H5T_NATIVE_LONG }
   , { "kalman_beta", HOFFSET(gauge_calibration::gauge, kalman_beta), H5T_NATIVE_DOUBLE }
   , { "kalman_variance", HOFFSET(gauge_calibration::gauge, kalman_variance), H5T_NATIVE_DOUBLE }
-  , { "err_samples_0", HOFFSET(gauge_calibration::gauge, err_samples[0]), H5T_NATIVE_INT }
-  , { "err_samples_1", HOFFSET(gauge_calibration::gauge, err_samples[1]), H5T_NATIVE_INT }
-  , { "err_samples_2", HOFFSET(gauge_calibration::gauge, err_samples[2]), H5T_NATIVE_INT }
-  , { "err_samples_3", HOFFSET(gauge_calibration::gauge, err_samples[3]), H5T_NATIVE_INT }
-  , { "err_mean_0", HOFFSET(gauge_calibration::gauge, err_mean[0]), H5T_NATIVE_DOUBLE }
-  , { "err_mean_1", HOFFSET(gauge_calibration::gauge, err_mean[1]), H5T_NATIVE_DOUBLE }
-  , { "err_mean_2", HOFFSET(gauge_calibration::gauge, err_mean[2]), H5T_NATIVE_DOUBLE }
-  , { "err_mean_3", HOFFSET(gauge_calibration::gauge, err_mean[3]), H5T_NATIVE_DOUBLE }
-  , { "err_m2_0", HOFFSET(gauge_calibration::gauge, err_m2[0]), H5T_NATIVE_DOUBLE }
-  , { "err_m2_1", HOFFSET(gauge_calibration::gauge, err_m2[1]), H5T_NATIVE_DOUBLE }
-  , { "err_m2_2", HOFFSET(gauge_calibration::gauge, err_m2[2]), H5T_NATIVE_DOUBLE }
-  , { "err_m2_3", HOFFSET(gauge_calibration::gauge, err_m2[3]), H5T_NATIVE_DOUBLE }
-  , { "err_var_0", HOFFSET(gauge_calibration::gauge, err_variance[0]), H5T_NATIVE_DOUBLE }
-  , { "err_var_1", HOFFSET(gauge_calibration::gauge, err_variance[1]), H5T_NATIVE_DOUBLE }
-  , { "err_var_2", HOFFSET(gauge_calibration::gauge, err_variance[2]), H5T_NATIVE_DOUBLE }
-  , { "err_var_3", HOFFSET(gauge_calibration::gauge, err_variance[3]), H5T_NATIVE_DOUBLE }
+  , { "kalman_betap", HOFFSET(gauge_calibration::gauge, kalman_betap), H5T_NATIVE_DOUBLE }
+  , { "obs0_samples", HOFFSET(gauge_calibration::gauge, obs_stats[0].samples), H5T_NATIVE_INT }
+  , { "obs0_mean", HOFFSET(gauge_calibration::gauge, obs_stats[0].mean), H5T_NATIVE_DOUBLE }
+  , { "obs0_m2", HOFFSET(gauge_calibration::gauge, obs_stats[0].m2), H5T_NATIVE_DOUBLE }
+  , { "obs0_var", HOFFSET(gauge_calibration::gauge, obs_stats[0].variance), H5T_NATIVE_DOUBLE }
+  , { "obs1_samples", HOFFSET(gauge_calibration::gauge, obs_stats[1].samples), H5T_NATIVE_INT }
+  , { "obs1_mean", HOFFSET(gauge_calibration::gauge, obs_stats[1].mean), H5T_NATIVE_DOUBLE }
+  , { "obs1_m2", HOFFSET(gauge_calibration::gauge, obs_stats[1].m2), H5T_NATIVE_DOUBLE }
+  , { "obs1_var", HOFFSET(gauge_calibration::gauge, obs_stats[1].variance), H5T_NATIVE_DOUBLE }
+  , { "obs2_samples", HOFFSET(gauge_calibration::gauge, obs_stats[2].samples), H5T_NATIVE_INT }
+  , { "obs2_mean", HOFFSET(gauge_calibration::gauge, obs_stats[2].mean), H5T_NATIVE_DOUBLE }
+  , { "obs2_m2", HOFFSET(gauge_calibration::gauge, obs_stats[2].m2), H5T_NATIVE_DOUBLE }
+  , { "obs2_var", HOFFSET(gauge_calibration::gauge, obs_stats[2].variance), H5T_NATIVE_DOUBLE }
+  , { "obs3_samples", HOFFSET(gauge_calibration::gauge, obs_stats[3].samples), H5T_NATIVE_INT }
+  , { "obs3_mean", HOFFSET(gauge_calibration::gauge, obs_stats[3].mean), H5T_NATIVE_DOUBLE }
+  , { "obs3_m2", HOFFSET(gauge_calibration::gauge, obs_stats[3].m2), H5T_NATIVE_DOUBLE }
+  , { "obs3_var", HOFFSET(gauge_calibration::gauge, obs_stats[3].variance), H5T_NATIVE_DOUBLE }
   , { NULL, 0, invalid_hid }
 };
 
@@ -45,31 +45,31 @@ static compound_spec fspec[] =
     { "id", 0, H5T_STD_I32LE }
   , { "latitude", 4, H5T_IEEE_F32LE }
   , { "longitude", 8, H5T_IEEE_F32LE }
-  , { "rainfall_gauge", 12, H5T_IEEE_F32LE }
-  , { "rainfall_radar", 16, H5T_IEEE_F32LE }
+  , { "precip_gauge", 12, H5T_IEEE_F32LE }
+  , { "precip_radar", 16, H5T_IEEE_F32LE }
   , { "bias", 20, H5T_IEEE_F32LE }
-  , { "kalman_time", 24, H5T_STD_I64LE }
-  , { "kalman_beta", 32, H5T_IEEE_F64LE }
-  , { "kalman_variance", 40, H5T_IEEE_F64LE }
-  , { "err_samples_0", 48, H5T_IEEE_F64LE }
-  , { "err_samples_1", 56, H5T_IEEE_F64LE }
-  , { "err_samples_2", 64, H5T_IEEE_F64LE }
-  , { "err_samples_3", 72, H5T_IEEE_F64LE }
-  , { "err_mean_0", 80, H5T_IEEE_F64LE }
-  , { "err_mean_1", 88, H5T_IEEE_F64LE }
-  , { "err_mean_2", 96, H5T_IEEE_F64LE }
-  , { "err_mean_3", 104, H5T_IEEE_F64LE }
-  , { "err_m2_0", 112, H5T_IEEE_F64LE }
-  , { "err_m2_1", 120, H5T_IEEE_F64LE }
-  , { "err_m2_2", 128, H5T_IEEE_F64LE }
-  , { "err_m2_3", 136, H5T_IEEE_F64LE }
-  , { "err_var_0", 144, H5T_IEEE_F64LE }
-  , { "err_var_1", 152, H5T_IEEE_F64LE }
-  , { "err_var_2", 160, H5T_IEEE_F64LE }
-  , { "err_var_3", 168, H5T_IEEE_F64LE }
+  , { "kalman_beta", 24, H5T_IEEE_F64LE }
+  , { "kalman_variance", 32, H5T_IEEE_F64LE }
+  , { "kalman_betap", 40, H5T_IEEE_F64LE }
+  , { "obs0_samples", 48, H5T_STD_I32LE }
+  , { "obs0_mean", 52, H5T_IEEE_F64LE }
+  , { "obs0_m2", 60, H5T_IEEE_F64LE }
+  , { "obs0_var", 68, H5T_IEEE_F64LE }
+  , { "obs1_samples", 76, H5T_STD_I32LE }
+  , { "obs1_mean", 80, H5T_IEEE_F64LE }
+  , { "obs1_m2", 88, H5T_IEEE_F64LE }
+  , { "obs1_var", 96, H5T_IEEE_F64LE }
+  , { "obs2_samples", 104, H5T_STD_I32LE }
+  , { "obs2_mean", 108, H5T_IEEE_F64LE }
+  , { "obs2_m2", 116, H5T_IEEE_F64LE }
+  , { "obs2_var", 124, H5T_IEEE_F64LE }
+  , { "obs3_samples", 132, H5T_STD_I32LE }
+  , { "obs3_mean", 136, H5T_IEEE_F64LE }
+  , { "obs3_m2", 144, H5T_IEEE_F64LE }
+  , { "obs3_var", 152, H5T_IEEE_F64LE }
   , { NULL, 0, invalid_hid }
 };
-const size_t file_type_size = 176;
+const size_t file_type_size = 160;
 
 gauge_calibration::gauge_calibration(
       const std::string& file

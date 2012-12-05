@@ -15,6 +15,16 @@ namespace hdf {
   class gauge_calibration
   {
   public:
+    static const size_t stats_slots = 4;
+
+    struct stats
+    {
+      int     samples;    // number of observations contributing to statistics
+      double  mean;       // mean of G/R bias
+      double  m2;         // sum of squares of difference from current mean
+      double  variance;   // variance of G/R bias
+    };
+
     /// Data for a single gauge
     struct gauge
     {
@@ -24,22 +34,21 @@ namespace hdf {
       float   longitude;
 
       // measurement information
-      float   rainfall_gauge;
-      float   rainfall_radar;
+      float   precip_gauge;
+      float   precip_radar;
 
       // bias information
       float   bias;
-      time_t  kalman_time;
-      double  kalman_beta;
+      double  kalman_beta;      // estimated beta (state)
       double  kalman_variance;
+      double  kalman_betap;     // predicted beta (used for evalutaion of filter optimality)
 
-      // measurement error rolling stats
-      // 0 = since start of this calendar month
-      // 1 = since start of prev calendar month, etc
-      int     err_samples[4];
-      double  err_mean[4];
-      double  err_m2[4];      // sum of squares of difference from current mean
-      double  err_variance[4];
+      // rolling stats of observed G/R bias
+      // 3 = since start of this calendar month
+      // 2 = since start of prev calendar month, etc
+      // ...
+      // 0 = oldest stats (for current use)
+      stats   obs_stats[stats_slots];
     };
 
   public:
