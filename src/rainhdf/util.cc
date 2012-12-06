@@ -241,6 +241,10 @@ namespace rainfields
     const char* atn_interval = "interval";
     const char* atn_min_height = "minheight";
     const char* atn_max_height = "maxheight";
+    const char* atn_xsize = "xsize";
+    const char* atn_ysize = "ysize";
+    const char* atn_xscale = "xscale";
+    const char* atn_yscale = "yscale";
 
     const char* dat_data = "data";
 

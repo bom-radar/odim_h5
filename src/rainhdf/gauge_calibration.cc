@@ -73,11 +73,11 @@ const size_t file_type_size = 160;
 
 gauge_calibration::gauge_calibration(
       const std::string& file
-    , const std::string& source
-    , time_t valid_time
-    , double latitude
-    , double longitude
-    , double height
+    , int station_id, const std::string& station_name
+    , time_t start_time, time_t valid_time
+    , double latitude, double longitude, double height
+    , long proj_size_x, long proj_size_y
+    , double proj_scale_x, double proj_scale_y
     , size_t gauge_count)
   : root_(hid_file, file.c_str(), create)
   , memory_type_(hid_type, sizeof(gauge), mspec)
@@ -89,11 +89,17 @@ gauge_calibration::gauge_calibration(
   hid_handle plist(hid_plist, H5P_DATASET_CREATE, create);
   gauges_ = hid_handle(hid_data, root_, "gauges", file_type, space, plist, create);
 
-  new_att(root_, atn_source, source);
+  new_att(root_, "station_id", station_id);
+  new_att(root_, "station_name", station_name);
+  new_att(root_, atn_start_date, atn_start_time, start_time);
   new_att(root_, atn_date, atn_time, valid_time);
   new_att(root_, atn_latitude, latitude);
   new_att(root_, atn_longitude, longitude);
   new_att(root_, atn_height, height);
+  new_att(root_, atn_xsize, proj_size_x);
+  new_att(root_, atn_ysize, proj_size_y);
+  new_att(root_, atn_xscale, proj_scale_x);
+  new_att(root_, atn_yscale, proj_scale_y);
 }
 
 gauge_calibration::gauge_calibration(const std::string& file, bool read_only)

@@ -339,6 +339,10 @@ namespace hdf {
   extern const char* atn_interval;
   extern const char* atn_min_height;
   extern const char* atn_max_height;
+  extern const char* atn_xsize;
+  extern const char* atn_ysize;
+  extern const char* atn_xscale;
+  extern const char* atn_yscale;
 
   // Dataset name constants
   extern const char* dat_data;

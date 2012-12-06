@@ -55,11 +55,11 @@ namespace hdf {
     /// Create a new gauge calibration product
     gauge_calibration(
           const std::string& file
-        , const std::string& source
-        , time_t valid_time
-        , double latitude
-        , double longitude
-        , double height
+        , int station_id, const std::string& station_name
+        , time_t start_time, time_t valid_time
+        , double latitude, double longitude, double height
+        , long proj_size_x, long proj_size_y
+        , double proj_scale_x, double proj_scale_y
         , size_t gauge_count);
 
     /// Open an existing gauge calibration product
@@ -68,11 +68,21 @@ namespace hdf {
     /// Ensure all previous writes are flushed to disk
     void flush() const;
 
-    /// Get the source string
-    std::string source() const { return get_att<std::string>(root_, atn_source); }
-    /// Wrtie the product source string
-    void set_source(const std::string& source) { set_att(root_, atn_source, source); }
+    /// Get the radar station name
+    int station_id() const { return get_att<int>(root_, "station_id"); }
+    /// Wrtie the radar station name
+    void set_station_id(int id) { set_att(root_, "station_id", id); }
     
+    /// Get the radar station name
+    std::string station_name() const { return get_att<std::string>(root_, "station_name"); }
+    /// Wrtie the radar station name
+    void set_station_name(const std::string& name) { set_att(root_, "station_name", name); }
+    
+    /// Get the start time for the product
+    time_t start_time() const { return get_att<time_t>(root_, atn_start_date, atn_start_time); }
+    /// Write the start time for the product
+    void set_start_time(time_t start_time) { set_att(root_, atn_start_date, atn_start_time, start_time); }
+
     /// Get the nominal (valid) time of the data/product
     time_t valid_time() const { return get_att<time_t>(root_, atn_date, atn_time); }
     /// Write the nominal (valid) time of the data/product
@@ -92,6 +102,26 @@ namespace hdf {
     double height() const { return get_att<double>(root_, atn_height); }
     /// Write the station elevation
     void set_height(double height) { set_att(root_, atn_height, height); }
+
+    /// Read the X dimension of the radar accumulation projection
+    long proj_size_x() const { return get_att<long>(root_, atn_xsize); }
+    /// Write the X dimension of the radar accumultion projection
+    void set_proj_size_x(long size) { set_att(root_, atn_xsize, size); }
+
+    /// Read the Y dimension of the radar accumulation projection
+    long proj_size_y() const { return get_att<long>(root_, atn_ysize); }
+    /// Write the Y dimension of the radar accumultion projection
+    void set_proj_size_y(long size) { set_att(root_, atn_ysize, size); }
+
+    /// Read the X dimension of the radar accumulation projection
+    double proj_scale_x() const { return get_att<double>(root_, atn_xscale); }
+    /// Write the X dimension of the radar accumultion projection
+    void set_proj_scale_x(double scale) { set_att(root_, atn_xscale, scale); }
+
+    /// Read the Y dimension of the radar accumulation projection
+    double proj_scale_y() const { return get_att<double>(root_, atn_yscale); }
+    /// Write the Y dimension of the radar accumultion projection
+    void set_proj_scale_y(double scale) { set_att(root_, atn_yscale, scale); }
 
     /// Get the number of gauges stored
     size_t gauge_count() const { return gauge_count_; }
