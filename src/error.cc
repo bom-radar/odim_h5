@@ -4,7 +4,6 @@
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
-#include "config.h"
 #include "error.h"
 #include <cstdio>
 #include <cstdarg>
@@ -13,7 +12,8 @@
 using namespace rainfields::hdf;
 
 error::error(hid_t loc, failure_type ft, hdf_object_type ht, const char* name)
-  : type_(ft)
+  : std::runtime_error("")
+  , type_(ft)
   , target_(ht)
   , target_name_(name)
 {
@@ -24,10 +24,12 @@ error::error(hid_t loc, failure_type ft, hdf_object_type ht, const char* name)
     buf[511] = '\0';
     location_.assign(buf);
   }
+  generate_description();
 }
 
 error::error(hid_t loc, failure_type ft, hdf_object_type ht, const std::string& name)
-  : type_(ft)
+  : std::runtime_error("")
+  , type_(ft)
   , target_(ht)
   , target_name_(name)
 {
@@ -38,14 +40,15 @@ error::error(hid_t loc, failure_type ft, hdf_object_type ht, const std::string& 
     buf[511] = '\0';
     location_.assign(buf);
   }
+  generate_description();
 }
 
-error::~error() RAINFIELDS_NOTHROW
+error::~error() RAINHDF_NOTHROW
 {
 
 }
 
-const char* error::what() const RAINFIELDS_NOTHROW
+void error::generate_description()
 {
   static const char* errs[] = 
   {
@@ -91,7 +94,10 @@ const char* error::what() const RAINFIELDS_NOTHROW
   buf[511] = '\0';
 
   description_.assign(buf);
-  return description_.c_str();
 }
 
+const char* error::what() const RAINHDF_NOTHROW
+{
+  return description_.c_str();
+}
 

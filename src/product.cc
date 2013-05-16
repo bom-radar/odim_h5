@@ -4,7 +4,6 @@
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
-#include "config.h"
 #include "product.h"
 #include <cstring>
 
@@ -12,7 +11,7 @@ using namespace rainfields::hdf;
 
 product::product(
       const std::string& file
-    , object_type type
+    , const char* type
     , const std::string& source
     , time_t valid_time)
   : base(file, create)
@@ -28,11 +27,13 @@ product::product(
   new_att(hnd_what_, atn_date, atn_time, valid_time);
 }
 
-product::product(const std::string& file, object_type type, bool read_only)
+product::product(const std::string& file, const char* type, bool read_only)
   : base(file, read_only, open)
 {
   // Check the object type
-  if (get_att<object_type>(hnd_what_, atn_object) != type)
+  char buf[32];
+  get_att(hnd_what_, atn_object, buf, sizeof(buf));
+  if (strncmp(buf, type, sizeof(buf)) != 0)
     throw error(hnd_what_, ft_bad_value, ht_attribute, atn_object);
 }
 

@@ -55,7 +55,7 @@ namespace hdf {
     /// Create a new gauge calibration product
     gauge_calibration(
           const std::string& file
-        , int station_id, const std::string& station_name
+        , long station_id, const std::string& station_name
         , time_t start_time, time_t valid_time
         , double latitude, double longitude, double height
         , long proj_size_x, long proj_size_y
@@ -69,9 +69,9 @@ namespace hdf {
     void flush() const;
 
     /// Get the radar station name
-    int station_id() const { return get_att<int>(root_, "station_id"); }
+    long station_id() const { return get_att<long>(root_, "station_id"); }
     /// Wrtie the radar station name
-    void set_station_id(int id) { set_att(root_, "station_id", id); }
+    void set_station_id(long id) { set_att(root_, "station_id", id); }
     
     /// Get the radar station name
     std::string station_name() const { return get_att<std::string>(root_, "station_name"); }

@@ -4,8 +4,8 @@
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
-#include "config.h"
 #include "profile.h"
+#include <cstring>
 
 using namespace rainfields::hdf;
 
@@ -37,7 +37,8 @@ profile::profile(const base& parent, size_t index, size_t levels)
   char name[32];
 
   // Verify that this dataset is indeed a profile
-  if (get_att<product_type>(hnd_what_, atn_product) != pt_vertical_profile)
+  get_att(hnd_what_, atn_product, name, sizeof(name));
+  if (strncmp(name, pt_vertical_profile, sizeof(name)) != 0)
     throw error(hnd_this_, ft_bad_value, ht_attribute, atn_product);
 
   // Reserve some space in our data info vector for efficency sake

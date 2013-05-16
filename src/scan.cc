@@ -4,8 +4,8 @@
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
-#include "config.h"
 #include "scan.h"
+#include <cstring>
 
 using namespace rainfields::hdf;
 
@@ -52,7 +52,8 @@ scan::scan(const base &parent, size_t index)
   char name[32];
 
   // Verify that this dataset is indeed a scan
-  if (get_att<product_type>(hnd_what_, atn_product) != pt_scan)
+  get_att(hnd_what_, atn_product, name, sizeof(name));
+  if (strncmp(name, pt_scan, sizeof(name)) != 0)
     throw error(hnd_this_, ft_bad_value, ht_attribute, atn_product);
 
   // Reserve some space in our data info vector for efficency sake

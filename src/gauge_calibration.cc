@@ -4,7 +4,6 @@
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
-#include "config.h"
 #include "gauge_calibration.h"
 #include <cstring>
 
@@ -73,7 +72,7 @@ const size_t file_type_size = 160;
 
 gauge_calibration::gauge_calibration(
       const std::string& file
-    , int station_id, const std::string& station_name
+    , long station_id, const std::string& station_name
     , time_t start_time, time_t valid_time
     , double latitude, double longitude, double height
     , long proj_size_x, long proj_size_y

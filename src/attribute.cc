@@ -4,7 +4,6 @@
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
-#include "config.h"
 #include "attribute.h"
 #include "util.h"
 #include <cstring>

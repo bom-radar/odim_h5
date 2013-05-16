@@ -7,8 +7,10 @@
 #ifndef RAINHDF_ERROR_H
 #define RAINHDF_ERROR_H
 
-#include <rainutil/rainutil.h>
+#include "macros.h"
+
 #include <hdf5.h>
+#include <stdexcept>
 #include <string>
 
 namespace rainfields {
@@ -40,19 +42,23 @@ namespace hdf {
   };
 
   /// rainhdf exception class
-  class error : public rainfields::error
+  class error : public std::runtime_error
   {
   public:
     error(hid_t loc, failure_type ft, hdf_object_type ht, const char* name = "");
     error(hid_t loc, failure_type ft, hdf_object_type ht, const std::string& name);
-    virtual ~error() RAINFIELDS_NOTHROW;
-    virtual const char* what() const RAINFIELDS_NOTHROW;
+    virtual ~error() RAINHDF_NOTHROW;
+    virtual const char* what() const RAINHDF_NOTHROW;
 
   private:
-    std::string     location_;      ///< string version of location
-    failure_type    type_;          ///< type of failure
-    hdf_object_type target_;        ///< type of target
-    std::string     target_name_;   ///< name of target
+    void generate_description();
+
+  private:
+    std::string     location_;
+    failure_type    type_;
+    hdf_object_type target_;
+    std::string     target_name_;
+    std::string     description_;
   };
 }}
 

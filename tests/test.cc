@@ -4,7 +4,7 @@
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
-#include "../src/rainhdf/rainhdf.h"
+#include "../src/rainhdf.h"
 
 #include <iostream>
 #include <cstring>
@@ -33,11 +33,11 @@ int main(int argc, const char *argv[])
       blah3[i] = i * 11.5f;
     }
 
-    data::ptr ff(prof->add_layer(to_string(qty_ff), false, true));
+    data::ptr ff(prof->add_layer("ff", false, true));
     ff->write(blah2, -1.0, -1.0);
-    data::ptr n(prof->add_layer(to_string(qty_n), false, false));
+    data::ptr n(prof->add_layer("n", false, false));
     n->write(blah, 0, 0);
-    data::ptr dd(prof->add_layer(to_string(qty_dd), false, true));
+    data::ptr dd(prof->add_layer("dd", false, true));
     dd->write(blah3, -1.0, -1.0);
 
 #if 0

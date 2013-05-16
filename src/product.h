@@ -18,11 +18,11 @@ namespace hdf {
     /// Create a new product
     product(
           const std::string& file
-        , object_type type
+        , const char* type
         , const std::string& source
         , time_t valid_time);
     /// Open an existing ODIM_H5 product
-    product(const std::string& file, object_type type, bool read_only);
+    product(const std::string& file, const char* type, bool read_only);
 
   public:
     /// Ensure all previous writes are flushed to disk

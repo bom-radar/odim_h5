@@ -4,205 +4,42 @@
  * Copyright (C) 2011 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
-#include "config.h"
 #include "util.h"
 #include <cstring>
 
 using namespace rainfields::hdf;
 
-namespace rainfields
-{
-  const char* enum_traits<object_type>::name = "object_type";
-  const char* enum_traits<object_type>::strings[] =
-  {
-      "PVOL"
-    , "CVOL"
-    , "SCAN"
-    , "RAY"
-    , "AZIM"
-    , "IMAGE"
-    , "COMP"
-    , "XSEC"
-    , "VP"
-    , "PIC"
-  };
+namespace rainfields {
+namespace hdf {
+    const char* ot_volume_polar = "PVOL";
+    const char* ot_volume_cartesian = "CVOL";
+    const char* ot_scan = "SCAN";
+    const char* ot_ray = "RAY";
+    const char* ot_azimuth = "AZIM";
+    const char* ot_image = "IMAGE";
+    const char* ot_composite_image = "COMP";
+    const char* ot_cross_section = "XSEC";
+    const char* ot_vertical_profile = "VP";
+    const char* ot_picture = "PIC";
 
-  const char* enum_traits<product_type>::name = "product_type";
-  const char* enum_traits<product_type>::strings[] =
-  {
-      "SCAN"
-    , "PPI"
-    , "CAPPI"
-    , "PCAPPI"
-    , "ETOP"
-    , "MAX"
-    , "RR"
-    , "VIL"
-    , "COMP"
-    , "VP"
-    , "RHI"
-    , "XSEC"
-    , "VSP"
-    , "HSP"
-    , "RAY"
-    , "AZIM"
-    , "QUAL"
-  };
+    const char* pt_scan = "SCAN";
+    const char* pt_ppi = "PPI";
+    const char* pt_cappi = "CAPPI";
+    const char* pt_psuedo_cappi = "PCAPPI";
+    const char* pt_echo_top = "ETOP";
+    const char* pt_maximum = "MAX";
+    const char* pt_accumulation = "RR";
+    const char* pt_vil = "VIL";
+    const char* pt_composite = "COMP";
+    const char* pt_vertical_profile = "VP";
+    const char* pt_range_height = "RHI";
+    const char* pt_vertical_slice = "XSEC";
+    const char* pt_vertical_side_panel = "VSP";
+    const char* pt_horizontal_side_panel = "HSP";
+    const char* pt_ray = "RAY";
+    const char* pt_azimuth = "AZIM";
+    const char* pt_quality = "QUAL";
 
-  const char* enum_traits<quantity>::name = "quantity";
-  const char* enum_traits<quantity>::strings[] =
-  {
-      "TH"
-    , "TV"
-    , "DBZH"
-    , "DBZV"
-    , "ZDR"
-    , "RHOHV"
-    , "LDR"
-    , "PHIDP"
-    , "KDP"
-    , "SQI"
-    , "SNR"
-    , "RATE"
-    , "ACRR"
-    , "HGHT"
-    , "VIL"
-    , "VRAD"
-    , "WRAD"
-    , "UWND"
-    , "VWND"
-    , "BRDR"
-    , "QIND"
-    , "CLASS"
-
-    , "ff"
-    , "dd"
-    , "ff_dev"
-    , "dd_dev"
-    , "n"
-    , "dbz"
-    , "dbz_dev"
-    , "z"
-    , "z_dev"
-    , "w"
-    , "w_dev"
-    , "div"
-    , "div_dev"
-    , "def"
-    , "def_dev"
-    , "ad"
-    , "ad_dev"
-    , "chi2"
-    , "rhohv"
-    , "rhohv_dev"
-
-    , "OCCUL"
-    , "ATTEN"
-    , "CPROB"
-    , "HPROB"
-
-    , "DBZH_CLEAN"
-    , "VRAD_CLEAN"
-
-    , "GENERIC"
-  };
-
-  const char* enum_traits<method>::name = "method";
-  const char* enum_traits<method>::strings[] =
-  {
-      "NEAREST"
-    , "INTERPOL"
-    , "AVERAGE"
-    , "RANDOM"
-    , "MDE"
-    , "LATEST"
-    , "MAXIMUM"
-    , "DOMAIN"
-    , "VAD"
-    , "VVP"
-    , "RGA"
-  };
-
-  const char* enum_traits<attrib>::name = "attribute";
-  const char* enum_traits<attrib>::strings[] =
-  {
-      "task"
-    , "startepochs"
-    , "endepochs"
-    , "system"
-    , "software"
-    , "sw_version"
-    , "zr_a"
-    , "zr_b"
-    , "kr_a"
-    , "kr_b"
-    , "simulated"
-    , "beamwidth"
-    , "wavelength"
-    , "rpm"
-    , "pulsewidth"
-    , "RXbandwidth"
-    , "lowprf"
-    , "highprf"
-    , "TXloss"
-    , "RXloss"
-    , "radomeloss"
-    , "antgain"
-    , "beamwH"
-    , "beamwV"
-    , "gasattn"
-    , "radconstH"
-    , "radconstV"
-    , "nomTXpower"
-    , "TXpower"
-    , "NI"
-    , "Vsamples"
-    , "azmethod"
-    , "binmethod"
-    , "elangles"
-    , "startazA"
-    , "stopazA"
-    , "startazT"
-    , "stopazT"
-    , "angles"
-    , "arotation"
-    , "camethod"
-    , "nodes"
-    , "ACCnum"
-    , "minrange"
-    , "maxrange"
-    , "dealiased"
-    , "pointaccEL"
-    , "pointaccAZ"
-    , "malfunc"
-    , "radar_msg"
-    , "radhoriz"
-    , "NEZ"
-    , "OUR"
-    , "Dclutter"
-    , "comment"
-    , "SQI"
-    , "CSR"
-    , "LOG"
-    , "VPRCorr"
-    , "freeze"
-    , "min"
-    , "max"
-    , "step"
-    , "levels"
-    , "peakpwr"
-    , "avgpwr"
-    , "dynrange"
-    , "RAC"
-    , "BBC"
-    , "PAC"
-    , "S2N"
-    , "polarization"
-    , "config_qc"
-  };
-
-  namespace hdf
-  {
     const char* grp_what = "what";
     const char* grp_where = "where";
     const char* grp_how = "how";
