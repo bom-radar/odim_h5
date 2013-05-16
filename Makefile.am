@@ -8,7 +8,7 @@
 # keep autoreconf happy
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS=src
+SUBDIRS=src tests
 
 # package config
 pkgconfigdir=$(libdir)/pkgconfig

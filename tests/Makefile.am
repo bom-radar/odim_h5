@@ -5,5 +5,9 @@
 # See COPYING for licensing and warranty details
 #-------------------------------------------------------------------------------
 
-SUBDIRS=rainhdf
+# unit test application
+unittest_SOURCES=test.cc
+unittest_CPPFLAGS=$(AM_CPPFLAGS) @TEST_CPPFLAGS@
+unittest_LDADD=$(top_builddir)/src/rainhdf/librainhdf.la @API_LIBS@
+check_PROGRAMS=unittest
 

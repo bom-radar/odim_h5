@@ -69,7 +69,7 @@ AC_CONFIG_FILES([
   Makefile
   src/Makefile
   src/rainhdf/Makefile
-  src/test/Makefile
+  tests/Makefile
   rainhdf.pc
 ])
 AC_OUTPUT
