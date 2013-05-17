@@ -45,17 +45,21 @@ namespace hdf {
 
     void get(bool& val) const;
     void get(long& val) const;
+    void get(float& val) const;
     void get(double& val) const;
     void get(std::string& val) const;
     void get(std::vector<long>& val) const;
+    void get(std::vector<float>& val) const;
     void get(std::vector<double>& val) const;
 
     void set(bool val);
     void set(long val);
+    void set(float val);
     void set(double val);
     void set(const char* val);
     void set(const std::string& val);
     void set(const std::vector<long>& val);
+    void set(const std::vector<float>& val);
     void set(const std::vector<double>& val);
 
   private:

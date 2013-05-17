@@ -38,9 +38,9 @@ namespace hdf {
     virtual ~base();
 
     /// Get the number of 'how' attributes
-    int attribute_count() const { return num_attrs_; }
-    rainfields::hdf::attribute::ptr       attribute(int i);
-    rainfields::hdf::attribute::const_ptr attribute(int i) const;
+    size_t attribute_count() const { return num_attrs_; }
+    rainfields::hdf::attribute::ptr       attribute(size_t i);
+    rainfields::hdf::attribute::const_ptr attribute(size_t i) const;
     rainfields::hdf::attribute::ptr       attribute(const char* name, bool create_if_missing = false);
     rainfields::hdf::attribute::const_ptr attribute(const char* name) const;
 
@@ -66,7 +66,7 @@ namespace hdf {
     hid_handle    hnd_what_;    ///< What group
     hid_handle    hnd_where_;   ///< Where group
     hid_handle    hnd_how_;     ///< How group
-    int           num_attrs_;   ///< Number of attributes available
+    size_t        num_attrs_;   ///< Number of attributes available
   };
 }}
 

@@ -104,6 +104,17 @@ void attribute::get(long& val) const
     throw error(parent_, ft_read, ht_attribute, name_);
 }
 
+void attribute::get(float& val) const
+{
+  hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+  if (type_ == at_unknown)
+    determine_type(attr);
+  if (type_ != at_double)
+    throw error(parent_, ft_type_mismatch, ht_attribute, name_);
+  if (H5Aread(attr, H5T_NATIVE_FLOAT, &val) < 0)
+    throw error(parent_, ft_read, ht_attribute, name_);
+}
+
 void attribute::get(double& val) const
 {
   hid_handle attr(hid_attr, parent_, name_.c_str(), open);
@@ -134,6 +145,18 @@ void attribute::get(std::vector<long>& val) const
     throw error(parent_, ft_type_mismatch, ht_attribute, name_);
   val.resize(size_);
   if (H5Aread(attr, H5T_NATIVE_LONG, &val[0]) < 0)
+    throw error(parent_, ft_read, ht_attribute, name_);
+}
+
+void attribute::get(std::vector<float>& val) const
+{
+  hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+  if (type_ == at_unknown)
+    determine_type(attr);
+  if (type_ != at_double_array)
+    throw error(parent_, ft_type_mismatch, ht_attribute, name_);
+  val.resize(size_);
+  if (H5Aread(attr, H5T_NATIVE_FLOAT, &val[0]) < 0)
     throw error(parent_, ft_read, ht_attribute, name_);
 }
 
@@ -228,6 +251,32 @@ void attribute::set(long val)
     if (type_ != at_long)
       throw error(parent_, ft_type_mismatch, ht_attribute, name_);
     if (H5Awrite(attr, H5T_NATIVE_LONG, &val) < 0)
+      throw error(parent_, ft_write, ht_attribute, name_);
+  }
+}
+
+void attribute::set(float val)
+{
+  // Do we need possibly need to create it?
+  if (type_ == at_unknown && creating_)
+  {
+    // Need to create
+    hid_handle space(hid_space, create);
+    hid_handle attr(hid_attr, parent_, name_.c_str(), H5T_IEEE_F64LE, space, create);
+    type_ = at_double;
+    if (H5Awrite(attr, H5T_NATIVE_FLOAT, &val) < 0)
+      throw error(parent_, ft_write, ht_attribute, name_);
+  }
+  else
+  {
+    // Need to load and overwrite
+    hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+
+    if (type_ == at_unknown)
+      determine_type(attr);
+    if (type_ != at_double)
+      throw error(parent_, ft_type_mismatch, ht_attribute, name_);
+    if (H5Awrite(attr, H5T_NATIVE_FLOAT, &val) < 0)
       throw error(parent_, ft_write, ht_attribute, name_);
   }
 }
@@ -413,6 +462,52 @@ void attribute::set(const std::vector<long>& val)
     {
       // Exists and is same size, just overwrite
       if (H5Awrite(parent_, H5T_NATIVE_LONG, &val[0]) < 0)
+        throw error(parent_, ft_write, ht_attribute, name_);
+    }
+  }
+}
+
+void attribute::set(const std::vector<float>& val)
+{
+  // Do we need possibly need to create it?
+  if (type_ == at_unknown && creating_)
+  {
+    // Need to create
+    hsize_t hs = val.size();
+    hid_handle space(hid_space, 1, &hs, create);
+    hid_handle attr(hid_attr, parent_, name_.c_str(), H5T_IEEE_F64LE, space, create);
+    type_ = at_double_array;
+    size_ = val.size();
+    if (H5Awrite(attr, H5T_NATIVE_FLOAT, &val[0]) < 0)
+      throw error(parent_, ft_write, ht_attribute, name_);
+  }
+  else
+  {
+    // Need to load and overwrite
+    hid_handle attr(hid_attr, parent_, name_.c_str(), open);
+
+    if (type_ == at_unknown)
+      determine_type(attr);
+    if (type_ != at_double_array)
+      throw error(parent_, ft_type_mismatch, ht_attribute, name_);
+    if (size_ != val.size())
+    {
+      // Size is different, need to delete and recreate
+      attr.close();
+      if (H5Adelete(parent_, name_.c_str()) < 0)
+        throw error(parent_, ft_remove, ht_attribute, name_);
+      hsize_t hs = val.size();
+      hid_handle space(hid_space, 1, &hs, create);
+      hid_handle attr2(hid_attr, parent_, name_.c_str(), H5T_IEEE_F64LE, space, create);
+      type_ = at_double_array;
+      size_ = val.size();
+      if (H5Awrite(attr2, H5T_NATIVE_FLOAT, &val[0]) < 0)
+        throw error(parent_, ft_write, ht_attribute, name_);
+    }
+    else
+    {
+      // Exists and is same size, just overwrite
+      if (H5Awrite(parent_, H5T_NATIVE_FLOAT, &val[0]) < 0)
         throw error(parent_, ft_write, ht_attribute, name_);
     }
   }

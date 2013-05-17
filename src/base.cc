@@ -65,12 +65,12 @@ base::~base()
 
 }
 
-attribute::ptr base::attribute(int i)
+attribute::ptr base::attribute(size_t i)
 {
   return rainfields::hdf::attribute::ptr(new rainfields::hdf::attribute(hnd_how_, i));
 }
 
-attribute::const_ptr base::attribute(int i) const
+attribute::const_ptr base::attribute(size_t i) const
 {
   return rainfields::hdf::attribute::const_ptr(new rainfields::hdf::attribute(hnd_how_, i));
 }
