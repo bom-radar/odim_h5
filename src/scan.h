@@ -18,8 +18,13 @@ namespace hdf {
   class scan : public base
   {
   public:
+#if RAINHDF_CXX11
+    typedef std::unique_ptr<scan> ptr;
+    typedef std::unique_ptr<const scan> const_ptr;
+#else
     typedef std::auto_ptr<scan> ptr;
     typedef std::auto_ptr<const scan> const_ptr;
+#endif
 
   public:
     virtual ~scan();

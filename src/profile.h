@@ -18,8 +18,13 @@ namespace hdf {
   class profile : public base
   {
   public:
+#if RAINHDF_CXX11
+    typedef std::unique_ptr<profile> ptr;
+    typedef std::unique_ptr<const profile> const_ptr;
+#else
     typedef std::auto_ptr<profile> ptr;
     typedef std::auto_ptr<const profile> const_ptr;
+#endif
 
   public:
     virtual ~profile();

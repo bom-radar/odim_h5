@@ -19,8 +19,13 @@ namespace hdf {
   class attribute
   {
   public:
+#if RAINHDF_CXX11
+    typedef std::unique_ptr<attribute> ptr;
+    typedef std::unique_ptr<const attribute> const_ptr;
+#else
     typedef std::auto_ptr<attribute> ptr;
     typedef std::auto_ptr<const attribute> const_ptr;
+#endif
 
     enum data_type
     {

@@ -144,7 +144,7 @@ data::ptr scan::layer(const std::string& quantity)
               i->quantity_,
               2,
               &azi_count_));
-  return data::ptr(NULL);
+  return data::ptr();
 }
 
 data::const_ptr scan::layer(const std::string& quantity) const
@@ -159,7 +159,7 @@ data::const_ptr scan::layer(const std::string& quantity) const
               i->quantity_,
               2,
               &azi_count_));
-  return data::const_ptr(NULL);
+  return data::const_ptr();
 }
 
 data::ptr scan::add_layer(const std::string& quantity, bool is_quality, bool floating_point)

@@ -129,7 +129,7 @@ data::ptr profile::layer(const std::string& quantity)
               i->quantity_,
               1,
               &levels_));
-  return data::ptr(NULL);
+  return data::ptr();
 }
 
 data::const_ptr profile::layer(const std::string& quantity) const
@@ -144,7 +144,7 @@ data::const_ptr profile::layer(const std::string& quantity) const
               i->quantity_,
               1,
               &levels_));
-  return data::const_ptr(NULL);
+  return data::const_ptr();
 }
 
 data::ptr profile::add_layer(const std::string& quantity, bool is_quality, bool floating_point)
