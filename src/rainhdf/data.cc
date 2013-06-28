@@ -119,8 +119,11 @@ void data::read(int* raw, int& no_data, int& undetect) const
   // Read the raw data
   no_data = lround(get_att<double>(hnd_what_, atn_no_data));
   undetect = lround(get_att<double>(hnd_what_, atn_undetect));
-  if (H5Dread(hnd_data_, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw) < 0)
-    throw error(hnd_data_, ft_read, ht_dataset);
+  if (raw)
+  {
+    if (H5Dread(hnd_data_, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw) < 0)
+      throw error(hnd_data_, ft_read, ht_dataset);
+  }
 
   // Convert using gain and offset?
   if (   std::fabs(gain_ - 1.0) > 0.000001
@@ -128,8 +131,11 @@ void data::read(int* raw, int& no_data, int& undetect) const
   {
     no_data = lround((no_data * gain_) + offset_);
     undetect = lround((undetect * gain_) + offset_);
-    for (size_t i = 0; i < size_; ++i)
-      raw[i] = lround((raw[i] * gain_) + offset_);
+    if (raw)
+    {
+      for (size_t i = 0; i < size_; ++i)
+        raw[i] = lround((raw[i] * gain_) + offset_);
+    }
   }
 }
 
@@ -144,8 +150,11 @@ void data::read(float* raw, float& no_data, float& undetect) const
   // Read the raw data
   no_data = get_att<double>(hnd_what_, atn_no_data);
   undetect = get_att<double>(hnd_what_, atn_undetect);
-  if (H5Dread(hnd_data_, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw) < 0)
-    throw error(hnd_data_, ft_read, ht_dataset);
+  if (raw)
+  {
+    if (H5Dread(hnd_data_, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw) < 0)
+      throw error(hnd_data_, ft_read, ht_dataset);
+  }
 
   // Convert using gain and offset?
   if (   std::fabs(gain_ - 1.0) > 0.000001
@@ -153,8 +162,11 @@ void data::read(float* raw, float& no_data, float& undetect) const
   {
     no_data = (no_data * gain_) + offset_;
     undetect = (undetect * gain_) + offset_;
-    for (size_t i = 0; i < size_; ++i)
-      raw[i] = (raw[i] * gain_) + offset_;
+    if (raw)
+    {
+      for (size_t i = 0; i < size_; ++i)
+        raw[i] = (raw[i] * gain_) + offset_;
+    }
   }
 }
 
@@ -169,8 +181,11 @@ void data::read(double* raw, double& no_data, double& undetect) const
   // Read the raw data
   no_data = get_att<double>(hnd_what_, atn_no_data);
   undetect = get_att<double>(hnd_what_, atn_undetect);
-  if (H5Dread(hnd_data_, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw) < 0)
-    throw error(hnd_data_, ft_read, ht_dataset);
+  if (raw)
+  {
+    if (H5Dread(hnd_data_, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw) < 0)
+      throw error(hnd_data_, ft_read, ht_dataset);
+  }
 
   // Convert using gain and offset?
   if (   std::fabs(gain_ - 1.0) > 0.000001
@@ -178,8 +193,11 @@ void data::read(double* raw, double& no_data, double& undetect) const
   {
     no_data = (no_data * gain_) + offset_;
     undetect = (undetect * gain_) + offset_;
-    for (size_t i = 0; i < size_; ++i)
-      raw[i] = (raw[i] * gain_) + offset_;
+    if (raw)
+    {
+      for (size_t i = 0; i < size_; ++i)
+        raw[i] = (raw[i] * gain_) + offset_;
+    }
   }
 }
 
