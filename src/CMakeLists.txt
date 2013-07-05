@@ -5,3 +5,4 @@
 # See COPYING for licensing and warranty details
 #-------------------------------------------------------------------------------
 add_subdirectory(rainhdf)
+add_subdirectory(new)
