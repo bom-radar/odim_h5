@@ -7,54 +7,14 @@
 #ifndef RAINHDF_RAINHDF_H
 #define RAINHDF_RAINHDF_H
 
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace rainfields {
 namespace hdf {
-
-  /// I/O mode for opening an HDF5 file
-  enum class io_mode
-  {
-      create
-    , read_only
-    , read_write
-  };
-
-  /// ODIM_H5 file scope object types
-  enum class object_type
-  {
-      unknown
-    , polar_volume
-    , cartesian_volume
-    , polar_scan
-    , polar_ray
-    , azimuthal_object
-    , cartesian_image
-    , composite_image
-    , vertical_cross_section
-    , vertical_profile
-    , graphical_image
-  };
-
-  /// Attribute data types
-  enum class attribute_type
-  {
-      boolean
-    , integer
-    , real
-    , string
-    , integer_array
-    , real_array
-  };
-
-  /// Storage type for data
-  enum class data_type
-  {
-      i8
-    , etc // TODO
-  };
 
   /// Get the name of the rainhdf library
   auto package_name() -> const char*;
@@ -92,30 +52,127 @@ namespace hdf {
     error(const char* what);
   };
 
+  /// Attribute handle
+  class attribute
+  {
+  public:
+    /// Attribute data types
+    enum class attribute_type
+    {
+        uninitialized     ///< New attribute which has not been set yet
+      , unknown           ///< Unknown data type
+      , boolean
+      , integer
+      , real
+      , string
+      , integer_array
+      , real_array
+    };
+
+  public:
+    /// Get attribute name
+    auto name() const -> const std::string&                     { return name_; }
+
+    /// Get data type of attribute
+    auto type() const -> attribute_type                         { return type_; }
+
+    /// Get whether the attribute is also exposed as a stand-alone function
+    auto standard() const -> bool                               { return standard_; }
+
+    auto get_boolean() const -> bool;
+    auto get_integer() const -> long;
+    auto get_real() const -> double;
+    auto get_string() const -> std::string;
+    auto get_integer_array() const -> std::vector<long>;
+    auto get_real_array() const -> std::vector<double>;
+
+    auto set(bool val) -> void;
+    auto set(long val) -> void;
+    auto set(double val) -> void;
+    auto set(const std::string& val) -> void;
+    auto set(const std::vector<long>& val) -> void;
+    auto set(const std::vector<double>& val) -> void;
+
+  private:
+    attribute(handle hnd, bool standard);
+    attribute(handle grp, std::string name, bool standard);
+
+  private:
+    handle          hnd_;       // parent if uninitialized, else attribute itself
+    std::string     name_;
+    attribute_type  type_;
+    bool            standard_;  // true if attribute has dedicated functions
+    size_t          size_;      // number of elements in array or characters in string
+
+    friend class group;
+  };
+
+  /// Interface to metadata attributes at a particular level
+  class attribute_store
+  {
+  public:
+    auto size() const -> size_t;
+
+#if 0
+    auto begin() const -> iterator; // etc
+#endif
+
+    auto operator[](const std::string& val) -> attribute&;
+    auto operator[](const std::string& val) const -> const attribute&;
+
+#if 0
+    auto erase(iterator i) -> void;
+#endif
+
+  private:
+  };
+
   /// Base class for ODIM_H5 objects with 'what', 'where' and 'how' attributes
-  class group
+  class group : private attribute_store
   {
   public:
     virtual ~group();
 
-    // TODO - do we put the attribute api in here, or do we make an attribute_store class?
+    auto attributes() -> attribute_store&                 { return *this; }
+    auto attributes() const -> const attribute_store&     { return *this; }
 
   protected:
-    group(handle hnd) : hnd_{std::move(hnd)} { }
+    group(handle hnd);
 
   protected:
     handle      hnd_;
+    handle      what_;
+    handle      where_;
+    handle      how_;
   };
 
   /// Dataset object
   class dataset : public group
   {
   public:
-    auto data_type() const -> data_type;
-    auto compression() const -> int;
+    /// Storage type for data
+    enum class data_type
+    {
+        unknown
+      , i8
+      , u8
+      , i16
+      , u16
+      , i32
+      , u32
+      , i64
+      , u64
+      , f32
+      , f64
+    };
 
+    /// Maximum supported dataset rank
+    constexpr static size_t max_rank = 32;
+
+  public:
+    auto type() const -> data_type;
     auto rank() const -> size_t;
-    auto dimension(size_t dim) const -> size_t;
+    auto dims(size_t* val) const -> size_t;
     auto size() const -> size_t;
 
     auto quantity() const -> std::string;
@@ -133,19 +190,71 @@ namespace hdf {
     auto undetect() const -> double;
     auto set_undetect(double val) -> void;
 
-    auto read(int* data, bool unpack = false, int nodata = 0, int undetect = 0) const -> void;
-    auto read(float* data, bool unpack = false, float nodata = 0.0f, float undetect = 0.0f) const -> void;
-    auto read(double* data, bool unpack = false, double nodata = 0.0, double undetect = 0.0) const -> void;
+    // all the POD types except for bool and pointers are supported
+    template <typename T>
+    auto read(T* data) const -> void;
 
-    auto write(const int* data, bool pack = false, int nodata = 0, int undetect = 0) -> void;
-    auto write(const float* data, bool pack = false, float nodata = 0.0f, float undetect = 0.0f) -> void;
-    auto write(const double* data, bool pack = false, double nodata = 0.0, double undetect = 0.0) -> void;
+    template <typename T>
+    auto read_unpack(T* data, T nodata, T undetect) const -> void;
+
+    template <typename T>
+    auto write(const T* data) -> void;
+
+    template <typename T, class NoDataTest, class UndetectTest>
+    auto write_pack(const T* data, NoDataTest is_nodata, UndetectTest is_undetect) -> void;
 
   protected:
     dataset(handle hnd);
+    dataset(handle hnd, data_type type, size_t rank, size_t* dims, int compression);
 
-  private:
+  protected:
+    handle  data_;
   };
+
+  template <typename T>
+  auto dataset::read_unpack(T* data, T nodata, T undetect) const -> void
+  {
+    read(data);
+
+    const T nd = nodata();
+    const T ud = undetect();
+    const auto a = gain();
+    const auto b = offset();
+    const auto size = size();
+
+    for (size_t i = 0; i < size; ++i)
+    {
+      if (data[i] == nd)
+        data[i] = nodata;
+      else if (data[i] == ud)
+        data[i] = undetect;
+      else
+        data[i] = a * data[i] + b;
+    }
+  }
+
+  template <typename T, class NoDataTest, class UndetectTest>
+  auto dataset::write_pack(const T* data, NoDataTest is_nodata, UndetectTest is_undetect) -> void
+  {
+    const T nd = nodata();
+    const T ud = undetect();
+    const auto a = gain();
+    const auto b = offset();
+    const auto size = size();
+
+    std::unique_ptr<T[]> buf{new T[size]};
+    for (size_t i = 0; i < size; ++i)
+    {
+      if (is_nodata(data[i]))
+        buf[i] = nd;
+      else if (is_undetect(data[i]))
+        buf[i] = ud;
+      else
+        buf[i] = (data[i] - b) / a;
+    }
+
+    write(buf);
+  }
 
   /// Polar volume file object
   class polar_volume : public group
@@ -163,6 +272,31 @@ namespace hdf {
   /// Top level ODIM_H5 file manager
   class file : public group
   {
+  public:
+    /// I/O mode for opening an HDF5 file
+    enum class io_mode
+    {
+        create
+      , read_only
+      , read_write
+    };
+
+    /// ODIM_H5 file scope object types
+    enum class object_type
+    {
+        unknown
+      , polar_volume
+      , cartesian_volume
+      , polar_scan
+      , polar_ray
+      , azimuthal_object
+      , cartesian_image
+      , composite_image
+      , vertical_cross_section
+      , vertical_profile
+      , graphical_image
+    };
+
   public:
     /// Open or create an ODIM_H5 file
     /**
@@ -200,6 +334,28 @@ namespace hdf {
     io_mode     mode_;
     object_type type_;
   };
+
+  /* efficient use of library:
+   *
+   * // best...
+   * polar_volume vol("path.vol.h5", io_mode::read_only);
+   *
+   * // next best...
+   * file f("path.vol.h5", io_mode::read_only);
+   * if (f.object() == object_type::polar_volume)
+   * {
+   *   polar_volume vol{std::move(f)};
+   *   ...
+   * }
+   *
+   * // still okay (extra H5Iinc/decs)
+   * file f("path.vol.h5", io_mode::read_only);
+   * if (f.object() == object_type::polar_volume)
+   * {
+   *   polar_volume vol{f};
+   *   do_something(static_cast<polar_volume>(f));
+   * }
+   */
 }}
 
 #endif
