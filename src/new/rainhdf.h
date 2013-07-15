@@ -43,6 +43,8 @@ namespace hdf {
 
     operator int() const { return id; }
     operator bool() const { return id > 0; }
+
+    auto close() -> void;
   };
 
   /// Exception thrown to indicate I/O errors
@@ -57,7 +59,7 @@ namespace hdf {
   {
   public:
     /// Attribute data types
-    enum class attribute_type
+    enum class data_type
     {
         uninitialized     ///< New attribute which has not been set yet
       , unknown           ///< Unknown data type
@@ -74,7 +76,7 @@ namespace hdf {
     auto name() const -> const std::string&                     { return name_; }
 
     /// Get data type of attribute
-    auto type() const -> attribute_type                         { return type_; }
+    auto type() const -> data_type;
 
     /// Get whether the attribute is also exposed as a stand-alone function
     auto standard() const -> bool                               { return standard_; }
@@ -94,56 +96,79 @@ namespace hdf {
     auto set(const std::vector<double>& val) -> void;
 
   private:
-    attribute(handle hnd, bool standard);
-    attribute(handle grp, std::string name, bool standard);
+    attribute(handle* parent, std::string name, bool existing);
+    auto open(handle* type_out = nullptr) const -> handle;
+    auto open_or_create(data_type type, size_t size, handle* type_out = nullptr) -> handle;
 
   private:
-    handle          hnd_;       // parent if uninitialized, else attribute itself
-    std::string     name_;
-    attribute_type  type_;
-    bool            standard_;  // true if attribute has dedicated functions
-    size_t          size_;      // number of elements in array or characters in string
+    handle*           parent_;
+    std::string       name_;
+    mutable data_type type_;
+    mutable size_t    size_;      // number of elements in array or characters in string
 
-    friend class group;
+    bool              standard_;  // true if attribute has dedicated functions
+
+    friend class attribute_store;
   };
 
   /// Interface to metadata attributes at a particular level
   class attribute_store
   {
   public:
-    auto size() const -> size_t;
+    typedef std::vector<attribute> store_impl;
+    typedef store_impl::iterator iterator;
+    typedef store_impl::const_iterator const_iterator;
+    typedef store_impl::reverse_iterator reverse_iterator;
+    typedef store_impl::const_reverse_iterator const_reverse_iterator;
 
-#if 0
-    auto begin() const -> iterator; // etc
-#endif
-
-    auto operator[](const std::string& val) -> attribute&;
-    auto operator[](const std::string& val) const -> const attribute&;
-
-#if 0
-    auto erase(iterator i) -> void;
-#endif
-
-  private:
-  };
-
-  /// Base class for ODIM_H5 objects with 'what', 'where' and 'how' attributes
-  class group : private attribute_store
-  {
   public:
-    virtual ~group();
+    auto size() const noexcept -> size_t                        { return attrs_.size(); }
 
-    auto attributes() -> attribute_store&                 { return *this; }
-    auto attributes() const -> const attribute_store&     { return *this; }
+    auto begin() noexcept -> iterator                           { return attrs_.begin(); }
+    auto begin() const noexcept -> const_iterator               { return attrs_.begin(); }
+    auto cbegin() const noexcept -> const_iterator              { return attrs_.begin(); }
+    auto rbegin() noexcept -> reverse_iterator                  { return attrs_.rbegin(); }
+    auto rbegin() const noexcept -> const_reverse_iterator      { return attrs_.rbegin(); }
+    auto crbegin() const noexcept -> const_reverse_iterator     { return attrs_.rbegin(); }
+
+    auto end() noexcept -> iterator                             { return attrs_.end(); }
+    auto end() const noexcept -> const_iterator                 { return attrs_.end(); }
+    auto cend() const noexcept -> const_iterator                { return attrs_.end(); }
+    auto rend() noexcept -> reverse_iterator                    { return attrs_.rend(); }
+    auto rend() const noexcept -> const_reverse_iterator        { return attrs_.rend(); }
+    auto crend() const noexcept -> const_reverse_iterator       { return attrs_.rend(); }
+
+    auto find(const std::string& name) noexcept -> iterator;
+    auto find(const std::string& name) const noexcept -> const_iterator;
+
+    auto operator[](const std::string& name) -> attribute&;
+    auto operator[](const std::string& name) const -> const attribute&;
+
+    auto erase(iterator i) -> void;
+    auto erase(const std::string& name) -> void;
 
   protected:
-    group(handle hnd);
+    attribute_store(handle hnd);
 
   protected:
     handle      hnd_;
     handle      what_;
     handle      where_;
     handle      how_;
+    store_impl  attrs_;
+  };
+
+  /// Base class for ODIM_H5 objects with 'what', 'where' and 'how' attributes
+  class group : protected attribute_store
+  {
+  public:
+    virtual ~group();
+
+    auto attributes() -> attribute_store&                       { return *this; }
+    auto attributes() const -> const attribute_store&           { return *this; }
+
+  protected:
+    group(handle hnd);
   };
 
   /// Dataset object
