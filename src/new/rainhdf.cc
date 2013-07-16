@@ -20,11 +20,11 @@ using namespace rainfields::hdf;
  * add some smarts to the build system so that backwards compatibility is 
  * maintained for older versions of HDF5. */
 static_assert(
-      std::is_same<decltype(handle::id), hid_t>::value
-    , "type of handle::id does not match hid_t!");
+      std::is_same<handle::id_t, hid_t>::value
+    , "handle::id_t does not match hid_t!");
 static_assert(
-      dataset::max_rank >= H5S_MAX_RANK
-    , "dataset::max_rank is less than H5S_MAX_RANK");
+      data::max_rank >= H5S_MAX_RANK
+    , "data::max_rank is less than H5S_MAX_RANK");
 
 // these MUST remain in ASCII sorted order
 static const char* what_names[] = 
@@ -183,31 +183,31 @@ template <> auto hdf_native_type<float>() -> hid_t              { return H5T_NAT
 template <> auto hdf_native_type<double>() -> hid_t             { return H5T_NATIVE_DOUBLE; }
 template <> auto hdf_native_type<long double>() -> hid_t        { return H5T_NATIVE_LDOUBLE; }
 
-static auto hdf_storage_type(dataset::data_type type) -> hid_t
+static auto hdf_storage_type(data::data_type type) -> hid_t
 {
   switch (type)
   {
-  case dataset::data_type::unknown:
+  case data::data_type::unknown:
     return -1;
-  case dataset::data_type::i8:
+  case data::data_type::i8:
     return H5T_STD_I8LE;
-  case dataset::data_type::u8:
+  case data::data_type::u8:
     return H5T_STD_U8LE;
-  case dataset::data_type::i16:
+  case data::data_type::i16:
     return H5T_STD_I16LE;
-  case dataset::data_type::u16:
+  case data::data_type::u16:
     return H5T_STD_U16LE;
-  case dataset::data_type::i32:
+  case data::data_type::i32:
     return H5T_STD_I32LE;
-  case dataset::data_type::u32:
+  case data::data_type::u32:
     return H5T_STD_U32LE;
-  case dataset::data_type::i64:
+  case data::data_type::i64:
     return H5T_STD_I64LE;
-  case dataset::data_type::u64:
+  case data::data_type::u64:
     return H5T_STD_U64LE;
-  case dataset::data_type::f32:
+  case data::data_type::f32:
     return H5T_IEEE_F32LE;
-  case dataset::data_type::f64:
+  case data::data_type::f64:
     return H5T_IEEE_F64LE;
   }
 }
@@ -553,48 +553,135 @@ auto attribute::open_or_create(data_type type, size_t size, handle* type_out) ->
   }
 }
 
-attribute_store::attribute_store(handle hnd)
-  : hnd_{std::move(hnd)}
-  , what_{H5Gopen(hnd_, "what", H5P_DEFAULT)}
-  , where_{H5Gopen(hnd_, "where", H5P_DEFAULT)}
-  , how_{H5Gopen(hnd_, "how", H5P_DEFAULT)}
+static inline auto group_checked_open_or_create(
+      const handle& parent
+    , const char* name
+    , size_t index
+    , bool open
+    ) -> handle::id_t
 {
-  hsize_t n = 0;
-  H5O_info_t info;
+  char buf[32];
+  sprintf(buf, name, index);
+  auto ret = open 
+    ? H5Gopen(parent, buf, H5P_DEFAULT) 
+    : H5Gcreate(parent, buf, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+  if (ret < 0)
+    throw make_error(parent, "group open", buf);
+  return ret;
+}
 
-  // determine the number of attributes available and reserve space in the vector
-  if (what_ && H5Oget_info(what_, &info) >= 0)
-    n += info.num_attrs;
-  if (where_ && H5Oget_info(where_, &info) >= 0)
-    n += info.num_attrs;
-  if (how_ && H5Oget_info(how_, &info) >= 0)
-    n += info.num_attrs;
-  attrs_.reserve(n);
-
-  // define operation needed to iterate through attribute
-  struct op_data
+attribute_store::attribute_store(handle::id_t hnd, bool existing)
+  : hnd_{hnd}
+{
+  if (existing)
   {
-    attribute_store& store;
-    handle* hnd;
-  };
-  op_data od{*this};
-  auto op = [](hid_t loc, const char* name, const H5A_info_t* info, void* odata) -> herr_t
-  {
-    auto p = reinterpret_cast<op_data*>(odata);
-    p->store.attrs_.push_back({p->hnd, name, true});
-    return 0;
-  };
+    what_ = H5Gopen(hnd_, "what", H5P_DEFAULT);
+    where_ = H5Gopen(hnd_, "where", H5P_DEFAULT);
+    how_ = H5Gopen(hnd_, "how", H5P_DEFAULT);
 
-  // iterate through each group to fetch the attribute names
-  n = 0; od.hnd = &what_;
-  if (what_ && H5Aiterate(what_, H5_INDEX_NAME, H5_ITER_NATIVE, &n, op, &od) < 0)
-    throw make_error(hnd_, "iterate attributes", "what");
-  n = 0; od.hnd = &where_;
-  if (where_ && H5Aiterate(where_, H5_INDEX_NAME, H5_ITER_NATIVE, &n, op, &od) < 0)
-    throw make_error(hnd_, "iterate attributes", "where");
-  n = 0; od.hnd = &how_;
-  if (how_ && H5Aiterate(how_, H5_INDEX_NAME, H5_ITER_NATIVE, &n, op, &od) < 0)
-    throw make_error(hnd_, "iterate attributes", "how");
+    hsize_t n = 0;
+    H5O_info_t info;
+
+    // determine the number of attributes available and reserve space in the vector
+    if (what_ && H5Oget_info(what_, &info) >= 0)
+      n += info.num_attrs;
+    if (where_ && H5Oget_info(where_, &info) >= 0)
+      n += info.num_attrs;
+    if (how_ && H5Oget_info(how_, &info) >= 0)
+      n += info.num_attrs;
+    attrs_.reserve(n);
+
+    // define operation needed to iterate through attribute
+    struct op_data
+    {
+      attribute_store& store;
+      handle* hnd;
+    };
+    op_data od{*this};
+    auto op = [](hid_t loc, const char* name, const H5A_info_t* info, void* odata) -> herr_t
+    {
+      auto p = reinterpret_cast<op_data*>(odata);
+      p->store.attrs_.push_back({p->hnd, name, true});
+      return 0;
+    };
+
+    // iterate through each group to fetch the attribute names
+    n = 0; od.hnd = &what_;
+    if (what_ && H5Aiterate(what_, H5_INDEX_NAME, H5_ITER_NATIVE, &n, op, &od) < 0)
+      throw make_error(hnd_, "iterate attributes", "what");
+    n = 0; od.hnd = &where_;
+    if (where_ && H5Aiterate(where_, H5_INDEX_NAME, H5_ITER_NATIVE, &n, op, &od) < 0)
+      throw make_error(hnd_, "iterate attributes", "where");
+    n = 0; od.hnd = &how_;
+    if (how_ && H5Aiterate(how_, H5_INDEX_NAME, H5_ITER_NATIVE, &n, op, &od) < 0)
+      throw make_error(hnd_, "iterate attributes", "how");
+  }
+}
+
+attribute_store::attribute_store(
+      const handle& parent
+    , const char* name
+    , size_t index
+    , bool existing)
+  : attribute_store{group_checked_open_or_create(parent, name, index, existing), existing}
+{
+
+}
+
+attribute_store::attribute_store(const attribute_store& rhs)
+  : hnd_{rhs.hnd_}
+  , what_{rhs.what_}
+  , where_{rhs.where_}
+  , how_{rhs.how_}
+  , attrs_(rhs.attrs_)
+{
+  fix_attribute_parents(rhs);
+}
+
+attribute_store::attribute_store(attribute_store&& rhs) noexcept
+  : hnd_{std::move(rhs.hnd_)}
+  , what_{std::move(rhs.what_)}
+  , where_{std::move(rhs.where_)}
+  , how_{std::move(rhs.how_)}
+  , attrs_(std::move(rhs.attrs_))
+{
+  fix_attribute_parents(rhs);
+}
+
+auto attribute_store::operator=(const attribute_store& rhs) -> attribute_store&
+{
+  hnd_ = rhs.hnd_;
+  what_ = rhs.what_;
+  where_ = rhs.where_;
+  how_ = rhs.how_;
+  attrs_ = rhs.attrs_;
+  fix_attribute_parents(rhs);
+  return *this;
+}
+
+auto attribute_store::operator=(attribute_store&& rhs) noexcept -> attribute_store&
+{
+  hnd_ = std::move(rhs.hnd_);
+  what_ = std::move(rhs.what_);
+  where_ = std::move(rhs.where_);
+  how_ = std::move(rhs.how_);
+  attrs_ = std::move(rhs.attrs_);
+  fix_attribute_parents(rhs);
+  return *this;
+}
+
+auto attribute_store::fix_attribute_parents(const attribute_store& old) -> void
+{
+  // update the 'parent group' pointers for each attribute
+  for (auto& a : attrs_)
+  {
+    if (a.parent_ == &old.what_)
+      a.parent_ = &what_;
+    else if (a.parent_ == &old.where_)
+      a.parent_ = &where_;
+    else
+      a.parent_ = &how_;
+  }
 }
 
 auto attribute_store::find(const std::string& name) noexcept -> iterator
@@ -685,8 +772,14 @@ auto attribute_store::erase(const std::string& name) -> void
   }
 }
 
-group::group(handle hnd)
-  : attribute_store{std::move(hnd)}
+group::group(handle::id_t hnd, bool existing)
+  : attribute_store{hnd, existing}
+{
+
+}
+
+group::group(const handle& parent, const char* name, size_t index, bool existing)
+  : attribute_store{parent, name, index, existing}
 {
 
 }
@@ -696,16 +789,46 @@ group::~group()
 
 }
 
-dataset::dataset(handle hnd)
-  : group{std::move(hnd)}
+data::data(const handle& parent, const char* name, size_t index)
+  : group{parent, name, index, true}
   , data_{H5Dopen(hnd_, "data", H5P_DEFAULT)}
+  , size_quality_{0}
 {
   if (!data_)
     throw make_error(hnd_, "open dataset", "data");
+
+  // determine the number of dataX and qualityX layers
+  H5G_info_t info;
+  if (H5Gget_info(hnd_, &info) < 0)
+    throw make_error(hnd_, "get group info");
+  if (what_) --info.nlinks;
+  if (where_) --info.nlinks;
+  if (how_) --info.nlinks;
+  for (size_t i = info.nlinks; i > 0; --i)
+  {
+    char name[32];
+    sprintf(name, "quality%d", i);
+    htri_t ret = H5Lexists(hnd_, name, H5P_DEFAULT);
+    if (ret < 0)
+      throw make_error(hnd_, "check group exists", name);
+    if (ret)
+    {
+      size_quality_ = i;
+      break;
+    }
+  }
 }
 
-dataset::dataset(handle hnd, data_type type, size_t rank, size_t* dims, int compression)
-  : group{std::move(hnd)}
+data::data(
+      const handle& parent
+    , const char* name
+    , size_t index
+    , data_type type
+    , size_t rank
+    , const size_t* dims
+    , int compression)
+  : group{parent, name, index, false}
+  , size_quality_{0}
 {
   // convert dimension array to hdf size type
   hsize_t hdims[max_rank];
@@ -720,7 +843,7 @@ dataset::dataset(handle hnd, data_type type, size_t rank, size_t* dims, int comp
   if (!plist)
     throw make_error(hnd_, "create dataset");
   if (   H5Pset_chunk(plist, rank, hdims) < 0
-      || (   compression
+      || (   compression > 0
           && H5Pset_deflate(plist, compression) < 0))
     throw make_error(hnd_, "create dataset");
   data_ = H5Dcreate(hnd_, "data", hdf_storage_type(type), space, H5P_DEFAULT, plist, H5P_DEFAULT);
@@ -734,7 +857,26 @@ dataset::dataset(handle hnd, data_type type, size_t rank, size_t* dims, int comp
   }
 }
 
-auto dataset::type() const -> data_type
+auto data::quality_open(size_t i) const -> data
+{
+  return {hnd_, "quality%d", i + 1};
+}
+
+auto data::quality_create(size_t rank, const size_t* dims, int compression) -> data
+{
+  try
+  {
+    ++size_quality_;
+    return {hnd_, "quality%d", size_quality_};
+  }
+  catch (...)
+  {
+    --size_quality_;
+    throw;
+  }
+}
+
+auto data::type() const -> data_type
 {
   handle id{H5Dget_type(data_)};
   if (!id)
@@ -772,7 +914,7 @@ auto dataset::type() const -> data_type
   return data_type::unknown;
 }
 
-auto dataset::rank() const -> size_t
+auto data::rank() const -> size_t
 {
   handle space{H5Dget_space(data_)};
   if (!space)
@@ -783,7 +925,7 @@ auto dataset::rank() const -> size_t
   return ret;
 }
 
-auto dataset::dims(size_t* val) const -> size_t
+auto data::dims(size_t* val) const -> size_t
 {
   handle space{H5Dget_space(data_)};
   if (!space)
@@ -797,7 +939,7 @@ auto dataset::dims(size_t* val) const -> size_t
   return rank;
 }
 
-auto dataset::size() const -> size_t
+auto data::size() const -> size_t
 {
   handle space{H5Dget_space(data_)};
   if (!space)
@@ -808,74 +950,213 @@ auto dataset::size() const -> size_t
   return ret;
 }
 
-auto dataset::quantity() const -> std::string
+auto data::quantity() const -> std::string
 {
   return attributes()["quantity"].get_string();
 }
 
-auto dataset::set_quantity(const std::string& val) -> void
+auto data::set_quantity(const std::string& val) -> void
 {
   attributes()["quantity"].set(val);
 }
 
 template <typename T>
-auto dataset::read(T* data) const -> void
+auto data::read(T* data) const -> void
 {
   auto err = H5Dread(data_, hdf_native_type<T>(), H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
   if (err < 0)
     throw make_error(hnd_, "read dataset", "data", err);
 }
 
-template auto dataset::read<char>(char* data) const -> void;
-template auto dataset::read<signed char>(signed char* data) const -> void;
-template auto dataset::read<unsigned char>(unsigned char* data) const -> void;
-template auto dataset::read<short>(short* data) const -> void;
-template auto dataset::read<unsigned short>(unsigned short* data) const -> void;
-template auto dataset::read<int>(int* data) const -> void;
-template auto dataset::read<unsigned int>(unsigned int* data) const -> void;
-template auto dataset::read<long>(long* data) const -> void;
-template auto dataset::read<unsigned long>(unsigned long* data) const -> void;
-template auto dataset::read<long long>(long long* data) const -> void;
-template auto dataset::read<unsigned long long>(unsigned long long* data) const -> void;
-template auto dataset::read<float>(float* data) const -> void;
-template auto dataset::read<double>(double* data) const -> void;
-template auto dataset::read<long double>(long double* data) const -> void;
+template auto data::read<char>(char* data) const -> void;
+template auto data::read<signed char>(signed char* data) const -> void;
+template auto data::read<unsigned char>(unsigned char* data) const -> void;
+template auto data::read<short>(short* data) const -> void;
+template auto data::read<unsigned short>(unsigned short* data) const -> void;
+template auto data::read<int>(int* data) const -> void;
+template auto data::read<unsigned int>(unsigned int* data) const -> void;
+template auto data::read<long>(long* data) const -> void;
+template auto data::read<unsigned long>(unsigned long* data) const -> void;
+template auto data::read<long long>(long long* data) const -> void;
+template auto data::read<unsigned long long>(unsigned long long* data) const -> void;
+template auto data::read<float>(float* data) const -> void;
+template auto data::read<double>(double* data) const -> void;
+template auto data::read<long double>(long double* data) const -> void;
 
 template <typename T>
-auto dataset::write(const T* data) -> void
+auto data::write(const T* data) -> void
 {
   auto err = H5Dwrite(data_, hdf_native_type<T>(), H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
   if (err < 0)
     throw make_error(hnd_, "write dataset", "data", err);
 }
 
-template auto dataset::write<char>(const char* data) -> void;
-template auto dataset::write<signed char>(const signed char* data) -> void;
-template auto dataset::write<unsigned char>(const unsigned char* data) -> void;
-template auto dataset::write<short>(const short* data) -> void;
-template auto dataset::write<unsigned short>(const unsigned short* data) -> void;
-template auto dataset::write<int>(const int* data) -> void;
-template auto dataset::write<unsigned int>(const unsigned int* data) -> void;
-template auto dataset::write<long>(const long* data) -> void;
-template auto dataset::write<unsigned long>(const unsigned long* data) -> void;
-template auto dataset::write<long long>(const long long* data) -> void;
-template auto dataset::write<unsigned long long>(const unsigned long long* data) -> void;
-template auto dataset::write<float>(const float* data) -> void;
-template auto dataset::write<double>(const double* data) -> void;
-template auto dataset::write<long double>(const long double* data) -> void;
+template auto data::write<char>(const char* data) -> void;
+template auto data::write<signed char>(const signed char* data) -> void;
+template auto data::write<unsigned char>(const unsigned char* data) -> void;
+template auto data::write<short>(const short* data) -> void;
+template auto data::write<unsigned short>(const unsigned short* data) -> void;
+template auto data::write<int>(const int* data) -> void;
+template auto data::write<unsigned int>(const unsigned int* data) -> void;
+template auto data::write<long>(const long* data) -> void;
+template auto data::write<unsigned long>(const unsigned long* data) -> void;
+template auto data::write<long long>(const long long* data) -> void;
+template auto data::write<unsigned long long>(const unsigned long long* data) -> void;
+template auto data::write<float>(const float* data) -> void;
+template auto data::write<double>(const double* data) -> void;
+template auto data::write<long double>(const long double* data) -> void;
+
+dataset::dataset(const handle& parent, const char* name, size_t index, bool existing)
+  : group{parent, name, index, existing}
+  , size_data_{0}
+  , size_quality_{0}
+{
+  if (existing)
+  {
+    // determine the number of dataX and qualityX layers
+    H5G_info_t info;
+    if (H5Gget_info(hnd_, &info) < 0)
+      throw make_error(hnd_, "get group info");
+    if (what_) --info.nlinks;
+    if (where_) --info.nlinks;
+    if (how_) --info.nlinks;
+    for (size_t i = info.nlinks; i > 0; --i)
+    {
+      char name[32];
+      sprintf(name, "data%d", i);
+      htri_t ret = H5Lexists(hnd_, name, H5P_DEFAULT);
+      if (ret < 0)
+        throw make_error(hnd_, "check group exists", name);
+      if (ret)
+      {
+        size_data_ = i;
+        break;
+      }
+    }
+    info.nlinks -= size_data_;
+    for (size_t i = info.nlinks; i > 0; --i)
+    {
+      char name[32];
+      sprintf(name, "quality%d", i);
+      htri_t ret = H5Lexists(hnd_, name, H5P_DEFAULT);
+      if (ret < 0)
+        throw make_error(hnd_, "check group exists", name);
+      if (ret)
+      {
+        size_quality_ = i;
+        break;
+      }
+    }
+  }
+}
+
+auto dataset::data_open(size_t i) const -> data
+{
+  return {hnd_, "data%d", i + 1};
+}
+
+auto dataset::data_create(size_t rank, const size_t* dims, int compression) -> data
+{
+  try
+  {
+    ++size_data_;
+    return {hnd_, "data%d", size_data_};
+  }
+  catch (...)
+  {
+    --size_data_;
+    throw;
+  }
+}
+
+auto dataset::quality_open(size_t i) const -> data
+{
+  return {hnd_, "quality%d", i + 1};
+}
+
+auto dataset::quality_create(size_t rank, const size_t* dims, int compression) -> data
+{
+  try
+  {
+    ++size_quality_;
+    return {hnd_, "quality%d", size_quality_};
+  }
+  catch (...)
+  {
+    --size_quality_;
+    throw;
+  }
+}
+
+static inline auto file_checked_open_or_create(
+      const char* path
+    , file::io_mode mode
+    ) -> handle::id_t
+{
+  auto ret = mode == file::io_mode::create
+   ? H5Fcreate(path, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)
+   : H5Fopen(path, mode == file::io_mode::read_only ? H5F_ACC_RDONLY : H5F_ACC_RDWR, H5P_DEFAULT);
+  if (ret < 0)
+    throw make_error({}, "file open", path);
+  return ret;
+}
 
 file::file(const std::string& path, io_mode mode)
-  : group {
-    mode == io_mode::create 
-    ? H5Fcreate(path.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)
-    : H5Fopen(path.c_str(), mode == io_mode::read_only ? H5F_ACC_RDONLY : H5F_ACC_RDWR, H5P_DEFAULT)}
+  : group{file_checked_open_or_create(path.c_str(), mode), mode != io_mode::create}
   , mode_{mode}
   , type_{object_type::unknown}
 {
-  if (!hnd_)
-    throw make_error({}, mode == io_mode::create ? "create file" : "open file", path.c_str());
+  if (mode != io_mode::create)
+  {
+    // determine the number of datasetX groups
+    H5G_info_t info;
+    if (H5Gget_info(hnd_, &info) < 0)
+      throw make_error(hnd_, "get group info");
+    if (what_) --info.nlinks;
+    if (where_) --info.nlinks;
+    if (how_) --info.nlinks;
+    for (size_t i = info.nlinks; i > 0; --i)
+    {
+      char name[32];
+      sprintf(name, "dataset%d", i);
+      htri_t ret = H5Lexists(hnd_, name, H5P_DEFAULT);
+      if (ret < 0)
+        throw make_error(hnd_, "check group exists", name);
+      if (ret)
+      {
+        size_ = i;
+        break;
+      }
+    }
+  }
 }
 
+auto file::dataset_open(size_t i) const -> dataset
+{
+  return {hnd_, "dataset%d", i + 1, true};
+}
+
+auto file::dataset_create() -> dataset
+{
+  try
+  {
+    ++size_;
+    return {hnd_, "dataset%d", size_, false};
+  }
+  catch (...)
+  {
+    --size_;
+    throw;
+  }
+}
+
+auto file::flush() -> void
+{
+  if (H5Fflush(hnd_, H5F_SCOPE_LOCAL) < 0) 
+    throw make_error(hnd_, "flush");
+}
+
+#if 0
 auto file::as_polar_volume() -> polar_volume
 {
   if (   type_ == object_type::polar_volume
@@ -891,10 +1172,5 @@ auto file::as_polar_volume() const -> polar_volume
     return {hnd_};
   throw make_error(hnd_, "open object", "polar_volume", "type mismatch");
 }
-
-auto file::flush() -> void
-{
-  if (H5Fflush(hnd_, H5F_SCOPE_LOCAL) < 0) 
-    throw make_error(hnd_, "flush");
-}
+#endif
 

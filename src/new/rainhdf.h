@@ -31,18 +31,20 @@ namespace hdf {
   // Internal - RAII object for managing an HDF5 API hid_t
   struct handle
   {
-    int id;
+    typedef int id_t;
 
-    handle() : id{-1} { }
-    handle(int id) : id{id} { }
+    id_t id;
+
+    handle() noexcept : id{-1} { }
+    handle(id_t id) noexcept : id{id} { }
     handle(const handle& rhs);
-    handle(handle&& rhs) : id(rhs.id) { rhs.id = -1; }
+    handle(handle&& rhs) noexcept : id(rhs.id) { rhs.id = -1; }
     auto operator=(const handle& rhs) -> handle&;
-    auto operator=(handle&& rhs) -> handle& { std::swap(id, rhs.id); return *this; }
+    auto operator=(handle&& rhs) noexcept -> handle& { std::swap(id, rhs.id); return *this; }
     ~handle();
 
-    operator int() const { return id; }
-    operator bool() const { return id > 0; }
+    operator id_t() const noexcept { return id; }
+    operator bool() const noexcept { return id > 0; }
 
     auto close() -> void;
   };
@@ -148,7 +150,16 @@ namespace hdf {
     auto erase(const std::string& name) -> void;
 
   protected:
-    attribute_store(handle hnd);
+    attribute_store(handle::id_t hnd, bool existing);
+    attribute_store(const handle& parent, const char* name, size_t index, bool existing);
+
+    attribute_store(const attribute_store& rhs);
+    attribute_store(attribute_store&& rhs) noexcept;
+
+    auto operator=(const attribute_store& rhs) -> attribute_store&;
+    auto operator=(attribute_store&& rhs) noexcept -> attribute_store&;
+
+    auto fix_attribute_parents(const attribute_store& old) -> void;
 
   protected:
     handle      hnd_;
@@ -168,11 +179,12 @@ namespace hdf {
     auto attributes() const -> const attribute_store&           { return *this; }
 
   protected:
-    group(handle hnd);
+    group(handle::id_t hnd, bool existing);
+    group(const handle& parent, const char* name, size_t index, bool existing);
   };
 
   /// Dataset object
-  class dataset : public group
+  class data : public group
   {
   public:
     /// Storage type for data
@@ -194,7 +206,21 @@ namespace hdf {
     /// Maximum supported dataset rank
     constexpr static size_t max_rank = 32;
 
+    /// Default compression level
+    constexpr static int default_compression = 6;
+
   public:
+    /// Get the number of quality layers
+    auto quality_count() const -> size_t                        { return size_quality_; }
+    /// Open a quality layer
+    auto quality_open(size_t i) const -> data;
+    /// Create a new quality layer
+    auto quality_create(
+          size_t rank
+        , const size_t* dims
+        , int compression = default_compression
+        ) -> data;
+
     auto type() const -> data_type;
     auto rank() const -> size_t;
     auto dims(size_t* val) const -> size_t;
@@ -229,15 +255,25 @@ namespace hdf {
     auto write_pack(const T* data, NoDataTest is_nodata, UndetectTest is_undetect) -> void;
 
   protected:
-    dataset(handle hnd);
-    dataset(handle hnd, data_type type, size_t rank, size_t* dims, int compression);
+    data(const handle& parent, const char* name, size_t index);
+    data(
+          const handle& parent
+        , const char* name
+        , size_t index
+        , data_type type
+        , size_t rank
+        , const size_t* dims
+        , int compression);
 
   protected:
+    size_t  size_quality_;
     handle  data_;
+
+    friend class dataset;
   };
 
   template <typename T>
-  auto dataset::read_unpack(T* data, T nodata, T undetect) const -> void
+  auto data::read_unpack(T* data, T nodata, T undetect) const -> void
   {
     read(data);
 
@@ -259,7 +295,7 @@ namespace hdf {
   }
 
   template <typename T, class NoDataTest, class UndetectTest>
-  auto dataset::write_pack(const T* data, NoDataTest is_nodata, UndetectTest is_undetect) -> void
+  auto data::write_pack(const T* data, NoDataTest is_nodata, UndetectTest is_undetect) -> void
   {
     const T nd = nodata();
     const T ud = undetect();
@@ -281,18 +317,41 @@ namespace hdf {
     write(buf);
   }
 
-  /// Polar volume file object
-  class polar_volume : public group
+  /// Dataset group which contains data and optional quality layers
+  class dataset : public group
   {
   public:
-    
+    /// Get the number of data layers
+    auto data_count() const -> size_t                           { return size_data_; }
+    /// Open a data layer
+    auto data_open(size_t i) const -> data;
+    /// Create a data layer
+    auto data_create(
+          size_t rank
+        , const size_t* dims
+        , int compression = data::default_compression
+        ) -> data;
+
+    /// Get the number of quality layers
+    auto quality_count() const -> size_t                        { return size_quality_; }
+    /// Open a quality layer
+    auto quality_open(size_t i) const -> data;
+    /// Create a new quality layer
+    auto quality_create(
+          size_t rank
+        , const size_t* dims
+        , int compression = data::default_compression
+        ) -> data;
+
   protected:
-    polar_volume(handle hnd) : group{std::move(hnd)} { }
+    dataset(const handle& parent, const char* name, size_t index, bool existing);
+
+  protected:
+    size_t  size_data_;
+    size_t  size_quality_;
+
     friend class file;
   };
-
-  // TODO - all the other ODIM object types
-  class cartesian_volume { };
 
   /// Top level ODIM_H5 file manager
   class file : public group
@@ -345,19 +404,20 @@ namespace hdf {
 
     auto object() const -> object_type;
 
-    auto as_polar_volume() -> polar_volume;
-    auto as_polar_volume() const -> polar_volume;
+    /// Get the number of datasets in the file
+    auto dataset_count() const -> size_t                        { return size_; }
+    /// Open a dataset
+    auto dataset_open(size_t i) const -> dataset;
+    /// Create a new dataset
+    auto dataset_create() -> dataset;
 
-    auto as_cartesian_volume() -> cartesian_volume;
-    auto as_cartesian_volume() const -> cartesian_volume;
-
-    // get the objects of the various types
-
+    /// Ensure all write actions have been synced to disk
     auto flush() -> void;
 
   private:
     io_mode     mode_;
     object_type type_;
+    size_t      size_;
   };
 
   /* efficient use of library:
