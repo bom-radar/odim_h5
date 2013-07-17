@@ -193,8 +193,6 @@ static auto hdf_storage_type(data::data_type type) -> hid_t
 {
   switch (type)
   {
-  case data::data_type::unknown:
-    return -1;
   case data::data_type::i8:
     return H5T_STD_I8LE;
   case data::data_type::u8:
@@ -215,6 +213,8 @@ static auto hdf_storage_type(data::data_type type) -> hid_t
     return H5T_IEEE_F32LE;
   case data::data_type::f64:
     return H5T_IEEE_F64LE;
+  default:
+    return -1;
   }
 }
 
@@ -406,6 +406,14 @@ auto attribute::set(double val) -> void
   auto hnd = open_or_create(data_type::real, 1);
   if (H5Awrite(hnd, H5T_NATIVE_DOUBLE, &val) < 0)
     throw make_error(hnd, "attribute write", "real");
+}
+
+auto attribute::set(const char* val) -> void
+{
+  handle type;
+  auto hnd = open_or_create(data_type::string, strlen(val) + 1, &type);
+  if (H5Awrite(hnd, type, &val) < 0)
+    throw make_error(hnd, "attribute write", "string");
 }
 
 auto attribute::set(const std::string& val) -> void
@@ -766,6 +774,7 @@ auto attribute_store::operator[](const char* name) -> attribute&
     }
     attrs_.push_back({&how_, name, false});
   }
+  return attrs_.back();
 }
 
 auto attribute_store::operator[](const char* name) const -> const attribute&
@@ -824,9 +833,9 @@ auto group::is_api_attribute(const std::string& name) const -> bool
 }
 
 data::data(const handle& parent, bool quality, size_t index)
-  : group{parent, quality ? "quality%d" : "data%d", index, true}
-  , data_{H5Dopen(hnd_, "data", H5P_DEFAULT)}
+  : group{parent, quality ? "quality%zu" : "data%zu", index, true}
   , size_quality_{0}
+  , data_{H5Dopen(hnd_, "data", H5P_DEFAULT)}
 {
   if (!data_)
     throw make_error(hnd_, "open dataset", "data");
@@ -841,7 +850,7 @@ data::data(const handle& parent, bool quality, size_t index)
   for (size_t i = info.nlinks; i > 0; --i)
   {
     char name[32];
-    sprintf(name, "quality%d", i);
+    sprintf(name, "quality%zu", i);
     htri_t ret = H5Lexists(hnd_, name, H5P_DEFAULT);
     if (ret < 0)
       throw make_error(hnd_, "check group exists", name);
@@ -861,7 +870,7 @@ data::data(
     , size_t rank
     , const size_t* dims
     , int compression)
-  : group{parent, quality ? "quality%d" : "data%d", index, false}
+  : group{parent, quality ? "quality%zu" : "data%zu", index, false}
   , size_quality_{0}
 {
   // convert dimension array to hdf size type
@@ -1083,7 +1092,7 @@ template auto data::write<double>(const double* data) -> void;
 template auto data::write<long double>(const long double* data) -> void;
 
 dataset::dataset(const handle& parent, size_t index, bool existing)
-  : group{parent, "dataset%d", index, existing}
+  : group{parent, "dataset%zu", index, existing}
   , size_data_{0}
   , size_quality_{0}
 {
@@ -1099,7 +1108,7 @@ dataset::dataset(const handle& parent, size_t index, bool existing)
     for (size_t i = info.nlinks; i > 0; --i)
     {
       char name[32];
-      sprintf(name, "data%d", i);
+      sprintf(name, "data%zu", i);
       htri_t ret = H5Lexists(hnd_, name, H5P_DEFAULT);
       if (ret < 0)
         throw make_error(hnd_, "check group exists", name);
@@ -1113,7 +1122,7 @@ dataset::dataset(const handle& parent, size_t index, bool existing)
     for (size_t i = info.nlinks; i > 0; --i)
     {
       char name[32];
-      sprintf(name, "quality%d", i);
+      sprintf(name, "quality%zu", i);
       htri_t ret = H5Lexists(hnd_, name, H5P_DEFAULT);
       if (ret < 0)
         throw make_error(hnd_, "check group exists", name);
@@ -1176,7 +1185,7 @@ file::file(const std::string& path, io_mode mode)
     for (size_t i = info.nlinks; i > 0; --i)
     {
       char name[32];
-      sprintf(name, "dataset%d", i);
+      sprintf(name, "dataset%zu", i);
       htri_t ret = H5Lexists(hnd_, name, H5P_DEFAULT);
       if (ret < 0)
         throw make_error(hnd_, "check group exists", name);
@@ -1522,7 +1531,7 @@ polar_volume::polar_volume(file f)
 
 auto polar_volume::longitude() const -> double
 {
-  attributes()["lon"].get_real();
+  return attributes()["lon"].get_real();
 }
 
 auto polar_volume::set_longitude(double val) -> void
@@ -1532,7 +1541,7 @@ auto polar_volume::set_longitude(double val) -> void
 
 auto polar_volume::latitude() const -> double
 {
-  attributes()["lat"].get_real();
+  return attributes()["lat"].get_real();
 }
 
 auto polar_volume::set_latitude(double val) -> void
@@ -1542,7 +1551,7 @@ auto polar_volume::set_latitude(double val) -> void
 
 auto polar_volume::height() const -> double
 {
-  attributes()["height"].get_real();
+  return attributes()["height"].get_real();
 }
 
 auto polar_volume::set_height(double val) -> void
@@ -1579,7 +1588,7 @@ vertical_profile::vertical_profile(file f)
 
 auto vertical_profile::longitude() const -> double
 {
-  attributes()["lon"].get_real();
+  return attributes()["lon"].get_real();
 }
 
 auto vertical_profile::set_longitude(double val) -> void
@@ -1589,7 +1598,7 @@ auto vertical_profile::set_longitude(double val) -> void
 
 auto vertical_profile::latitude() const -> double
 {
-  attributes()["lat"].get_real();
+  return attributes()["lat"].get_real();
 }
 
 auto vertical_profile::set_latitude(double val) -> void
@@ -1599,7 +1608,7 @@ auto vertical_profile::set_latitude(double val) -> void
 
 auto vertical_profile::height() const -> double
 {
-  attributes()["height"].get_real();
+  return attributes()["height"].get_real();
 }
 
 auto vertical_profile::set_height(double val) -> void
@@ -1609,7 +1618,7 @@ auto vertical_profile::set_height(double val) -> void
 
 auto vertical_profile::level_count() const -> long
 {
-  attributes()["levels"].get_integer();
+  return attributes()["levels"].get_integer();
 }
 
 auto vertical_profile::set_level_count(long val) -> void
@@ -1619,7 +1628,7 @@ auto vertical_profile::set_level_count(long val) -> void
 
 auto vertical_profile::interval() const -> double
 {
-  attributes()["interval"].get_real();
+  return attributes()["interval"].get_real();
 }
 
 auto vertical_profile::set_interval(double val) -> void
@@ -1629,7 +1638,7 @@ auto vertical_profile::set_interval(double val) -> void
 
 auto vertical_profile::min_height() const -> double
 {
-  attributes()["minheight"].get_real();
+  return attributes()["minheight"].get_real();
 }
 
 auto vertical_profile::set_min_height(double val) -> void
@@ -1639,7 +1648,7 @@ auto vertical_profile::set_min_height(double val) -> void
 
 auto vertical_profile::max_height() const -> double
 {
-  attributes()["maxheight"].get_real();
+  return attributes()["maxheight"].get_real();
 }
 
 auto vertical_profile::set_max_height(double val) -> void

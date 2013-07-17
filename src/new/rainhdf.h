@@ -100,6 +100,8 @@ namespace hdf {
     /// Set the attribute
     auto set(double val) -> void;
     /// Set the attribute
+    auto set(const char* val) -> void;
+    /// Set the attribute
     auto set(const std::string& val) -> void;
     /// Set the attribute
     auto set(const std::vector<long>& val) -> void;
@@ -341,11 +343,11 @@ namespace hdf {
   {
     read(data);
 
-    const T nd = nodata();
-    const T ud = undetect();
+    const T nd = this->nodata();
+    const T ud = this->undetect();
     const auto a = gain();
     const auto b = offset();
-    const auto size = size();
+    const auto size = this->size();
 
     for (size_t i = 0; i < size; ++i)
     {
