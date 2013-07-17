@@ -26,6 +26,10 @@ static_assert(
       data::max_rank >= H5S_MAX_RANK
     , "data::max_rank is less than H5S_MAX_RANK");
 
+static constexpr int default_version_major = 2;
+static constexpr int default_version_minor = 1;
+static constexpr const char* default_conventions = "ODIM_H5/V2_1";
+
 // these MUST remain in ASCII sorted order
 static const char* what_names[] = 
 {
@@ -86,14 +90,15 @@ static const char* where_names[] =
   , "ysize"
 };
 
-static auto is_what_attribute(const std::string& name) -> bool
+static auto is_what_attribute(const char* name) -> bool
 {
   auto beg = &what_names[0];
   auto end = &what_names[std::extent<decltype(what_names)>::value];
   auto mid = &what_names[std::extent<decltype(what_names)>::value / 2];
   while (beg <= end)
   {
-    auto cmp = name.compare(*mid);
+    // TODO - may be opposite arg order required
+    auto cmp = strcmp(name, *mid);
     if (cmp == 0)
       return true;
     else if (cmp < 0)
@@ -105,14 +110,15 @@ static auto is_what_attribute(const std::string& name) -> bool
   return false;
 }
 
-static auto is_where_attribute(const std::string& name) -> bool
+static auto is_where_attribute(const char* name) -> bool
 {
   auto beg = &where_names[0];
   auto end = &where_names[std::extent<decltype(where_names)>::value];
   auto mid = &where_names[std::extent<decltype(where_names)>::value / 2];
   while (beg <= end)
   {
-    auto cmp = name.compare(*mid);
+    // TODO - may be opposite arg order required
+    auto cmp = strcmp(name, *mid);
     if (cmp == 0)
       return true;
     else if (cmp < 0)
@@ -212,6 +218,28 @@ static auto hdf_storage_type(data::data_type type) -> hid_t
   }
 }
 
+static auto strings_to_time(const std::string& date, const std::string& time) -> time_t
+{
+  struct tm tms;
+  if (   sscanf(date.c_str(), "%04d%02d%02d", &tms.tm_year, &tms.tm_mon, &tms.tm_mday) != 3
+      || sscanf(time.c_str(), "%02d%02d%02d", &tms.tm_hour, &tms.tm_min, &tms.tm_sec) != 3)
+    throw make_error({}, "date/time syntax error");
+  tms.tm_year -= 1900;
+  tms.tm_mon -= 1;
+  tms.tm_wday = 0;
+  tms.tm_yday = 0;
+  tms.tm_isdst = 0;
+  return timegm(&tms);
+}
+
+static auto time_to_strings(time_t val, char date[9], char time[7]) -> void
+{
+  struct tm tms;
+  gmtime_r(&val, &tms);
+  snprintf(date, 9, "%04d%02d%02d", tms.tm_year + 1900, tms.tm_mon + 1, tms.tm_mday);
+  snprintf(time, 7, "%02d%02d%02d", tms.tm_hour, tms.tm_min, tms.tm_sec);
+}
+
 //------------------------------------------------------------------------------
 
 auto rainfields::hdf::package_name() -> const char*
@@ -231,7 +259,7 @@ auto rainfields::hdf::package_support() -> const char*
 
 auto rainfields::hdf::default_version() -> std::pair<int, int>
 {
-  return {2, 1};
+  return {default_version_major, default_version_minor};
 }
 
 handle::handle(const handle& rhs)
@@ -264,10 +292,11 @@ error::error(const char* what)
 
 }
 
-attribute::attribute(handle* parent, std::string name, bool existing)
-  : parent_(parent)
-  , name_(std::move(name))
-  , type_(existing ? data_type::unknown : data_type::uninitialized)
+attribute::attribute(const handle* parent, std::string name, bool existing)
+  : parent_{parent}
+  , name_{std::move(name)}
+  , type_{existing ? data_type::unknown : data_type::uninitialized}
+  , size_{0}
 {
 
 }
@@ -561,7 +590,7 @@ static inline auto group_checked_open_or_create(
     ) -> handle::id_t
 {
   char buf[32];
-  sprintf(buf, name, index);
+  sprintf(buf, name, index + 1);
   auto ret = open 
     ? H5Gopen(parent, buf, H5P_DEFAULT) 
     : H5Gcreate(parent, buf, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -700,7 +729,7 @@ auto attribute_store::find(const std::string& name) const noexcept -> const_iter
   return attrs_.end();
 }
 
-auto attribute_store::operator[](const std::string& name) -> attribute&
+auto attribute_store::operator[](const char* name) -> attribute&
 {
   for (auto& a : attrs_)
     if (a.name() == name)
@@ -739,12 +768,12 @@ auto attribute_store::operator[](const std::string& name) -> attribute&
   }
 }
 
-auto attribute_store::operator[](const std::string& name) const -> const attribute&
+auto attribute_store::operator[](const char* name) const -> const attribute&
 {
   for (auto& a : attrs_)
     if (a.name() == name)
       return a;
-  throw make_error(hnd_, "no such attribute", name.c_str());
+  throw make_error(hnd_, "no such attribute", name);
 }
 
 auto attribute_store::erase(iterator i) -> void
@@ -789,8 +818,13 @@ group::~group()
 
 }
 
-data::data(const handle& parent, const char* name, size_t index)
-  : group{parent, name, index, true}
+auto group::is_api_attribute(const std::string& name) const -> bool
+{
+  return false;
+}
+
+data::data(const handle& parent, bool quality, size_t index)
+  : group{parent, quality ? "quality%d" : "data%d", index, true}
   , data_{H5Dopen(hnd_, "data", H5P_DEFAULT)}
   , size_quality_{0}
 {
@@ -821,13 +855,13 @@ data::data(const handle& parent, const char* name, size_t index)
 
 data::data(
       const handle& parent
-    , const char* name
+    , bool quality
     , size_t index
     , data_type type
     , size_t rank
     , const size_t* dims
     , int compression)
-  : group{parent, name, index, false}
+  : group{parent, quality ? "quality%d" : "data%d", index, false}
   , size_quality_{0}
 {
   // convert dimension array to hdf size type
@@ -853,27 +887,18 @@ data::data(
   // if 2d, add the image attributes (for sake of hdfview)
   if (rank == 2)
   {
-
+    // TODO
   }
 }
 
 auto data::quality_open(size_t i) const -> data
 {
-  return {hnd_, "quality%d", i + 1};
+  return {hnd_, true, i};
 }
 
-auto data::quality_create(size_t rank, const size_t* dims, int compression) -> data
+auto data::quality_append(data_type type, size_t rank, const size_t* dims, int compression) -> data
 {
-  try
-  {
-    ++size_quality_;
-    return {hnd_, "quality%d", size_quality_};
-  }
-  catch (...)
-  {
-    --size_quality_;
-    throw;
-  }
+  return {hnd_, true, size_quality_++, type, rank, dims, compression};
 }
 
 auto data::type() const -> data_type
@@ -960,6 +985,57 @@ auto data::set_quantity(const std::string& val) -> void
   attributes()["quantity"].set(val);
 }
 
+auto data::gain() const -> double
+{
+  return attributes()["gain"].get_real();
+}
+
+auto data::set_gain(double val) -> void
+{
+  attributes()["gain"].set(val);
+}
+
+auto data::offset() const -> double
+{
+  return attributes()["offset"].get_real();
+}
+
+auto data::set_offset(double val) -> void
+{
+  attributes()["offset"].set(val);
+}
+
+auto data::nodata() const -> double
+{
+  return attributes()["nodata"].get_real();
+}
+
+auto data::set_nodata(double val) -> void
+{
+  attributes()["nodata"].set(val);
+}
+
+auto data::undetect() const -> double
+{
+  return attributes()["undetect"].get_real();
+}
+
+auto data::set_undetect(double val) -> void
+{
+  attributes()["undetect"].set(val);
+}
+
+auto data::is_api_attribute(const std::string& name) const -> bool
+{
+  return 
+       name == "quantity"
+    || name == "gain"
+    || name == "offset"
+    || name == "nodata"
+    || name == "undetect"
+    || group::is_api_attribute(name);
+}
+
 template <typename T>
 auto data::read(T* data) const -> void
 {
@@ -1006,8 +1082,8 @@ template auto data::write<float>(const float* data) -> void;
 template auto data::write<double>(const double* data) -> void;
 template auto data::write<long double>(const long double* data) -> void;
 
-dataset::dataset(const handle& parent, const char* name, size_t index, bool existing)
-  : group{parent, name, index, existing}
+dataset::dataset(const handle& parent, size_t index, bool existing)
+  : group{parent, "dataset%d", index, existing}
   , size_data_{0}
   , size_quality_{0}
 {
@@ -1052,40 +1128,22 @@ dataset::dataset(const handle& parent, const char* name, size_t index, bool exis
 
 auto dataset::data_open(size_t i) const -> data
 {
-  return {hnd_, "data%d", i + 1};
+  return {hnd_, false, i};
 }
 
-auto dataset::data_create(size_t rank, const size_t* dims, int compression) -> data
+auto dataset::data_append(data::data_type type, size_t rank, const size_t* dims, int compression) -> data
 {
-  try
-  {
-    ++size_data_;
-    return {hnd_, "data%d", size_data_};
-  }
-  catch (...)
-  {
-    --size_data_;
-    throw;
-  }
+  return {hnd_, false, size_data_++, type, rank, dims, compression};
 }
 
 auto dataset::quality_open(size_t i) const -> data
 {
-  return {hnd_, "quality%d", i + 1};
+  return {hnd_, true, i};
 }
 
-auto dataset::quality_create(size_t rank, const size_t* dims, int compression) -> data
+auto dataset::quality_append(data::data_type type, size_t rank, const size_t* dims, int compression) -> data
 {
-  try
-  {
-    ++size_quality_;
-    return {hnd_, "quality%d", size_quality_};
-  }
-  catch (...)
-  {
-    --size_quality_;
-    throw;
-  }
+  return {hnd_, true, size_quality_++, type, rank, dims, compression};
 }
 
 static inline auto file_checked_open_or_create(
@@ -1128,25 +1186,35 @@ file::file(const std::string& path, io_mode mode)
         break;
       }
     }
-  }
-}
 
-auto file::dataset_open(size_t i) const -> dataset
-{
-  return {hnd_, "dataset%d", i + 1, true};
-}
-
-auto file::dataset_create() -> dataset
-{
-  try
-  {
-    ++size_;
-    return {hnd_, "dataset%d", size_, false};
+    // determine the object type
+    auto str = attributes()["object"].get_string();
+    if (str == "PVOL")
+      type_ = object_type::polar_volume;
+    else if (str == "CVOL")
+      type_ = object_type::cartesian_volume;
+    else if (str == "SCAN")
+      type_ = object_type::polar_scan;
+    else if (str == "RAY")
+      type_ = object_type::polar_ray;
+    else if (str == "AZIM")
+      type_ = object_type::azimuthal_object;
+    else if (str == "IMAGE")
+      type_ = object_type::cartesian_image;
+    else if (str == "COMP")
+      type_ = object_type::composite_image;
+    else if (str == "XSEC")
+      type_ = object_type::vertical_cross_section;
+    else if (str == "VP")
+      type_ = object_type::vertical_profile;
+    else if (str == "PIC")
+      type_ = object_type::graphical_image;
   }
-  catch (...)
+  else
   {
-    --size_;
-    throw;
+    // set the default conventions and version attributes
+    set_conventions(default_conventions);
+    set_version(default_version_major, default_version_minor);
   }
 }
 
@@ -1156,21 +1224,514 @@ auto file::flush() -> void
     throw make_error(hnd_, "flush");
 }
 
-#if 0
-auto file::as_polar_volume() -> polar_volume
+template <class T>
+auto file::dset_open_as(size_t i) const -> T
 {
-  if (   type_ == object_type::polar_volume
-      || (   type_ == object_type::unknown
-          && mode_ == io_mode::create))
-    return {hnd_};
-  throw make_error(hnd_, "open object", "polar_volume", "type mismatch");
+  return {hnd_, i, true};
 }
 
-auto file::as_polar_volume() const -> polar_volume
+template <class T>
+auto file::dset_make_as() -> T
 {
-  if (type_ == object_type::polar_volume)
-    return {hnd_};
-  throw make_error(hnd_, "open object", "polar_volume", "type mismatch");
+  return {hnd_, size_++, false};
 }
-#endif
 
+auto file::conventions() const -> std::string
+{
+  return attribute{&hnd_, "Conventions", true}.get_string();
+}
+
+auto file::set_conventions(const std::string& val) -> void
+{
+  attribute{&hnd_, "Conventions", false}.set(val);
+}
+
+auto file::set_object(object_type type) -> void
+{
+  const char* val;
+  switch (type)
+  {
+  case object_type::polar_volume:
+    val = "PVOL";
+    break;
+  case object_type::cartesian_volume:
+    val = "CVOL";
+    break;
+  case object_type::polar_scan:
+    val = "SCAN";
+    break;
+  case object_type::polar_ray:
+    val = "RAY";
+    break;
+  case object_type::azimuthal_object:
+    val = "AZIM";
+    break;
+  case object_type::cartesian_image:
+    val = "IMAGE";
+    break;
+  case object_type::composite_image:
+    val = "COMP";
+    break;
+  case object_type::vertical_cross_section:
+    val = "XSEC";
+    break;
+  case object_type::vertical_profile:
+    val = "VP";
+    break;
+  case object_type::graphical_image:
+    val = "PIC";
+    break;
+  default:
+    val = "UNKNOWN";
+    break;
+  }
+  attributes()["object"].set(val);
+}
+
+auto file::version() const -> std::pair<int, int>
+{
+  std::pair<int, int> ret;
+  auto str = attributes()["version"].get_string();
+  if (sscanf(str.c_str(), "H5rad %d.%d", &ret.first, &ret.second) != 2)
+    throw make_error(hnd_, "read attribute", "version", "syntax error");
+  return ret;
+}
+
+auto file::set_version(int major, int minor) -> void
+{
+  char buf[32];
+  sprintf(buf, "H5rad %d.%d", major, minor);
+  attributes()["version"].set(buf);
+}
+
+auto file::date() const -> std::string
+{
+  return attributes()["date"].get_string();
+}
+
+auto file::set_date(const std::string& val) -> void
+{
+  attributes()["date"].set(val);
+}
+
+auto file::time() const -> std::string
+{
+  return attributes()["time"].get_string();
+}
+
+auto file::set_time(const std::string& val) -> void
+{
+  attributes()["time"].set(val);
+}
+
+auto file::date_time() const -> time_t
+{
+  return strings_to_time(attributes()["date"].get_string(), attributes()["time"].get_string());
+}
+
+auto file::set_date_time(time_t val) -> void
+{
+  char date[9], time[7];
+  time_to_strings(val, date, time);
+  attributes()["date"].set(date);
+  attributes()["time"].set(time);
+}
+
+auto file::source() const -> std::string
+{
+  return attributes()["source"].get_string();
+}
+
+auto file::set_source(const std::string& val) -> void
+{
+  attributes()["source"].set(val);
+}
+
+auto file::is_api_attribute(const std::string& name) const -> bool
+{
+  return 
+       name == "object"
+    || name == "version"
+    || name == "date"
+    || name == "time"
+    || name == "source"
+    || group::is_api_attribute(name);
+}
+
+//------------------------------------------------------------------------------
+
+auto scan::elevation_angle() const -> double
+{
+  return attributes()["elangle"].get_real();
+}
+
+auto scan::set_elevation_angle(double val) -> void
+{
+  attributes()["elangle"].set(val);
+}
+
+auto scan::bin_count() const -> long
+{
+  return attributes()["nbins"].get_integer();
+}
+
+auto scan::set_bin_count(long val) -> void
+{
+  attributes()["nbins"].set(val);
+}
+
+auto scan::range_start() const -> double
+{
+  return attributes()["rstart"].get_real();
+}
+
+auto scan::set_range_start(double val) -> void
+{
+  attributes()["rstart"].set(val);
+}
+
+auto scan::range_scale() const -> double
+{
+  return attributes()["rscale"].get_real();
+}
+
+auto scan::set_range_scale(double val) -> void
+{
+  attributes()["rscale"].set(val);
+}
+
+auto scan::ray_count() const -> long
+{
+  return attributes()["nrays"].get_integer();
+}
+
+auto scan::set_ray_count(long val) -> void
+{
+  attributes()["nrays"].set(val);
+}
+
+auto scan::first_ray_radiated() const -> long
+{
+  return attributes()["a1gate"].get_integer();
+}
+
+auto scan::set_first_ray_radiated(long val) -> void
+{
+  attributes()["a1gate"].set(val);
+}
+
+auto scan::start_date() const -> std::string
+{
+  return attributes()["startdate"].get_string();
+}
+
+auto scan::set_start_date(const std::string& val) -> void
+{
+  attributes()["startdate"].set(val);
+}
+
+auto scan::start_time() const -> std::string
+{
+  return attributes()["starttime"].get_string();
+}
+
+auto scan::set_start_time(const std::string& val) -> void
+{
+  attributes()["starttime"].set(val);
+}
+
+auto scan::start_date_time() const -> time_t
+{
+  return strings_to_time(attributes()["startdate"].get_string(), attributes()["starttime"].get_string());
+}
+
+auto scan::set_start_date_time(time_t val) -> void
+{
+  char date[9], time[7];
+  time_to_strings(val, date, time);
+  attributes()["startdate"].set(date);
+  attributes()["starttime"].set(time);
+}
+
+auto scan::end_date() const -> std::string
+{
+  return attributes()["enddate"].get_string();
+}
+
+auto scan::set_end_date(const std::string& val) -> void
+{
+  attributes()["enddate"].set(val);
+}
+
+auto scan::end_time() const -> std::string
+{
+  return attributes()["endtime"].get_string();
+}
+
+auto scan::set_end_time(const std::string& val) -> void
+{
+  attributes()["endtime"].set(val);
+}
+
+auto scan::end_date_time() const -> time_t
+{
+  return strings_to_time(attributes()["enddate"].get_string(), attributes()["endtime"].get_string());
+}
+
+auto scan::set_end_date_time(time_t val) -> void
+{
+  char date[9], time[7];
+  time_to_strings(val, date, time);
+  attributes()["enddate"].set(date);
+  attributes()["endtime"].set(time);
+}
+
+auto scan::is_api_attribute(const std::string& name) const -> bool
+{
+  return 
+       name == "elangle"
+    || name == "nbins"
+    || name == "rstart"
+    || name == "rscale"
+    || name == "nrays"
+    || name == "a1gate"
+    || name == "startdate"
+    || name == "starttime"
+    || name == "enddate"
+    || name == "endtime"
+    || dataset::is_api_attribute(name);
+}
+
+polar_volume::polar_volume(const std::string& path, io_mode mode)
+  : file{path, mode}
+{
+  if (mode_ == io_mode::create)
+    set_object(object_type::polar_volume);
+  else if (type_ != object_type::polar_volume)
+    throw make_error(hnd_, "unexpected object type", "polar_volume");
+}
+
+polar_volume::polar_volume(file f)
+  : file{std::move(f)}
+{
+  if (mode_ == io_mode::create)
+    set_object(object_type::polar_volume);
+  else if (type_ != object_type::polar_volume)
+    throw make_error(hnd_, "unexpected object type", "polar_volume");
+}
+
+auto polar_volume::longitude() const -> double
+{
+  attributes()["lon"].get_real();
+}
+
+auto polar_volume::set_longitude(double val) -> void
+{
+  attributes()["lon"].set(val);
+}
+
+auto polar_volume::latitude() const -> double
+{
+  attributes()["lat"].get_real();
+}
+
+auto polar_volume::set_latitude(double val) -> void
+{
+  attributes()["lat"].set(val);
+}
+
+auto polar_volume::height() const -> double
+{
+  attributes()["height"].get_real();
+}
+
+auto polar_volume::set_height(double val) -> void
+{
+  attributes()["height"].set(val);
+}
+
+auto polar_volume::is_api_attribute(const std::string& name) const -> bool
+{
+  return 
+       name == "lon"
+    || name == "lat"
+    || name == "height"
+    || file::is_api_attribute(name);
+}
+
+vertical_profile::vertical_profile(const std::string& path, io_mode mode)
+  : file{path, mode}
+{
+  if (mode_ == io_mode::create)
+    set_object(object_type::vertical_profile);
+  else if (type_ != object_type::vertical_profile)
+    throw make_error(hnd_, "unexpected object type", "vertical_profile");
+}
+
+vertical_profile::vertical_profile(file f)
+  : file{std::move(f)}
+{
+  if (mode_ == io_mode::create)
+    set_object(object_type::vertical_profile);
+  else if (type_ != object_type::vertical_profile)
+    throw make_error(hnd_, "unexpected object type", "vertical_profile");
+}
+
+auto vertical_profile::longitude() const -> double
+{
+  attributes()["lon"].get_real();
+}
+
+auto vertical_profile::set_longitude(double val) -> void
+{
+  attributes()["lon"].set(val);
+}
+
+auto vertical_profile::latitude() const -> double
+{
+  attributes()["lat"].get_real();
+}
+
+auto vertical_profile::set_latitude(double val) -> void
+{
+  attributes()["lat"].set(val);
+}
+
+auto vertical_profile::height() const -> double
+{
+  attributes()["height"].get_real();
+}
+
+auto vertical_profile::set_height(double val) -> void
+{
+  attributes()["height"].set(val);
+}
+
+auto vertical_profile::level_count() const -> long
+{
+  attributes()["levels"].get_integer();
+}
+
+auto vertical_profile::set_level_count(long val) -> void
+{
+  attributes()["levels"].set(val);
+}
+
+auto vertical_profile::interval() const -> double
+{
+  attributes()["interval"].get_real();
+}
+
+auto vertical_profile::set_interval(double val) -> void
+{
+  attributes()["interval"].set(val);
+}
+
+auto vertical_profile::min_height() const -> double
+{
+  attributes()["minheight"].get_real();
+}
+
+auto vertical_profile::set_min_height(double val) -> void
+{
+  attributes()["minheight"].set(val);
+}
+
+auto vertical_profile::max_height() const -> double
+{
+  attributes()["maxheight"].get_real();
+}
+
+auto vertical_profile::set_max_height(double val) -> void
+{
+  attributes()["maxheight"].set(val);
+}
+
+auto vertical_profile::is_api_attribute(const std::string& name) const -> bool
+{
+  return 
+       name == "lon"
+    || name == "lat"
+    || name == "height"
+    || name == "levels"
+    || name == "interval"
+    || name == "minheight"
+    || name == "maxheight"
+    || file::is_api_attribute(name);
+}
+
+auto profile::start_date() const -> std::string
+{
+  return attributes()["startdate"].get_string();
+}
+
+auto profile::set_start_date(const std::string& val) -> void
+{
+  attributes()["startdate"].set(val);
+}
+
+auto profile::start_time() const -> std::string
+{
+  return attributes()["starttime"].get_string();
+}
+
+auto profile::set_start_time(const std::string& val) -> void
+{
+  attributes()["starttime"].set(val);
+}
+
+auto profile::start_date_time() const -> time_t
+{
+  return strings_to_time(attributes()["startdate"].get_string(), attributes()["starttime"].get_string());
+}
+
+auto profile::set_start_date_time(time_t val) -> void
+{
+  char date[9], time[7];
+  time_to_strings(val, date, time);
+  attributes()["startdate"].set(date);
+  attributes()["starttime"].set(time);
+}
+
+auto profile::end_date() const -> std::string
+{
+  return attributes()["enddate"].get_string();
+}
+
+auto profile::set_end_date(const std::string& val) -> void
+{
+  attributes()["enddate"].set(val);
+}
+
+auto profile::end_time() const -> std::string
+{
+  return attributes()["endtime"].get_string();
+}
+
+auto profile::set_end_time(const std::string& val) -> void
+{
+  attributes()["endtime"].set(val);
+}
+
+auto profile::end_date_time() const -> time_t
+{
+  return strings_to_time(attributes()["enddate"].get_string(), attributes()["endtime"].get_string());
+}
+
+auto profile::set_end_date_time(time_t val) -> void
+{
+  char date[9], time[7];
+  time_to_strings(val, date, time);
+  attributes()["enddate"].set(date);
+  attributes()["endtime"].set(time);
+}
+
+auto profile::is_api_attribute(const std::string& name) const -> bool
+{
+  return 
+       name == "startdate"
+    || name == "starttime"
+    || name == "enddate"
+    || name == "endtime"
+    || dataset::is_api_attribute(name);
+}
