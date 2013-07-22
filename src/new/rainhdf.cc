@@ -496,7 +496,7 @@ auto attribute::open_or_create(data_type type, size_t size, handle* type_out) ->
   {
     // if type is a match, just open as normal
     if (type_ == type && size_ == size)
-      return open();
+      return open(type_out);
 
     // typemismatch - delete existing attribute
     if (type_ != data_type::uninitialized)
