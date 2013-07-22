@@ -313,7 +313,7 @@ auto attribute::get_boolean() const -> bool
   if (type_ == data_type::unknown)
     open();
   if (type_ != data_type::boolean)
-    throw make_error(open(), "type mismatch", "boolean");
+    throw make_error(open(), "type mismatch", name_.c_str(), "boolean");
   return size_ == 5;
 }
 
@@ -321,10 +321,10 @@ auto attribute::get_integer() const -> long
 {
   auto hnd = open();
   if (type_ != data_type::integer)
-    throw make_error(hnd, "type mismatch", "integer");
+    throw make_error(hnd, "type mismatch", name_.c_str(), "integer");
   long val;
   if (H5Aread(hnd, H5T_NATIVE_LONG, &val) < 0)
-    throw make_error(hnd, "attribute read", "integer");
+    throw make_error(hnd, "attribute read", name_.c_str(), "integer");
   return val;
 }
 
@@ -332,10 +332,10 @@ auto attribute::get_real() const -> double
 {
   auto hnd = open();
   if (type_ != data_type::real)
-    throw make_error(hnd, "type mismatch", "real");
+    throw make_error(hnd, "type mismatch", name_.c_str(), "real");
   double val;
   if (H5Aread(hnd, H5T_NATIVE_DOUBLE, &val) < 0)
-    throw make_error(hnd, "attribute read", "real");
+    throw make_error(hnd, "attribute read", name_.c_str(), "real");
   return val;
 }
 
@@ -345,22 +345,22 @@ auto attribute::get_string() const -> std::string
 
   auto hnd = open(&type);
   if (type_ != data_type::string)
-    throw make_error(hnd, "type mismatch", "string");
+    throw make_error(hnd, "type mismatch", name_.c_str(), "string");
 
   // use stack allocation for short strings
   if (size_ < 256)
   {
     char* buf = static_cast<char*>(alloca(size_));
     if (H5Aread(hnd, type, buf) < 0)
-      throw make_error(hnd, "attribute read", "string");
-    return {buf, size_};
+      throw make_error(hnd, "attribute read", name_.c_str(), "string");
+    return {buf, size_ - 1};
   }
   else
   {
     std::unique_ptr<char[]> buf{new char[size_]};
     if (H5Aread(hnd, type, buf.get()) < 0)
-      throw make_error(hnd, "attribute read", "string");
-    return {buf.get(), size_};
+      throw make_error(hnd, "attribute read", name_.c_str(), "string");
+    return {buf.get(), size_ - 1};
   }
 }
 
@@ -368,10 +368,10 @@ auto attribute::get_integer_array() const -> std::vector<long>
 {
   auto hnd = open();
   if (type_ != data_type::integer_array)
-    throw make_error(hnd, "type mismatch", "integer_array");
+    throw make_error(hnd, "type mismatch", name_.c_str(), "integer_array");
   std::vector<long> val(size_);
   if (H5Aread(hnd, H5T_NATIVE_LONG, &val[0]) < 0)
-    throw make_error(hnd, "attribute read", "integer_array");
+    throw make_error(hnd, "attribute read", name_.c_str(), "integer_array");
   return val;
 }
 
@@ -379,10 +379,10 @@ auto attribute::get_real_array() const -> std::vector<double>
 {
   auto hnd = open();
   if (type_ != data_type::integer_array)
-    throw make_error(hnd, "type mismatch", "real_array");
+    throw make_error(hnd, "type mismatch", name_.c_str(), "real_array");
   std::vector<double> val(size_);
   if (H5Aread(hnd, H5T_NATIVE_DOUBLE, &val[0]) < 0)
-    throw make_error(hnd, "attribute read", "double_array");
+    throw make_error(hnd, "attribute read", name_.c_str(), "double_array");
   return val;
 }
 
@@ -391,21 +391,21 @@ auto attribute::set(bool val) -> void
   handle type;
   auto hnd = open_or_create(data_type::boolean, val ? 5 : 6, &type);
   if (H5Awrite(hnd, type, val ? "True" : "False") < 0)
-    throw make_error(hnd, "attribute write", "integer");
+    throw make_error(hnd, "attribute write", name_.c_str(), "integer");
 }
 
 auto attribute::set(long val) -> void
 {
   auto hnd = open_or_create(data_type::integer, 1);
   if (H5Awrite(hnd, H5T_NATIVE_LONG, &val) < 0)
-    throw make_error(hnd, "attribute write", "integer");
+    throw make_error(hnd, "attribute write", name_.c_str(), "integer");
 }
 
 auto attribute::set(double val) -> void
 {
   auto hnd = open_or_create(data_type::real, 1);
   if (H5Awrite(hnd, H5T_NATIVE_DOUBLE, &val) < 0)
-    throw make_error(hnd, "attribute write", "real");
+    throw make_error(hnd, "attribute write", name_.c_str(), "real");
 }
 
 auto attribute::set(const char* val) -> void
@@ -413,7 +413,7 @@ auto attribute::set(const char* val) -> void
   handle type;
   auto hnd = open_or_create(data_type::string, strlen(val) + 1, &type);
   if (H5Awrite(hnd, type, &val) < 0)
-    throw make_error(hnd, "attribute write", "string");
+    throw make_error(hnd, "attribute write", name_.c_str(), "string");
 }
 
 auto attribute::set(const std::string& val) -> void
@@ -421,21 +421,21 @@ auto attribute::set(const std::string& val) -> void
   handle type;
   auto hnd = open_or_create(data_type::string, val.size() + 1, &type);
   if (H5Awrite(hnd, type, &val) < 0)
-    throw make_error(hnd, "attribute write", "string");
+    throw make_error(hnd, "attribute write", name_.c_str(), "string");
 }
 
 auto attribute::set(const std::vector<long>& val) -> void
 {
   auto hnd = open_or_create(data_type::integer_array, val.size());
   if (H5Awrite(hnd, H5T_NATIVE_LONG, val.data()) < 0)
-    throw make_error(hnd, "attribute write", "integer_array");
+    throw make_error(hnd, "attribute write", name_.c_str(), "integer_array");
 }
 
 auto attribute::set(const std::vector<double>& val) -> void
 {
   auto hnd = open_or_create(data_type::real_array, val.size());
   if (H5Awrite(hnd, H5T_NATIVE_DOUBLE, val.data()) < 0)
-    throw make_error(hnd, "attribute write", "real_array");
+    throw make_error(hnd, "attribute write", name_.c_str(), "real_array");
 }
 
 // open an existing attribute
@@ -449,16 +449,16 @@ auto attribute::open(handle* type_out) const -> handle
   // get the size (array elements)
   handle space{H5Aget_space(hnd)};
   if (!space)
-    throw make_error(hnd, "get attribute space");
+    throw make_error(hnd, "get attribute space", name_.c_str());
   auto hsize = H5Sget_simple_extent_npoints(space);
   if (hsize < 0)
-    throw make_error(hnd, "get attribute size");
+    throw make_error(hnd, "get attribute size", name_.c_str());
   size_ = hsize;
 
   // determine the type
   handle type{H5Aget_type(hnd)};
   if (!type)
-    throw make_error(hnd, "get attribute type");
+    throw make_error(hnd, "get attribute type", name_.c_str());
   switch (H5Tget_class(type))
   {
   case H5T_INTEGER:
@@ -474,8 +474,8 @@ auto attribute::open(handle* type_out) const -> handle
     {
       char buf[6];
       if (H5Aread(hnd, type, buf) < 0)
-        throw make_error(hnd, "read attribute");
-      if (strcmp(buf, "True") || strcmp(buf, "False"))
+        throw make_error(hnd, "read attribute", name_.c_str());
+      if (strcmp(buf, "True") == 0 || strcmp(buf, "False") == 0)
         type_ = data_type::boolean;
     }
     break;
@@ -502,7 +502,7 @@ auto attribute::open_or_create(data_type type, size_t size, handle* type_out) ->
     if (type_ != data_type::uninitialized)
     {
       if (H5Adelete(*parent_, name_.c_str()) < 0)
-        throw make_error(*parent_, "delete attribute");
+        throw make_error(*parent_, "delete attribute", name_.c_str());
     }
   }
 
@@ -612,9 +612,12 @@ attribute_store::attribute_store(handle::id_t hnd, bool existing)
 {
   if (existing)
   {
-    what_ = H5Gopen(hnd_, "what", H5P_DEFAULT);
-    where_ = H5Gopen(hnd_, "where", H5P_DEFAULT);
-    how_ = H5Gopen(hnd_, "how", H5P_DEFAULT);
+    if (H5Lexists(hnd_, "what", H5P_DEFAULT) > 0)
+      what_ = H5Gopen(hnd_, "what", H5P_DEFAULT);
+    if (H5Lexists(hnd_, "where", H5P_DEFAULT) > 0)
+      where_ = H5Gopen(hnd_, "where", H5P_DEFAULT);
+    if (H5Lexists(hnd_, "how", H5P_DEFAULT) > 0)
+      how_ = H5Gopen(hnd_, "how", H5P_DEFAULT);
 
     hsize_t n = 0;
     H5O_info_t info;
@@ -1239,11 +1242,17 @@ auto file::dset_open_as(size_t i) const -> T
   return {hnd_, i, true};
 }
 
+template auto file::dset_open_as<scan>(size_t i) const -> scan;
+template auto file::dset_open_as<profile>(size_t i) const -> profile;
+
 template <class T>
 auto file::dset_make_as() -> T
 {
   return {hnd_, size_++, false};
 }
+
+template auto file::dset_make_as<scan>() -> scan;
+template auto file::dset_make_as<profile>() -> profile;
 
 auto file::conventions() const -> std::string
 {
@@ -1744,3 +1753,4 @@ auto profile::is_api_attribute(const std::string& name) const -> bool
     || name == "endtime"
     || dataset::is_api_attribute(name);
 }
+

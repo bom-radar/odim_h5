@@ -367,7 +367,7 @@ namespace hdf {
     const T ud = undetect();
     const auto a = gain();
     const auto b = offset();
-    const auto size = size();
+    const auto size = this->size();
 
     std::unique_ptr<T[]> buf{new T[size]};
     for (size_t i = 0; i < size; ++i)
@@ -380,7 +380,7 @@ namespace hdf {
         buf[i] = (data[i] - b) / a;
     }
 
-    write(buf);
+    write(buf.get());
   }
 
   /// Dataset group which contains data and optional quality layers
