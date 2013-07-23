@@ -6,35 +6,11 @@
 #-------------------------------------------------------------------------------
 
 set(lib_HDR
-  attribute.h
-  base.h
-  data.h
-  error.h
-  gauge_calibration.h
-  macros.h
-  product.h
-  profile.h
-  raii.h
   rainhdf.h
-  scan.h
-  util.h
-  vertical_profile.h
-  volume.h
   )
 
 set(lib_SRC
-  attribute.cc
-  base.cc
-  data.cc
-  error.cc
-  gauge_calibration.cc
-  product.cc
-  profile.cc
   rainhdf.cc
-  scan.cc
-  util.cc
-  vertical_profile.cc
-  volume.cc
   )
 
 # build the rainhdf library
