@@ -16,6 +16,7 @@ using namespace rainfields::hdf;
 
 int main(int argc, const char *argv[])
 {
+#if 0
   try
   {
     // Create a vertical profile
@@ -175,6 +176,7 @@ int main(int argc, const char *argv[])
   printf("open objs: %d (should be 0)\n", H5Fget_obj_count(H5F_OBJ_ALL, H5F_OBJ_ALL));
 
   cout << "done" << endl;
+#endif
 }
 
 
