@@ -412,7 +412,7 @@ auto attribute::set(const char* val) -> void
 {
   handle type;
   auto hnd = open_or_create(data_type::string, strlen(val) + 1, &type);
-  if (H5Awrite(hnd, type, &val) < 0)
+  if (H5Awrite(hnd, type, val) < 0)
     throw make_error(hnd, "attribute write", name_.c_str(), "string");
 }
 
@@ -420,7 +420,7 @@ auto attribute::set(const std::string& val) -> void
 {
   handle type;
   auto hnd = open_or_create(data_type::string, val.size() + 1, &type);
-  if (H5Awrite(hnd, type, &val) < 0)
+  if (H5Awrite(hnd, type, val.c_str()) < 0)
     throw make_error(hnd, "attribute write", name_.c_str(), "string");
 }
 
@@ -1175,6 +1175,7 @@ file::file(const std::string& path, io_mode mode)
   : group{file_checked_open_or_create(path.c_str(), mode), mode != io_mode::create}
   , mode_{mode}
   , type_{object_type::unknown}
+  , size_{0}
 {
   if (mode != io_mode::create)
   {

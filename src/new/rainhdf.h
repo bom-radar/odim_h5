@@ -372,10 +372,10 @@ namespace hdf {
     std::unique_ptr<T[]> buf{new T[size]};
     for (size_t i = 0; i < size; ++i)
     {
-      if (is_nodata(data[i]))
-        buf[i] = nd;
-      else if (is_undetect(data[i]))
+      if (is_undetect(data[i]))
         buf[i] = ud;
+      else if (is_nodata(data[i]))
+        buf[i] = nd;
       else
         buf[i] = (data[i] - b) / a;
     }
@@ -598,7 +598,7 @@ namespace hdf {
     polar_volume(file f);
 
     /// Get the number of scans in the volume
-    auto scan_count() const -> size_t                           { return size(); }
+    auto scan_count() const -> size_t                           { return dataset_count(); }
     /// Open a scan
     auto scan_open(size_t i) const -> scan                      { return dset_open_as<scan>(i); }
     /// Append a new scan
@@ -673,7 +673,7 @@ namespace hdf {
     vertical_profile(file f);
 
     /// Get the number of profiles in the volume
-    auto profile_count() const -> size_t                        { return size(); }
+    auto profile_count() const -> size_t                        { return dataset_count(); }
     /// Open a profile
     auto profile_open(size_t i) const -> profile                { return dset_open_as<profile>(i); }
     /// Append a new profile
