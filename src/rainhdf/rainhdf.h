@@ -457,6 +457,9 @@ namespace hdf {
      */
     file(const std::string& path, io_mode mode);
 
+    /// Get the io_mode used to open the file
+    auto mode() const noexcept                                  { return mode_; }
+
     /// Ensure all write actions have been synced to disk
     auto flush() -> void;
 
