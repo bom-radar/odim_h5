@@ -120,6 +120,7 @@ namespace hdf {
     mutable size_t    size_;      // number of elements in array or characters in string
 
     friend class attribute_store;
+    friend class data;
     friend class file;
   };
 

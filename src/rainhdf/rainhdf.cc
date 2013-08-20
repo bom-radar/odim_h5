@@ -899,7 +899,8 @@ data::data(
   // if 2d, add the image attributes (for sake of hdfview)
   if (rank == 2)
   {
-    // TODO
+    attribute{&data_, "CLASS", false}.set("IMAGE");
+    attribute{&data_, "IMAGE_VERSION", false}.set("1.2");
   }
 }
 
