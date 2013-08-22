@@ -311,15 +311,15 @@ namespace hdf {
 
     /// Unpack and read the dataset, replace nodata and undetect with user values
     template <typename T>
-    auto read_unpack(T* data, T nodata, T undetect) const -> void;
+    auto read_unpack(T* data, T undetect, T nodata) const -> void;
 
     /// Write the dataset without packing
     template <typename T>
     auto write(const T* data) -> void;
 
     /// Pack and write the dataset, use passed functors to test for undetect and nodata
-    template <typename T, class NoDataTest, class UndetectTest>
-    auto write_pack(const T* data, NoDataTest is_nodata, UndetectTest is_undetect) -> void;
+    template <typename T, class UndetectTest, class NoDataTest>
+    auto write_pack(const T* data, UndetectTest is_undetect, NoDataTest is_nodata) -> void;
 
   protected:
     data(const handle& parent, bool quality, size_t index);
@@ -340,7 +340,7 @@ namespace hdf {
   };
 
   template <typename T>
-  auto data::read_unpack(T* data, T nodata, T undetect) const -> void
+  auto data::read_unpack(T* data, T undetect, T nodata) const -> void
   {
     read(data);
 
@@ -352,17 +352,17 @@ namespace hdf {
 
     for (size_t i = 0; i < size; ++i)
     {
+      if (data[i] == ud)
+        data[i] = undetect;
       if (data[i] == nd)
         data[i] = nodata;
-      else if (data[i] == ud)
-        data[i] = undetect;
       else
         data[i] = a * data[i] + b;
     }
   }
 
-  template <typename T, class NoDataTest, class UndetectTest>
-  auto data::write_pack(const T* data, NoDataTest is_nodata, UndetectTest is_undetect) -> void
+  template <typename T, class UndetectTest, class NoDataTest>
+  auto data::write_pack(const T* data, UndetectTest is_undetect, NoDataTest is_nodata) -> void
   {
     const T nd = nodata();
     const T ud = undetect();
