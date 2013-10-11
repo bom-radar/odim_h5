@@ -352,6 +352,8 @@ namespace hdf {
 
     for (size_t i = 0; i < size; ++i)
     {
+      // TODO - if T is a floating point, then the == operations below are unsafe
+      //      - should introduce a tolerance, or if store type is int, read as int and convert to T
       if (data[i] == ud)
         data[i] = undetect;
       if (data[i] == nd)
