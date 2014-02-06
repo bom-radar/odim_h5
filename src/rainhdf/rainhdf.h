@@ -356,7 +356,7 @@ namespace hdf {
       //      - should introduce a tolerance, or if store type is int, read as int and convert to T
       if (data[i] == ud)
         data[i] = undetect;
-      if (data[i] == nd)
+      else if (data[i] == nd)
         data[i] = nodata;
       else
         data[i] = a * data[i] + b;
