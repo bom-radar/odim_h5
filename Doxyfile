@@ -72,7 +72,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = rainhdf
+INPUT                  = src/rainhdf
 FILE_PATTERNS          = 
 RECURSIVE              = YES
 EXCLUDE                = 
