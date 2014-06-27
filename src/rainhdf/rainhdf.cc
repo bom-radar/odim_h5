@@ -378,7 +378,7 @@ auto attribute::get_integer_array() const -> std::vector<long>
 auto attribute::get_real_array() const -> std::vector<double>
 {
   auto hnd = open();
-  if (type_ != data_type::integer_array)
+  if (type_ != data_type::real_array)
     throw make_error(hnd, "type mismatch", name_.c_str(), "real_array");
   std::vector<double> val(size_);
   if (H5Aread(hnd, H5T_NATIVE_DOUBLE, &val[0]) < 0)
