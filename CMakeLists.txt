@@ -26,17 +26,8 @@ set(RAINHDF_BUGREPORT "m.curtis@bom.gov.au")
 add_definitions(-DRAINHDF_VERSION="${RAINHDF_VERSION}")
 add_definitions(-DRAINHDF_BUGREPORT="${RAINHDF_BUGREPORT}")
 
-# determine C++11 support (currently we only auto-detect for gcc)
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-  execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
-  if (NOT GCC_VERSION VERSION_LESS 4.5.3)
-    set(DEF_CXX11 ON)
-  endif()
-endif()
-option(ENABLE_CXX11 "Whether to compile as C++11" ${DEF_CXX11})
-if (ENABLE_CXX11)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif()
+# enable C++11 support
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 # find the HDF5 library
 find_package(HDF5 1.8.8 REQUIRED)
