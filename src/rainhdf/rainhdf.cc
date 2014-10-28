@@ -1244,6 +1244,7 @@ auto file::dset_open_as(size_t i) const -> T
   return {hnd_, i, true};
 }
 
+template auto file::dset_open_as<dataset>(size_t i) const -> dataset;
 template auto file::dset_open_as<scan>(size_t i) const -> scan;
 template auto file::dset_open_as<profile>(size_t i) const -> profile;
 
