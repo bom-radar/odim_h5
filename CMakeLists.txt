@@ -19,8 +19,8 @@ project(rainhdf)
 
 # package versioning
 set(RAINHDF_VERSION_MAJOR 1)
-set(RAINHDF_VERSION_MINOR 1)
-set(RAINHDF_VERSION_PATCH 2)
+set(RAINHDF_VERSION_MINOR 2)
+set(RAINHDF_VERSION_PATCH 0)
 set(RAINHDF_VERSION ${RAINHDF_VERSION_MAJOR}.${RAINHDF_VERSION_MINOR}.${RAINHDF_VERSION_PATCH})
 set(RAINHDF_BUGREPORT "m.curtis@bom.gov.au")
 add_definitions(-DRAINHDF_VERSION="${RAINHDF_VERSION}")
@@ -33,7 +33,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 find_package(HDF5 1.8.8 REQUIRED)
 include_directories(${HDF5_INCLUDE_DIRS})
 add_definitions(${HDF5_DEFINITIONS})
-set(API_DEPS "${API_DEPS} hdf5 >= 1.8.8")
+set(API_DEPS "${API_DEPS} hdf5 >= 1.8.14")
 
 # customizable installation locations
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
