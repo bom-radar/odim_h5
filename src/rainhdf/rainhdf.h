@@ -552,6 +552,11 @@ namespace hdf {
     /// Set the number of azimuth gates in the scan
     auto set_ray_count(long val) -> void;
 
+    /// Get the azimuthal offset of the CCW edge of the first ray from north (degrees)
+    auto ray_start() const -> double;
+    /// Set the azimuthal offset of the CCW edge of the first ray from north (degrees)
+    auto set_ray_start(double val) -> void;
+
     /// Get the index of the first azimuth gate radiated
     auto first_ray_radiated() const -> long;
     /// Set the index of the first azimuth gate radiated

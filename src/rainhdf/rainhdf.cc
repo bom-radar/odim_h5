@@ -27,8 +27,8 @@ static_assert(
     , "data::max_rank is less than H5S_MAX_RANK");
 
 static constexpr int default_version_major = 2;
-static constexpr int default_version_minor = 1;
-static constexpr const char* default_conventions = "ODIM_H5/V2_1";
+static constexpr int default_version_minor = 2;
+static constexpr const char* default_conventions = "ODIM_H5/V2_2";
 
 // these MUST remain in ASCII sorted order
 static const char* what_names[] = 
@@ -51,6 +51,11 @@ static const char* what_names[] =
   , "version"
 };
 
+/* Note:
+ * 'astart' is a how attribute, despite my best efforts to have it adopted as a
+ * compulsory where attribute. It is therefore exposed via the API but deliberately
+ * excluded from this list.  Hopefully in a post V2.2 release of ODIM we can get
+ * astart promoted to where. */
 static const char* where_names[] =
 {
     "LL_lat"
@@ -1431,6 +1436,16 @@ auto scan::set_ray_count(long val) -> void
   attributes()["nrays"].set(val);
 }
 
+auto scan::ray_start() const -> double
+{
+  return attributes()["astart"].get_real();
+}
+
+auto scan::set_ray_start(double val) -> void
+{
+  attributes()["astart"].set(val);
+}
+
 auto scan::first_ray_radiated() const -> long
 {
   return attributes()["a1gate"].get_integer();
@@ -1515,6 +1530,7 @@ auto scan::is_api_attribute(const std::string& name) const -> bool
     || name == "rstart"
     || name == "rscale"
     || name == "nrays"
+    || name == "astart"
     || name == "a1gate"
     || name == "startdate"
     || name == "starttime"

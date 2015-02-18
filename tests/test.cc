@@ -16,6 +16,7 @@ using namespace rainfields::hdf;
 
 int main(int argc, const char *argv[])
 {
+  return 0;
 #if 0
   try
   {
