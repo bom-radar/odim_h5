@@ -171,6 +171,10 @@ namespace hdf {
     auto crend() const noexcept -> const_reverse_iterator       { return attrs_.rend(); }
 
     /// Find an attribute by name
+    auto find(const char* name) noexcept -> iterator;
+    /// Find an attribute by name
+    auto find(const char* name) const noexcept -> const_iterator;
+    /// Find an attribute by name
     auto find(const std::string& name) noexcept -> iterator;
     /// Find an attribute by name
     auto find(const std::string& name) const noexcept -> const_iterator;

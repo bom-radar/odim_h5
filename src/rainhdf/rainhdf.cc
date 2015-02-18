@@ -729,6 +729,22 @@ auto attribute_store::fix_attribute_parents(const attribute_store& old) -> void
   }
 }
 
+auto attribute_store::find(const char* name) noexcept -> iterator
+{
+  for (auto i = attrs_.begin(); i != attrs_.end(); ++i)
+    if (i->name() == name)
+      return i;
+  return attrs_.end();
+}
+
+auto attribute_store::find(const char* name) const noexcept -> const_iterator
+{
+  for (auto i = attrs_.begin(); i != attrs_.end(); ++i)
+    if (i->name() == name)
+      return i;
+  return attrs_.end();
+}
+
 auto attribute_store::find(const std::string& name) noexcept -> iterator
 {
   for (auto i = attrs_.begin(); i != attrs_.end(); ++i)
@@ -1438,7 +1454,11 @@ auto scan::set_ray_count(long val) -> void
 
 auto scan::ray_start() const -> double
 {
-  return attributes()["astart"].get_real();
+  // since astart is technically a 'how' attribute we must cope iwth its absence and return the default
+  auto i = attributes().find("astart");
+  if (i != attributes().end())
+    return i->get_real();
+  return 0.0;
 }
 
 auto scan::set_ray_start(double val) -> void
