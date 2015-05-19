@@ -30,20 +30,28 @@ add_definitions(-DRAINHDF_BUGREPORT="${RAINHDF_BUGREPORT}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 # find the HDF5 library
-find_package(HDF5 1.8.8 REQUIRED)
+find_package(HDF5 1.8.14 REQUIRED)
 include_directories(${HDF5_INCLUDE_DIRS})
 add_definitions(${HDF5_DEFINITIONS})
 set(API_DEPS "${API_DEPS} hdf5 >= 1.8.14")
 
-# customizable installation locations
-set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
-set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
-set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
+# default locations based on system configuration
+get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
+if (LIB64)
+  set(DEF_INSTALL_LIB_DIR lib64)
+else()
+  set(DEF_INSTALL_LIB_DIR lib)
+endif()
 if (WIN32 AND NOT CYGWIN)
   set(DEF_INSTALL_CMAKE_DIR cmake)
 else()
-  set(DEF_INSTALL_CMAKE_DIR lib/cmake/rainhdf)
+  set(DEF_INSTALL_CMAKE_DIR ${DEF_INSTALL_LIB_DIR}/cmake/rainhdf)
 endif()
+
+# customizable installation locations
+set(INSTALL_LIB_DIR ${DEF_INSTALL_LIBDIR} CACHE PATH "Installation directory for libraries")
+set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
+set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
 
 # convert relative paths to absolute
@@ -67,29 +75,17 @@ install(FILES "${PROJECT_BINARY_DIR}/rainhdf.pc" DESTINATION "${INSTALL_LIB_DIR}
 
 # boilerplate to generate our config and version cmake files
 
-# add all targets to build-tree export set
-export(TARGETS rainhdf FILE "${PROJECT_BINARY_DIR}/rainhdf-targets.cmake")
-
-# export package for use from build-tree
-export(PACKAGE rainhdf)
-
 # create config files
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")
-# ... for build tree
-set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
-configure_file(rainhdf-config.cmake.in "${PROJECT_BINARY_DIR}/rainhdf-config.cmake" @ONLY)
-# ... for install tree
 set(CONF_INCLUDE_DIRS "\${RAINHDF_CMAKE_DIR}/${REL_INCLUDE_DIR}")
-configure_file(rainhdf-config.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/rainhdf-config.cmake" @ONLY)
-# ... for both
+configure_file(rainhdf-config.cmake.in "${PROJECT_BINARY_DIR}/rainhdf-config.cmake" @ONLY)
 configure_file(rainhdf-config-version.cmake.in "${PROJECT_BINARY_DIR}/rainhdf-config-version.cmake" @ONLY)
 
 # install the config files
 install(FILES
-  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/rainhdf-config.cmake"
+  "${PROJECT_BINARY_DIR}/rainhdf-config.cmake"
   "${PROJECT_BINARY_DIR}/rainhdf-config-version.cmake"
   DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
 
 # install the export set for use with the install-tree
 install(EXPORT rainhdf-targets DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
-
