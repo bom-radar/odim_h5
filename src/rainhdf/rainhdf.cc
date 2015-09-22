@@ -49,6 +49,7 @@ static const char* what_names[] =
   , "time"
   , "undetect"
   , "version"
+  , nullptr
 };
 
 /* Note:
@@ -93,45 +94,22 @@ static const char* where_names[] =
   , "xsize"
   , "yscale"
   , "ysize"
+  , nullptr
 };
 
 static auto is_what_attribute(const char* name) -> bool
 {
-  auto beg = &what_names[0];
-  auto end = &what_names[std::extent<decltype(what_names)>::value];
-  auto mid = &what_names[std::extent<decltype(what_names)>::value / 2];
-  while (beg <= end)
-  {
-    // TODO - may be opposite arg order required
-    auto cmp = strcmp(name, *mid);
-    if (cmp == 0)
+  for (auto ptr = what_names; *ptr != nullptr; ++ptr)
+    if (strcmp(*ptr, name) == 0)
       return true;
-    else if (cmp < 0)
-      end = mid - 1;
-    else
-      beg = mid + 1;
-    mid = beg + (end - beg) / 2;
-  }
   return false;
 }
 
 static auto is_where_attribute(const char* name) -> bool
 {
-  auto beg = &where_names[0];
-  auto end = &where_names[std::extent<decltype(where_names)>::value];
-  auto mid = &where_names[std::extent<decltype(where_names)>::value / 2];
-  while (beg <= end)
-  {
-    // TODO - may be opposite arg order required
-    auto cmp = strcmp(name, *mid);
-    if (cmp == 0)
+  for (auto ptr = where_names; *ptr != nullptr; ++ptr)
+    if (strcmp(*ptr, name) == 0)
       return true;
-    else if (cmp < 0)
-      end = mid - 1;
-    else
-      beg = mid + 1;
-    mid = beg + (end - beg) / 2;
-  }
   return false;
 }
 
