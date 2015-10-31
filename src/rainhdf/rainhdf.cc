@@ -259,7 +259,8 @@ auto handle::operator=(const handle& rhs) -> handle&
   if (id > 0)
     H5Idec_ref(id);
   id = rhs.id;
-  H5Iinc_ref(id);
+  if (id > 0)
+    H5Iinc_ref(id);
   return *this;
 }
 
