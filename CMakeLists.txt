@@ -1,10 +1,19 @@
 #-------------------------------------------------------------------------------
-# Rainfields ODIM HDF5 Library (rainhdf)
+# ODIM (HDF5 format) Support Library
 #
 # Copyright (C) 2013 Commonwealth of Australia, Bureau of Meteorology
 # See COPYING for licensing and warranty details
 #-------------------------------------------------------------------------------
 cmake_minimum_required(VERSION 2.8)
+
+# version number used for shared library
+#  - major -> update when breaking API
+#  - minor -> update when breaking ABI - users only need to re-link
+#  - patch -> update when no-relink is required (ie: self-contained inside .so)
+set(ODIM_H5_VERSION_MAJOR 1)
+set(ODIM_H5_VERSION_MINOR 0)
+set(ODIM_H5_VERSION_PATCH 0)
+set(ODIM_H5_VERSION "${ODIM_H5_VERSION_MAJOR}.${ODIM_H5_VERSION_MINOR}.${ODIM_H5_VERSION_PATCH}")
 
 # default to a release build (must be before project())
 if (DEFINED CMAKE_BUILD_TYPE)
@@ -15,25 +24,7 @@ endif()
 set(CMAKE_BUILD_TYPE ${DEF_BUILD_TYPE} CACHE STRING "Build type: <none>|Debug|Release|RelWithDebInfo|MinSizeRel")
 
 # initialize the project
-project(rainhdf)
-
-# package versioning
-set(RAINHDF_VERSION_MAJOR 1)
-set(RAINHDF_VERSION_MINOR 2)
-set(RAINHDF_VERSION_PATCH 0)
-set(RAINHDF_VERSION ${RAINHDF_VERSION_MAJOR}.${RAINHDF_VERSION_MINOR}.${RAINHDF_VERSION_PATCH})
-set(RAINHDF_BUGREPORT "m.curtis@bom.gov.au")
-add_definitions(-DRAINHDF_VERSION="${RAINHDF_VERSION}")
-add_definitions(-DRAINHDF_BUGREPORT="${RAINHDF_BUGREPORT}")
-
-# enable C++11 support
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
-# find the HDF5 library
-find_package(HDF5 1.8.14 REQUIRED)
-include_directories(${HDF5_INCLUDE_DIRS})
-add_definitions(${HDF5_DEFINITIONS})
-set(API_DEPS "${API_DEPS} hdf5 >= 1.8.14")
+project(odim_h5)
 
 # default locations based on system configuration
 get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
@@ -45,7 +36,7 @@ endif()
 if (WIN32 AND NOT CYGWIN)
   set(DEF_INSTALL_CMAKE_DIR cmake)
 else()
-  set(DEF_INSTALL_CMAKE_DIR ${DEF_INSTALL_LIB_DIR}/cmake/rainhdf)
+  set(DEF_INSTALL_CMAKE_DIR ${DEF_INSTALL_LIB_DIR}/cmake/odim_h5)
 endif()
 
 # customizable installation locations
@@ -62,30 +53,61 @@ foreach(p LIB BIN INCLUDE CMAKE)
   endif()
 endforeach()
 
-# setup include directories
-include_directories("${PROJECT_SOURCE_DIR}/src" "${PROJECT_BINARY_DIR}/src")
+# external dependencies
+find_package(HDF5 1.8.14 REQUIRED)
+include_directories(${HDF5_INCLUDE_DIRS})
+add_definitions(${HDF5_DEFINITIONS})
+set(API_DEPS "${API_DEPS} hdf5 >= 1.8.14")
 
-# add sub directories
-add_subdirectory(src)
-add_subdirectory(tests)
+# extract sourcee tree version information from git
+find_package(Git)
+if(GIT_FOUND)
+  execute_process(
+    COMMAND "${GIT_EXECUTABLE}" describe --dirty
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+    OUTPUT_VARIABLE ODIM_H5_RELEASE_TAG
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET)
+endif()
+if(NOT DEFINED ODIM_H5_RELEASE_TAG OR "${ODIM_H5_RELEASE_TAG}" STREQUAL "")
+  set(ODIM_H5_RELEASE_TAG "unknown-version")
+endif()
+add_definitions("-DODIM_H5_RELEASE_TAG=\"${ODIM_H5_RELEASE_TAG}\"")
+
+# ensure C++11 support is turned on
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+# set a high warning level
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Wno-unused-parameter")
+
+# build our library
+add_library(odim_h5 SHARED odim_h5.h odim_h5.cc)
+target_link_libraries(odim_h5 ${HDF5_LIBRARIES})
+set_target_properties(odim_h5 PROPERTIES VERSION ${ODIM_H5_VERSION})
+set_target_properties(odim_h5 PROPERTIES PUBLIC_HEADER odim_h5.h)
+install(TARGETS odim_h5
+  EXPORT odim_h5-targets
+  LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+  PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}"
+  COMPONENT dev)
 
 # create pkg-config file
-configure_file(rainhdf.pc.in "${PROJECT_BINARY_DIR}/rainhdf.pc" @ONLY)
-install(FILES "${PROJECT_BINARY_DIR}/rainhdf.pc" DESTINATION "${INSTALL_LIB_DIR}/pkgconfig")
+configure_file(odim_h5.pc.in "${PROJECT_BINARY_DIR}/odim_h5.pc" @ONLY)
+install(FILES "${PROJECT_BINARY_DIR}/odim_h5.pc" DESTINATION "${INSTALL_LIB_DIR}/pkgconfig")
 
 # boilerplate to generate our config and version cmake files
 
 # create config files
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")
-set(CONF_INCLUDE_DIRS "\${RAINHDF_CMAKE_DIR}/${REL_INCLUDE_DIR}")
-configure_file(rainhdf-config.cmake.in "${PROJECT_BINARY_DIR}/rainhdf-config.cmake" @ONLY)
-configure_file(rainhdf-config-version.cmake.in "${PROJECT_BINARY_DIR}/rainhdf-config-version.cmake" @ONLY)
+set(CONF_INCLUDE_DIRS "\${ODIM_H5_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+configure_file(odim_h5-config.cmake.in "${PROJECT_BINARY_DIR}/odim_h5-config.cmake" @ONLY)
+configure_file(odim_h5-config-version.cmake.in "${PROJECT_BINARY_DIR}/odim_h5-config-version.cmake" @ONLY)
 
 # install the config files
 install(FILES
-  "${PROJECT_BINARY_DIR}/rainhdf-config.cmake"
-  "${PROJECT_BINARY_DIR}/rainhdf-config-version.cmake"
+  "${PROJECT_BINARY_DIR}/odim_h5-config.cmake"
+  "${PROJECT_BINARY_DIR}/odim_h5-config-version.cmake"
   DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
 
 # install the export set for use with the install-tree
-install(EXPORT rainhdf-targets DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+install(EXPORT odim_h5-targets DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)

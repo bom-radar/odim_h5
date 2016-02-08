@@ -1,0 +1,9 @@
+# Config file for the odim_h5 package
+# Defines the following variables:
+#  ODIM_H5_INCLUDE_DIRS - include directories for odim_h5
+#  ODIM_H5_LIBRARIES    - libraries to link against
+
+get_filename_component(ODIM_H5_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+include("${ODIM_H5_CMAKE_DIR}/odim_h5-targets.cmake")
+set(ODIM_H5_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+set(ODIM_H5_LIBRARIES odim_h5)

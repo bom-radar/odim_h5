@@ -1,11 +1,11 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainhdf)
+ * ODIM (HDF5 format) Support Library
  *
  * Copyright (C) 2013 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
-#ifndef RAINHDF_RAINHDF_H
-#define RAINHDF_RAINHDF_H
+#ifndef ODIM_H5_H
+#define ODIM_H5_H
 
 #include <memory>
 #include <stdexcept>
@@ -13,20 +13,13 @@
 #include <utility>
 #include <vector>
 
-namespace rainfields {
-namespace hdf {
-
-  /// Get the name of the rainhdf library
-  auto package_name() -> const char*;
-
-  /// Get the version of the rainhdf library
-  auto package_version() -> const char*;
-
-  /// Get the support email for rainhdf library
-  auto package_support() -> const char*;
+namespace odim_h5
+{
+  /// Get the SCM release tag that the library was built from
+  auto release_tag() -> char const*;
 
   /// Get the default ODIM_H5 conventions version used
-  auto default_version() -> std::pair<int, int>;
+  auto default_odim_version() -> std::pair<int, int>;
 
   // Internal - RAII object for managing an HDF5 API hid_t
   struct handle
@@ -753,6 +746,6 @@ namespace hdf {
    *   do_something(static_cast<polar_volume>(f));
    * }
    */
-}}
+}
 
 #endif

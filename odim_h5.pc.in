@@ -3,9 +3,9 @@ exec_prefix=@CMAKE_INSTALL_PREFIX@
 libdir=@INSTALL_LIB_DIR@
 includedir=@INSTALL_INCLUDE_DIR@
 
-Name: rainhdf
-Description: Rainfields ODIM HDF5 Library
-Version: @RAINHDF_VERSION@
+Name: odim_h5
+Description: ODIM (HDF5 format) support library
+Version: @ODIM_H5_VERSION@
 #Requires: @API_DEPS@
-Libs: -L${libdir} -lrainhdf -lhdf5
+Libs: -L${libdir} -lodim_h5 -lhdf5
 Cflags: -I${includedir}

@@ -1,17 +1,17 @@
 /*------------------------------------------------------------------------------
- * Rainfields ODIM HDF5 Library (rainhdf)
+ * ODIM (HDF5 format) Support Library
  *
  * Copyright (C) 2013 Commonwealth of Australia, Bureau of Meteorology
  * See COPYING for licensing and warranty details
  *----------------------------------------------------------------------------*/
-#include "rainhdf.h"
+#include "odim_h5.h"
 
 #include <hdf5.h>
 #include <alloca.h>
 #include <cstdio>
 #include <cstring>
 
-using namespace rainfields::hdf;
+using namespace odim_h5;
 
 /* To avoid our clients from having to include the HDF5 headers indirectly, we
  * redefine hid_t.  The following check ensures that our assumption about its
@@ -225,22 +225,12 @@ static auto time_to_strings(time_t val, char date[9], char time[7]) -> void
 
 //------------------------------------------------------------------------------
 
-auto rainfields::hdf::package_name() -> const char*
+auto odim_h5::release_tag() -> char const*
 {
-  return "rainhdf";
+  return ODIM_H5_RELEASE_TAG;
 }
 
-auto rainfields::hdf::package_version() -> const char*
-{
-  return "2.0.0";
-}
-
-auto rainfields::hdf::package_support() -> const char*
-{
-  return "m.curtis@bom.gov.au";
-}
-
-auto rainfields::hdf::default_version() -> std::pair<int, int>
+auto odim_h5::default_odim_version() -> std::pair<int, int>
 {
   return {default_version_major, default_version_minor};
 }
@@ -621,7 +611,7 @@ attribute_store::attribute_store(handle::id_t hnd, bool existing)
       attribute_store& store;
       handle* hnd;
     };
-    op_data od{*this};
+    op_data od{*this, nullptr};
     auto op = [](hid_t loc, const char* name, const H5A_info_t* info, void* odata) -> herr_t
     {
       auto p = reinterpret_cast<op_data*>(odata);
