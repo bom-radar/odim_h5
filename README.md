@@ -58,14 +58,14 @@ scenario is found below:
 To discover compilation and link flags via `pkg-config` use the following
 commands:
 
-    pkg-config --cflags rapic
-    pkg-config --libs rapic
+    pkg-config --cflags odim_h5
+    pkg-config --libs odim_h5
 
 A typical usage scenario is found below:
 
-    g++ -o foo $(pkg-config --cflags --libs rapic) foo.cc
+    g++ -o foo $(pkg-config --cflags --libs odim_h5) foo.cc
 
-If pkg-config cannot find the rapic package, ensure that you have set your
+If pkg-config cannot find the `odim_h5` package, ensure that you have set your
 `PKG_CONFIG_PATH` environment variable correctly for the install prefix which
 installed the library to.  For example, in the ${HOME}/local example above
 the following will set the correct `PKG_CONFIG_PATH`:
@@ -79,11 +79,11 @@ need to explicitly enable C++11 support by adding the `-std=c++11` flag._
 
 For example:
 
-    g++ -std=c++11 -o foo $(pkg-config --cflags --libs rapic) foo.cc
+    g++ -std=c++11 -o foo $(pkg-config --cflags --libs odim_h5) foo.cc
 
 ## Using the API
-Please consult the rapic.h header and the source of demo.cc for examples on how
-to use the API within your code.
+Please consult the `odim_h5.h` header for examples on how to use the API within
+your code.
 
 ## License
 This library is open source and made freely available according to the below
