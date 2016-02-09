@@ -3,9 +3,7 @@
 This library implements classes which ease the task of reading and writing
 HDF5 files which conform to the OPERA Data Information Model (ODIM) standard.
 
-More information on ODIM may be found at
-
-    http://www.eumetnet.eu/opera
+More information on ODIM may be found at http://www.eumetnet.eu/opera
 
 ## Installation
 To build and install the library use CMake to generate Makefiles.  For an
@@ -27,7 +25,6 @@ as such:
     make
     sudo make install
 
-
 ## Building the demo project
 A demo application is included which simply uses the API to connect to a ROWLF
 server and print received scan messages to the console.
@@ -36,7 +33,6 @@ To build and run this project, from within the 'build' directory above type:
 
     make demo
     ./demo
-
 
 ## Integrating with your project
 To use the library within your project it is necessary to tell your build
