@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #-------------------------------------------------------------------------------
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1)
 
 # version number used for shared library
 #  - major -> update when breaking API
@@ -85,8 +85,10 @@ if(NOT DEFINED ODIM_H5_RELEASE_TAG OR "${ODIM_H5_RELEASE_TAG}" STREQUAL "")
 endif()
 add_definitions("-DODIM_H5_RELEASE_TAG=\"${ODIM_H5_RELEASE_TAG}\"")
 
-# ensure C++11 support is turned on
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+# require C++11 or better, disable compiler extensions by default
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # set a high warning level
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Wno-unused-parameter")
