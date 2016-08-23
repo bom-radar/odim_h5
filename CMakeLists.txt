@@ -37,32 +37,8 @@ set(CMAKE_BUILD_TYPE ${DEF_BUILD_TYPE} CACHE STRING "Build type: <none>|Debug|Re
 # initialize the project
 project(odim_h5)
 
-# default locations based on system configuration
-get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
-if (LIB64)
-  set(DEF_INSTALL_LIB_DIR lib64)
-else()
-  set(DEF_INSTALL_LIB_DIR lib)
-endif()
-if (WIN32 AND NOT CYGWIN)
-  set(DEF_INSTALL_CMAKE_DIR cmake)
-else()
-  set(DEF_INSTALL_CMAKE_DIR ${DEF_INSTALL_LIB_DIR}/cmake/odim_h5)
-endif()
-
-# customizable installation locations
-set(INSTALL_LIB_DIR ${DEF_INSTALL_LIB_DIR} CACHE PATH "Installation directory for libraries")
-set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
-set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
-set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
-
-# convert relative paths to absolute
-foreach(p LIB BIN INCLUDE CMAKE)
-  set(var INSTALL_${p}_DIR)
-  if (NOT IS_ABSOLUTE "${${var}}")
-    set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
-  endif()
-endforeach()
+# setup standard install locations
+include(GNUInstallDirs)
 
 # external dependencies
 find_package(HDF5 1.8.14 REQUIRED)
@@ -100,19 +76,18 @@ set_target_properties(odim_h5 PROPERTIES VERSION ${ODIM_H5_VERSION})
 set_target_properties(odim_h5 PROPERTIES PUBLIC_HEADER odim_h5.h)
 install(TARGETS odim_h5
   EXPORT odim_h5-targets
-  LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
-  PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}"
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
+  PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
   COMPONENT dev)
 
 # create pkg-config file
 configure_file(odim_h5.pc.in "${PROJECT_BINARY_DIR}/odim_h5.pc" @ONLY)
-install(FILES "${PROJECT_BINARY_DIR}/odim_h5.pc" DESTINATION "${INSTALL_LIB_DIR}/pkgconfig")
+install(FILES "${PROJECT_BINARY_DIR}/odim_h5.pc" DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
 # boilerplate to generate our config and version cmake files
 
 # create config files
-file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")
-set(CONF_INCLUDE_DIRS "\${ODIM_H5_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+file(RELATIVE_PATH REL_INCLUDE_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/cmake/odim_h5" "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
 configure_file(odim_h5-config.cmake.in "${PROJECT_BINARY_DIR}/odim_h5-config.cmake" @ONLY)
 configure_file(odim_h5-config-version.cmake.in "${PROJECT_BINARY_DIR}/odim_h5-config-version.cmake" @ONLY)
 
@@ -120,7 +95,7 @@ configure_file(odim_h5-config-version.cmake.in "${PROJECT_BINARY_DIR}/odim_h5-co
 install(FILES
   "${PROJECT_BINARY_DIR}/odim_h5-config.cmake"
   "${PROJECT_BINARY_DIR}/odim_h5-config-version.cmake"
-  DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/odim_h5" COMPONENT dev)
 
 # install the export set for use with the install-tree
-install(EXPORT odim_h5-targets DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+install(EXPORT odim_h5-targets DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/odim_h5" COMPONENT dev)

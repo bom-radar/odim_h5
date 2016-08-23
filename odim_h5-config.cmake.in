@@ -5,5 +5,5 @@
 
 get_filename_component(ODIM_H5_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 include("${ODIM_H5_CMAKE_DIR}/odim_h5-targets.cmake")
-set(ODIM_H5_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+set(ODIM_H5_INCLUDE_DIRS "${ODIM_H5_CMAKE_DIR}/@REL_INCLUDE_DIR@")
 set(ODIM_H5_LIBRARIES odim_h5)
