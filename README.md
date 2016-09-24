@@ -1,4 +1,5 @@
 # ODIM (HDF5 format) Support Library
+[![Build Status](https://travis-ci.org/bom-radar/odim_h5.svg?branch=master)](https://travis-ci.org/bom-radar/odim_h5)
 
 This library implements classes which ease the task of reading and writing
 HDF5 files which conform to the OPERA Data Information Model (ODIM) standard.
