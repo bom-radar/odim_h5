@@ -8,6 +8,11 @@ compiler:
   - clang
   - gcc
 
+# install dependencies
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y libhdf5-dev
+
 # the actual build and test process
 script:
   - mkdir build
