@@ -36,6 +36,8 @@ the RPM generator is officially supported:
     cmake ..
     cpack -G RPM
 
+> Note that RPM packaging requires CMake 3.6 or better.
+
 ## Building the demo project
 A demo application is included which simply uses the API to connect to a ROWLF
 server and print received scan messages to the console.
