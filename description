@@ -1,0 +1,3 @@
+The odim_h5 library provides a basic C++ API for reading and writing HDF5
+files which conform to the OPERA Data Information Model (version 2.2). See
+http://www.eumetnet.eu/opera to find more information on the ODIM_H5 standard.

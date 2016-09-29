@@ -76,26 +76,35 @@ set_target_properties(odim_h5 PROPERTIES VERSION ${ODIM_H5_VERSION})
 set_target_properties(odim_h5 PROPERTIES PUBLIC_HEADER odim_h5.h)
 install(TARGETS odim_h5
   EXPORT odim_h5-targets
-  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
-  PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-  COMPONENT dev)
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT runtime
+  PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT devel)
 
 # create pkg-config file
 configure_file(odim_h5.pc.in "${PROJECT_BINARY_DIR}/odim_h5.pc" @ONLY)
-install(FILES "${PROJECT_BINARY_DIR}/odim_h5.pc" DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+install(FILES "${PROJECT_BINARY_DIR}/odim_h5.pc" DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig" COMPONENT devel)
 
-# boilerplate to generate our config and version cmake files
-
-# create config files
+# create cmake package config files
 file(RELATIVE_PATH REL_INCLUDE_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/cmake/odim_h5" "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
 configure_file(odim_h5-config.cmake.in "${PROJECT_BINARY_DIR}/odim_h5-config.cmake" @ONLY)
 configure_file(odim_h5-config-version.cmake.in "${PROJECT_BINARY_DIR}/odim_h5-config-version.cmake" @ONLY)
-
-# install the config files
 install(FILES
   "${PROJECT_BINARY_DIR}/odim_h5-config.cmake"
   "${PROJECT_BINARY_DIR}/odim_h5-config-version.cmake"
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/odim_h5" COMPONENT dev)
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/odim_h5" COMPONENT devel)
 
 # install the export set for use with the install-tree
-install(EXPORT odim_h5-targets DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/odim_h5" COMPONENT dev)
+install(EXPORT odim_h5-targets DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/odim_h5" COMPONENT devel)
+
+# build installation packages
+set(CPACK_PACKAGE_VENDOR "Australian Government, Bureau of Meteorology")
+set(CPACK_PACKAGE_VERSION_MAJOR ${ODIM_H5_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${ODIM_H5_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${ODIM_H5_VERSION_PATCH})
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "ODIM (HDF5 format) Support Library")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/description")
+set(CPACK_API_DEPS ${API_DEPS})
+set(CPACK_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
+set(CPACK_COMPONENT_DEVEL_DEPENDS runtime)
+set(CPACK_PROJECT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/CPackOptions.cmake")
+
+include(CPack)

@@ -26,6 +26,16 @@ as such:
     make
     sudo make install
 
+## Packaging
+To build distribution packages of the library use CPack.  Pass the name of
+the package generator you wish to use via the `-G` argument.  Currently only
+the RPM generator is officially supported:
+
+    mkdir build
+    cd build
+    cmake ..
+    cpack -G RPM
+
 ## Building the demo project
 A demo application is included which simply uses the API to connect to a ROWLF
 server and print received scan messages to the console.
