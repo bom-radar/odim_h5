@@ -22,8 +22,8 @@ cmake_minimum_required(VERSION 3.1)
 #  - minor -> update when breaking ABI - users only need to re-link
 #  - patch -> update when no-relink is required (ie: self-contained inside .so)
 set(ODIM_H5_VERSION_MAJOR 1)
-set(ODIM_H5_VERSION_MINOR 0)
-set(ODIM_H5_VERSION_PATCH 0)
+set(ODIM_H5_VERSION_MINOR 3)
+set(ODIM_H5_VERSION_PATCH 2)
 set(ODIM_H5_VERSION "${ODIM_H5_VERSION_MAJOR}.${ODIM_H5_VERSION_MINOR}.${ODIM_H5_VERSION_PATCH}")
 
 # default to a release build (must be before project())
