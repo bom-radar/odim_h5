@@ -38,15 +38,6 @@ the RPM generator is officially supported:
 
 > Note that RPM packaging requires CMake 3.6 or better.
 
-## Building the demo project
-A demo application is included which simply uses the API to connect to a ROWLF
-server and print received scan messages to the console.
-
-To build and run this project, from within the 'build' directory above type:
-
-    make demo
-    ./demo
-
 ## Integrating with your project
 To use the library within your project it is necessary to tell your build
 system how to locate the correct header and shared library files.  Support
