@@ -18,6 +18,7 @@
 #ifndef ODIM_H5_H
 #define ODIM_H5_H
 
+#include <cstdint>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -35,7 +36,7 @@ namespace odim_h5
   // Internal - RAII object for managing an HDF5 API hid_t
   struct handle
   {
-    typedef int id_t;
+    typedef int64_t id_t;
 
     id_t id;
 
