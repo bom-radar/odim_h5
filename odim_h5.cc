@@ -28,11 +28,25 @@ using namespace odim_h5;
  * redefine hid_t.  The following check ensures that our assumption about its
  * definition is correct.  If the definition of hid_t changes, then you must
  * also change the definition of handle::id_t.  In such a case, you will need to
- * add some smarts to the build system so that backwards compatibility is 
- * maintained for older versions of HDF5. */
+ * add some smarts to the build system so that backwards compatibility is
+ * maintained for older versions of HDF5.
+ *
+ * In HDF5 1.10.0 hid_t was changed from an int to an int64_t.  To ensure we can
+ * compile against both types without resorting to macros our internal id_t has
+ * been changed to int64_t and the asserts changed to ensure that id_t matches
+ * hid_t in signeness and is at least as big.  That we integer promotion rules
+ * allow the 64 bit type to be passed into the older 32 bit API.  This only works
+ * because we never need to pass and hid_t into the HDF5 API by pointer.
+ * */
 static_assert(
-      std::is_same<handle::id_t, hid_t>::value
-    , "handle::id_t does not match hid_t!");
+      std::is_integral<hid_t>::value
+    , "hid_t is not integral");
+static_assert(
+      sizeof(hid_t) <= sizeof(handle::id_t)
+    , "handle::id_t is smaller than hid_t");
+static_assert(
+      std::is_signed<hid_t>::value == std::is_signed<handle::id_t>::value
+    , "handle::id_t does not match signedness of hid_t");
 static_assert(
       data::max_rank >= H5S_MAX_RANK
     , "data::max_rank is less than H5S_MAX_RANK");
