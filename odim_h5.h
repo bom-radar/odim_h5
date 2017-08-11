@@ -48,8 +48,11 @@ namespace odim_h5
     auto operator=(handle&& rhs) noexcept -> handle& { std::swap(id, rhs.id); return *this; }
     ~handle();
 
-    operator id_t() const noexcept { return id; }
-    operator bool() const noexcept { return id > 0; }
+    // allow use as either int (pre hdf5 1.10) or int_64 (post hdf5 1.10)
+    operator int() const noexcept     { return id; }
+    operator int64_t() const noexcept { return id; }
+
+    operator bool() const noexcept    { return id > 0; }
 
     auto close() -> void;
   };

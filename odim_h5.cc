@@ -148,7 +148,7 @@ static auto make_error(
   constexpr int len = 512;
   char msg[len];
 
-  auto at = snprintf(msg, len, "rainhdf error: %s\n  operation: %s", err ? err : "", op);
+  auto at = snprintf(msg, len, "odim_h5 error: %s\n  operation: %s", err ? err : "", op);
   if (at < len && param)
     at += snprintf(msg + at, len - at, "\n  parameter: %s", param);
   if (at < len && hnd)
